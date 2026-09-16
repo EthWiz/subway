@@ -7,7 +7,8 @@
 
 ## Current state — Phase 0 RUN, NO-GO on THESE THREE PAIRS (2026-09-16)
 
-**Phases 1–5 below are GATED and have not started.** The plan's own gate says
+**The Phase 1 contracts are built; Phases 2–5 have not started.** The
+economic gate below is unchanged and still shut. The plan's own gate says
 "go/no-go before any code beyond scaffolding". It returned no-go on this
 plan's three named pairs — and **no verdict at all on the direction**, which
 remains ungraded rather than killed.
@@ -73,7 +74,7 @@ remains ungraded rather than killed.
 
 # Hedged Stock-Token LP App — Plan
 
-**Status:** Plan (nothing shipped). Drafted 2026-09-16 from the Robinhood
+**Status:** Phase 1 contracts built, nothing deployed. Drafted 2026-09-16 from the Robinhood
 Chain LP research in the `claude/lp-meme-token-il-strategies-t9wd3q` session.
 Revised the same day from per-user vaults to **shared ERC-4626 vaults per
 pair** so the position is a fungible, collateral-grade token, and again on
@@ -285,14 +286,26 @@ Holder surface — **synchronous, no queue**:
 - `deposit(stockAmt, usdgAmt, receiver)` — dual-asset deposit valued at the
   Chainlink feed. Single-asset deposits allowed; the keeper rebalances the mix
   at the next range move. Permit2 for approvals.
-- `withdraw` / `redeem` — real ERC-4626, settled out of the range. The vault
-  takes the redeemer's pro-rata slice of liquidity through
-  `IPoolAdapter.decreaseLiquidity`, which brings out their share of accrued
-  fees in the same proportion and leaves the remaining holders' claim
-  unchanged. No cash buffer is held against redemptions, because none is
+- `redeem(shares, receiver)` — dual-asset, settled out of the range, returning
+  `(stockOut, usdgOut)`. The vault takes the redeemer's pro-rata slice of
+  liquidity through `IPoolAdapter.decreaseLiquidity`. **Fees are swept first.**
+  An earlier draft of this plan said `decreaseLiquidity` brings out a
+  proportional share of accrued fees; that is false on Uniswap v4, which pays
+  a position's whole fee balance to whoever changes its liquidity. The vault
+  therefore calls `collectFees` before it divides anything, so fees are split
+  as idle balance. No cash buffer is held against redemptions, because none is
   needed.
-- `convertToAssets` — LP value at the **feed** price plus idle balances.
-  Exact, on-chain, and never a function of the pool tick.
+- The **single-asset ERC-4626 exits revert.** `withdraw` and
+  `redeem(uint256,address,address)` raise `UseDualAssetRedeem`, and
+  `maxWithdraw`/`maxRedeem` return 0. `xAMC` is ERC-20 plus the ERC-4626
+  accounting views, not a compliant ERC-4626 — a dual-asset payout cannot
+  honestly be reported through a single return value, and failing at
+  integration time beats failing in production.
+- `convertToAssets` — LP value at the **feed** price, plus fees the range has
+  earned, plus idle balances. It never reads a keeper-supplied value and never
+  takes a price from the pool, but it is **not** tick-independent: the pool's
+  price sets the mix the range holds, so it moves the quantities. Pricing
+  deposits against that is an open question (see `docs/decisions.md`).
 
 Keeper surface (each call checked against on-chain policy):
 
@@ -493,10 +506,14 @@ a 50% fee decay. This gate reuses this repo's tooling; its report lands in
 
 ## Phases
 
-> **GATED — none started beyond the adapter.** Phase 0 returned NO-GO on
-> AMC/HOOD/MSTR and no economic grade for any other pair (see Current state).
-> `UniV4Adapter`, `RangePolicy` and the share-math libraries exist; nothing is
-> deployed.
+> **Phase 1 contracts are BUILT; the economic gate is still shut.** Phase 0
+> returned NO-GO on AMC/HOOD/MSTR and no economic grade for any other pair
+> (see Current state). `BaseVault` (`xAMC`), `Router`, `VaultFactory`,
+> `UniV4Adapter`, `RangePolicy` and the share-math libraries exist and are
+> tested. Not built: the keeper, Permit2 deposits, deposit pausing and caps, a
+> named `rebalance`, fork tests against live 4663, and a timelock on
+> `setBounds` — all of which this document still calls for. Nothing is
+> deployed and no address is pinned.
 
 Revised 2026-09-16 for the two-vault stack. The reordering is the point: the
 unhedged vault is shippable and measurable on its own, and it answers the fee

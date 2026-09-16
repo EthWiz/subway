@@ -3,7 +3,7 @@
 AMM liquidity provision on [Robinhood Chain](https://chain.robinhood.com)
 (chain id `4663`), hedged or not, as two fungible tokens.
 
-A pooled ERC-4626 vault (`xAMC`) LPs a Robinhood Stock Token against USDG on
+A pooled vault (`xAMC`) LPs a Robinhood Stock Token against USDG on
 Uniswap. A second vault (`hAMC`) holds `xAMC` and hedges its delta with a
 short on Lighter's Robinhood Chain perp instance, whose settlement contract
 lives on the same chain and is owned by that vault. Holding `xAMC` is equity
@@ -49,9 +49,19 @@ balance to bound.
 
 ## The hard problem: what is a share worth?
 
-**`xAMC` does not have this problem.** Everything the base vault owns is on
-this chain: LP value at the Chainlink feed price plus idle balances. Its
-`convertToAssets` is exact, and withdrawals come straight out of the range.
+**`xAMC` has a much smaller version of this problem.** Everything the base
+vault owns is on this chain: LP value at the Chainlink feed price, plus fees
+the range has earned, plus idle balances. Nothing is hidden inside a rollup, so
+nothing has to be haircut to zero, and withdrawals come straight out of the
+range.
+
+What it is _not_ is independent of the pool. The two legs are priced at the
+feed, but how much of each a range is holding is decided by the pool's current
+price — so moving the pool inside the range moves `convertToAssets` even with
+the feed still. The feed bounds the damage, because the inventory is always
+marked at an honest price rather than at a tick an attacker chose. It does not
+eliminate it. How deposits should be priced in the face of that is still open;
+see `docs/decisions.md`.
 
 The problem belongs to `hAMC`. Everything it owns is priceable — it holds
 `xAMC`, which prices itself — **except the hedge equity**, which lives inside
@@ -68,18 +78,36 @@ is paid slightly less than fair, which is the side to be wrong on.
 
 Two consequences that look like bugs and are not:
 
-- **Depositors mint at the floor**, so they are mildly underpaid. That
-  asymmetry is exactly what makes a deposit-time manipulation pointless.
+- **Depositors mint at the floor.** Note which way that cuts: shares are
+  `value × supply / floor`, so a _lower_ denominator mints _more_ shares. A
+  depositor entering at a floor below true NAV is therefore mildly **over**paid,
+  at the expense of the holders already in. An earlier version of this file
+  claimed the opposite and drew a security argument from it; the argument does
+  not hold, and pricing an `hAMC` mint is an open Phase 3 problem rather than
+  something the floor solves for free.
 - **The price uses the Chainlink feed, never the pool tick.** A pool tick is
   something an attacker can move with capital; a share price built on one is a
   share price they can print.
 
 ## `xAMC` redeems synchronously; `hAMC` cannot
 
-`xAMC` is a real ERC-4626. A redeemer's shares are paid by taking their
-pro-rata slice of the Uniswap position — their share of accrued fees comes out
-in the same proportion, so nobody else's claim changes. There is no cash
-buffer, because none is needed.
+`xAMC` is **not** a compliant ERC-4626, and deliberately so. A slice of a
+Uniswap range is stock _and_ USDG, so `redeem` returns two amounts; the
+single-asset ERC-4626 exits revert pointing at it, and `mint`/`previewMint`/
+`maxDeposit`/`maxMint`/`previewWithdraw` are absent. What is implemented is
+ERC-20 plus the ERC-4626 _accounting_ views (`asset`, `totalAssets`,
+`convertTo*`, `previewDeposit`, `previewRedeem`), because that is the part an
+oracle or a lending market actually reads. Implementing the 4626 exit signature
+and quietly paying two tokens would break every integrator that trusted the
+return value.
+
+A redeemer is paid their pro-rata slice of the position, and nobody else's
+claim changes. Fees take an extra step to make that true: Uniswap v4 pays a
+position's **entire** accrued fee balance to whoever changes its liquidity, no
+matter how small the change, so the vault sweeps fees into itself _before_ it
+divides anything and then splits them like any other idle balance. Without that
+step a one-share redeemer would leave with every other holder's fees. There is
+no cash buffer, because none is needed.
 
 `hAMC` cannot do that. Lighter withdrawals take minutes normally and up to 14
 days through the escape hatch, so a synchronous `redeem()` would either lie
@@ -203,18 +231,34 @@ Unaudited, undeployed, and holding no funds. Please open an issue rather than
 a PR for anything that looks like a vulnerability in the vault's money-movement
 or NAV logic.
 
+**Known unfixed, and blocking any deposit path a stranger can reach.** A
+two-model review on 2026-09-16 found one blocker that is fixed (a redeemer
+taking every holder's Uniswap fees) and one family that is not: how a deposit
+should be priced. `deposit` mints in value-space at the feed while `redeem`
+pays a physical slice; the mint denominator moves with the pool's price inside
+the range; the first deposit has no virtual-share or dead-share defence against
+a donation attack; and there is no `minShares` for a depositor to defend
+themselves with. Each is written up, with worked numbers, in
+[`docs/decisions.md`](docs/decisions.md). Do not put third-party money through
+`deposit` until they are settled.
+
 The invariants the design rests on are stated and tested in
 [`contracts/test/SubwayVault.t.sol`](contracts/test/SubwayVault.t.sol) and
 [`contracts/test/UniV4Adapter.t.sol`](contracts/test/UniV4Adapter.t.sol) — the
 latter against Uniswap's genuine `PoolManager`, not a mock of it:
 
 1. Money only ever moves between a vault, its pool position, the hedged
-   vault's own Lighter account, and a share holder. **No vault entry point
-   takes a recipient**, and the Uniswap adapter holds no balance between calls
+   vault's own Lighter account, and a share holder. **No keeper or adapter
+   path takes a recipient** — a holder may name a receiver for their own
+   deposit or redemption, and nobody else can name one for them — and the
+   Uniswap adapter holds no balance between calls
    — it settles from the vault straight to the pool and takes from the pool
    straight back.
-2. `convertToAssets` never reads the pool tick or a keeper-supplied value. This
-   binds both vaults.
+2. `convertToAssets` never reads a keeper-supplied value, and prices every
+   leg at the Chainlink feed rather than at the pool. It is **not** fully
+   tick-independent: the pool's price decides what mix the range holds, so it
+   moves the quantities even though it never sets the prices. Tested with a
+   bound on how far, not with a claim that it cannot move.
 3. The keeper cannot exceed `maxMargin`, open a range that violates
    `RangePolicy`, or settle an epoch the queue cannot be paid from.
 4. `panic()` leaves every `hAMC` holder able to exit without the keeper — and

@@ -184,6 +184,58 @@ contract BaseVaultTest is Test {
         assertGe(stockOut + usdgOut * 1e12, s1 + u1 * 1e12, "redeemer left fees behind");
     }
 
+    /// @dev Claim 1, the version that can actually fail.
+    ///
+    /// The test above has ONE holder, so "the redeemer took their fees" and
+    /// "the redeemer took EVERYONE's fees" look identical. This is the
+    /// two-holder form, and it catches the v4 rule the first version of this
+    /// vault got wrong: `modifyLiquidity` pays a position's WHOLE accrued fee
+    /// balance to whoever changes its liquidity, however little they remove.
+    ///
+    /// The sharp assertion is preview-vs-actual rather than a size bound. A
+    /// redeemer who is paid their own fee slice matches the preview exactly; a
+    /// redeemer who sweeps the pot exceeds it by everyone else's fees, and
+    /// that gap does not shrink with the size of the redemption — which is
+    /// precisely what makes the bug worth one share to exploit.
+    function test_aTinyRedeemerCannotTakeEveryonesFees() public {
+        _deposit(alice, 100e18, 20_000e6);
+        _deposit(bob, 100e18, 20_000e6);
+        _openRange();
+
+        // Real fees, from real round trips through the range.
+        PoolKey memory key = adapter.poolKey();
+        swapper.swap(key, true, -20e18);
+        swapper.swap(key, false, -4_000e6);
+
+        (uint256 feeStock, uint256 feeUsdg) = adapter.pendingFees();
+        uint256 feeValue = feeUsdg + feeStock * 200 / 1e12;
+        assertGt(feeValue, 1e6, "test earned no fees worth measuring");
+
+        // Alice leaves with 1% of her holding — about 0.5% of the supply.
+        uint256 tiny = vault.balanceOf(alice) / 100;
+        (uint256 pStock, uint256 pUsdg) = vault.previewRedeemAmounts(tiny);
+
+        vm.prank(alice);
+        (uint256 stockOut, uint256 usdgOut) = vault.redeem(tiny, alice);
+
+        // She is paid what she was quoted. Under the bug she is paid that plus
+        // the other ~99.5% of the fee pot.
+        uint256 quoted = pUsdg + pStock * 200 / 1e12;
+        uint256 paid = usdgOut + stockOut * 200 / 1e12;
+        assertApproxEqAbs(paid, quoted, feeValue / 10, "redeemer paid more than their quote");
+
+        // And the fees are still in the vault for the holder who earned them:
+        // Bob holds ~99.5% of what is left, so his claim must still carry
+        // essentially the whole fee pot.
+        uint256 remaining = vault.totalAssets();
+        (uint256 bStock, uint256 bUsdg) = vault.previewRedeemAmounts(vault.balanceOf(bob));
+        uint256 bobClaim = bUsdg + bStock * 200 / 1e12;
+        uint256 bobFraction = vault.balanceOf(bob) * 1e18 / vault.totalSupply();
+        assertApproxEqRel(
+            bobClaim, remaining * bobFraction / 1e18, 0.01e18, "the remaining holder was left short"
+        );
+    }
+
     /// @dev Claim 2. A redeemer must not need the oracle, because needing it
     /// would mean an outage traps every holder.
     function test_redeemWorksWithADeadFeed() public {
@@ -307,6 +359,18 @@ contract BaseVaultTest is Test {
 
     function test_routerDepositAndRedeemMatchTheDirectPath() public {
         address stockToken = address(stock);
+
+        // The adapter is immutably bound to ONE vault, so a factory-created
+        // vault needs its own adapter bound to the address the factory is
+        // about to deploy at. Handing it the adapter that belongs to the
+        // directly-deployed vault compiles and even passes an idle-balance
+        // test, then reverts `NotVault` the first time a keeper touches the
+        // range — which is the wiring this test exists to prove.
+        address predicted = vm.computeCreateAddress(address(factory), vm.getNonce(address(factory)));
+        UniV4Adapter routerAdapter = new UniV4Adapter(
+            poolManager, predicted, IERC20(stockToken), IERC20(address(usdg)), FEE, TICK_SPACING
+        );
+
         vm.prank(admin);
         factory.addPair(
             VaultFactory.PairParams({
@@ -314,7 +378,7 @@ contract BaseVaultTest is Test {
                 symbol: "xSTK",
                 stock: stockToken,
                 feed: address(feed),
-                pool: address(adapter),
+                pool: address(routerAdapter),
                 keeper: keeper,
                 lighterMarketId: 7,
                 bounds: RangePolicy.Bounds({
@@ -323,6 +387,8 @@ contract BaseVaultTest is Test {
             })
         );
         address base = factory.baseVaultFor(stockToken);
+        assertEq(base, predicted, "factory vault address prediction failed");
+        assertEq(routerAdapter.vault(), base, "adapter is not bound to the factory's vault");
 
         vm.prank(alice);
         uint256 shares = router.deposit(stockToken, 10e18, 2_000e6, false, alice);
@@ -331,6 +397,18 @@ contract BaseVaultTest is Test {
         assertEq(stock.balanceOf(address(router)), 0, "router kept stock");
         assertEq(usdg.balanceOf(address(router)), 0, "router kept usdg");
 
+        // The part the old version of this test never reached: real liquidity
+        // through the factory's own wiring, and fees earned on it.
+        uint256 vaultStock = stock.balanceOf(base);
+        uint256 vaultUsdg = usdg.balanceOf(base);
+        vm.prank(keeper);
+        BaseVault(base).openRange(188e18, 212e18, vaultStock, vaultUsdg);
+        assertTrue(routerAdapter.hasPosition(), "factory vault could not open a range");
+
+        PoolKey memory key = routerAdapter.poolKey();
+        swapper.swap(key, true, -20e18);
+        swapper.swap(key, false, -4_000e6);
+
         vm.startPrank(alice);
         BaseVault(base).approve(address(router), shares);
         (uint256 stockOut, uint256 usdgOut) = router.redeem(stockToken, shares, false, alice);
@@ -338,6 +416,7 @@ contract BaseVaultTest is Test {
 
         assertTrue(stockOut > 0 || usdgOut > 0, "router redeem paid nothing");
         assertEq(BaseVault(base).balanceOf(address(router)), 0, "router kept shares");
+        assertEq(BaseVault(base).totalSupply(), 0, "sole holder left shares behind");
     }
 
     function test_hedgedPathsAreHonestlyUnavailable() public {
@@ -392,7 +471,19 @@ contract BaseVaultTest is Test {
         address fakeHedged = makeAddr("hAMC");
         vm.prank(admin);
         factory.registerHedgedVault(address(stock), fakeHedged);
-        assertTrue(router.hedgeAvailable(address(stock)), "hedge not advertised after registration");
+        assertEq(factory.hedgedVaultFor(address(stock)), fakeHedged, "registration did not stick");
+
+        // Registering a wrapper does NOT advertise the hedged mode: the Router
+        // still cannot route to it in Phase 1, and a toggle that lights up on
+        // a path that always reverts is worse than no toggle.
+        assertFalse(
+            router.hedgeAvailable(address(stock)), "hedge advertised while routing still reverts"
+        );
+        vm.prank(alice);
+        vm.expectRevert(
+            abi.encodeWithSelector(Router.HedgedVaultNotDeployed.selector, address(stock))
+        );
+        router.deposit(address(stock), 10e18, 2_000e6, true, alice);
 
         // Write-once: re-pointing a live wrapper would strand its holders.
         vm.prank(admin);

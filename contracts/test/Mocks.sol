@@ -167,6 +167,15 @@ contract MockPool is IPoolAdapter {
         return (0, 0);
     }
 
+    /// @dev `accrue` credits fees straight into the position, so from the
+    /// vault's point of view there is never anything pending here. The real
+    /// v4 fee behaviour — a partial removal paying out the WHOLE position's
+    /// fees — cannot be modelled by a mock and is tested against the genuine
+    /// `PoolManager` in `BaseVault.t.sol` instead.
+    function pendingFees() external pure returns (uint256, uint256) {
+        return (0, 0);
+    }
+
     /// @dev The mock measures "liquidity" as the USDG leg, which is enough for
     /// the vault's pro-rata arithmetic and says nothing about real AMM units.
     function positionLiquidity() external view returns (uint128) {

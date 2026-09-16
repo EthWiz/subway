@@ -14,6 +14,8 @@ import {Currency} from "v4-core/src/types/Currency.sol";
 import {BalanceDelta} from "v4-core/src/types/BalanceDelta.sol";
 import {ModifyLiquidityParams} from "v4-core/src/types/PoolOperation.sol";
 import {StateLibrary} from "v4-core/src/libraries/StateLibrary.sol";
+import {FullMath} from "v4-core/src/libraries/FullMath.sol";
+import {FixedPoint128} from "v4-core/src/libraries/FixedPoint128.sol";
 import {SqrtPriceMath} from "v4-core/src/libraries/SqrtPriceMath.sol";
 import {TickMath} from "v4-core/src/libraries/TickMath.sol";
 
@@ -189,6 +191,44 @@ contract UniV4Adapter is IPoolAdapter, IUnlockCallback {
         return tick >= tickLower && tick < tickUpper;
     }
 
+    /// @notice Fees the range has earned and not yet been paid, in vault
+    /// units (stock, USDG).
+    ///
+    /// @dev This exists because of a v4 rule that is easy to miss and
+    /// expensive to miss: `modifyLiquidity` credits a position's ENTIRE
+    /// accrued fee balance to the caller on ANY liquidity change, however
+    /// small — `feesOwed` is computed against the position's whole
+    /// pre-change liquidity (`Position.update`), and `PoolManager` then
+    /// returns `principalDelta + feesAccrued` as one number. So fees are not
+    /// something a vault can leave in the range and account for later: they
+    /// are paid to whoever touches the position next, and a vault that splits
+    /// only the principal pro-rata hands the first redeemer everyone's fees.
+    ///
+    /// Exposing them as a separate, readable quantity is what lets the vault
+    /// count them in NAV and realise them before it splits anything.
+    ///
+    /// Mirrors `Position.update`'s arithmetic exactly, including the wrapping
+    /// subtraction: v4 lets fee growth overflow deliberately, and only the
+    /// difference is meaningful.
+    function pendingFees() external view returns (uint256 stockFees, uint256 usdgFees) {
+        uint128 liq = positionLiquidity;
+        if (liq == 0) return (0, 0);
+
+        PoolId id = poolId();
+        (uint256 growth0, uint256 growth1) =
+            poolManager.getFeeGrowthInside(id, tickLower, tickUpper);
+        (, uint256 last0, uint256 last1) =
+            poolManager.getPositionInfo(id, address(this), tickLower, tickUpper, bytes32(0));
+
+        uint256 amount0;
+        uint256 amount1;
+        unchecked {
+            amount0 = FullMath.mulDiv(growth0 - last0, liq, FixedPoint128.Q128);
+            amount1 = FullMath.mulDiv(growth1 - last1, liq, FixedPoint128.Q128);
+        }
+        return stockIsCurrency0 ? (amount0, amount1) : (amount1, amount0);
+    }
+
     /// @notice The pool's own price, in the vault's units (USDG per whole
     /// stock token, 1e18).
     /// @dev For keepers and dashboards ONLY. Nothing that decides a share price
@@ -265,8 +305,7 @@ contract UniV4Adapter is IPoolAdapter, IUnlockCallback {
         emit LiquidityDecreased(liquidity, stockOut, usdgOut);
     }
 
-    function closeRange() external returns (uint256 stockOut, uint256 usdgOut) {
-        // `decreaseLiquidity` carries the `onlyVault` check.
+    function closeRange() external onlyVault returns (uint256 stockOut, uint256 usdgOut) {
         return decreaseLiquidity(positionLiquidity);
     }
 

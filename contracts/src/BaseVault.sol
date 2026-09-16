@@ -172,12 +172,19 @@ contract BaseVault is ERC20, ReentrancyGuard {
 
     /// @notice Everything the vault owns, valued in USDG at the FEED price.
     ///
-    /// Unlike the hedged wrapper's `navFloor`, this is not a deliberate
-    /// undervaluation — every term is on this chain and exactly priceable.
-    /// What it shares with the floor is where the price comes from: the
-    /// CHAINLINK FEED, never the pool tick. A pool tick is something an
-    /// attacker can move with capital, and a share price built on one is a
-    /// share price they can print.
+    /// Every term is on this chain and priceable, so unlike the hedged
+    /// wrapper's `navFloor` this is not a deliberate undervaluation.
+    ///
+    /// **It is not, however, independent of the pool.** The stock and USDG
+    /// legs are priced at the Chainlink feed, but the QUANTITIES come from
+    /// `positionAmounts`, and what mix a range is holding is decided by the
+    /// pool's current price. Moving the pool inside the range therefore moves
+    /// this number even with the feed still. The feed bounds how badly — the
+    /// value of the inventory is marked honestly rather than at a tick an
+    /// attacker chose — but "the share price cannot read the tick" is a
+    /// stronger claim than this function supports, and it is not made here.
+    /// The manipulation that remains is a mint-pricing question; see the open
+    /// item in `docs/decisions.md`.
     function totalAssets() public view returns (uint256) {
         uint256 price = _feedPriceOrZero();
         uint256 total = usdg.balanceOf(address(this));
@@ -194,8 +201,14 @@ contract BaseVault is ERC20, ReentrancyGuard {
 
         if (pool.hasPosition()) {
             (uint256 poolStock, uint256 poolUsdg) = pool.positionAmounts();
-            total += poolUsdg;
-            total += _stockValue(poolStock, price);
+            // Fees the range has earned are assets of this vault whether or
+            // not they have been swept yet. Leaving them out understates NAV,
+            // and an understated NAV is not conservative on the MINT side: it
+            // is the denominator new shares are priced against, so it hands
+            // the next depositor a slice of yield the existing holders earned.
+            (uint256 feeStock, uint256 feeUsdg) = pool.pendingFees();
+            total += poolUsdg + feeUsdg;
+            total += _stockValue(poolStock + feeStock, price);
         }
         return total;
     }
@@ -204,7 +217,7 @@ contract BaseVault is ERC20, ReentrancyGuard {
         uint256 supply = totalSupply();
         uint256 nav = totalAssets();
         if (supply == 0 || nav == 0) return assets;
-        return assets * supply / nav;
+        return Math.mulDiv(assets, supply, nav);
     }
 
     /// @notice USDG per share. This is what an oracle or a lending market
@@ -212,7 +225,7 @@ contract BaseVault is ERC20, ReentrancyGuard {
     function convertToAssets(uint256 shares) public view returns (uint256) {
         uint256 supply = totalSupply();
         if (supply == 0) return shares;
-        return shares * totalAssets() / supply;
+        return Math.mulDiv(shares, totalAssets(), supply);
     }
 
     function previewDeposit(uint256 assets) external view returns (uint256) {
@@ -234,8 +247,11 @@ contract BaseVault is ERC20, ReentrancyGuard {
         uint256 supply = totalSupply();
         if (supply == 0 || shares == 0) return (0, 0);
 
-        stockOut = stock.balanceOf(address(this)) * shares / supply;
-        usdgOut = usdg.balanceOf(address(this)) * shares / supply;
+        // Mirrors `redeem`, which sweeps the range's fees into the vault before
+        // dividing: they are idle balance by the time anyone's slice is taken.
+        (uint256 feeStock, uint256 feeUsdg) = pool.pendingFees();
+        stockOut = (stock.balanceOf(address(this)) + feeStock) * shares / supply;
+        usdgOut = (usdg.balanceOf(address(this)) + feeUsdg) * shares / supply;
 
         uint128 liq = pool.positionLiquidity();
         if (liq > 0) {
@@ -288,7 +304,7 @@ contract BaseVault is ERC20, ReentrancyGuard {
         uint256 supply = totalSupply();
 
         uint256 value = usdgAmount + _stockValue(stockAmount, price);
-        shares = (supply == 0 || navBefore == 0) ? value : value * supply / navBefore;
+        shares = (supply == 0 || navBefore == 0) ? value : Math.mulDiv(value, supply, navBefore);
         if (shares == 0) revert NothingToMint();
 
         if (stockAmount > 0) stock.safeTransferFrom(msg.sender, address(this), stockAmount);
@@ -301,11 +317,12 @@ contract BaseVault is ERC20, ReentrancyGuard {
     /// @notice Burn shares and take the corresponding slice of the vault out,
     /// immediately, in both tokens.
     ///
-    /// The redeemer's share of the Uniswap position comes out as liquidity,
-    /// which brings their share of accrued fees with it in the same
-    /// proportion. That is what leaves every remaining holder's claim exactly
-    /// where it was: nobody subsidises an exit, and no cash buffer is held
-    /// against one.
+    /// The redeemer's share of the Uniswap position comes out as liquidity.
+    /// Fees are NOT taken out with it — v4 would pay all of them to whoever
+    /// removed liquidity first — so they are swept into the vault before
+    /// anything is divided and then split like any other idle balance. That
+    /// is what leaves every remaining holder's claim exactly where it was:
+    /// nobody subsidises an exit, and no cash buffer is held against one.
     ///
     /// No price is read anywhere in this function.
     function redeem(uint256 shares, address receiver)
@@ -318,6 +335,18 @@ contract BaseVault is ERC20, ReentrancyGuard {
         if (shares > held) revert InsufficientShares(shares, held);
 
         uint256 supply = totalSupply();
+
+        // Sweep the range's fees into the vault FIRST, so the pro-rata lines
+        // below split them like any other idle balance.
+        //
+        // This is not an optimisation. Uniswap v4 pays a position's ENTIRE
+        // accrued fee balance to whoever changes its liquidity, regardless of
+        // how small the change is — `callerDelta = principalDelta +
+        // feesAccrued`, with `feesAccrued` computed against the position's
+        // whole pre-change liquidity. So without this line the first redeemer
+        // after a fee-earning period leaves with every other holder's fees,
+        // and one share is enough to do it.
+        if (pool.hasPosition()) pool.collectFees();
 
         // Idle slices are computed BEFORE the pool pays in, so a redeemer gets
         // a share of what the vault held, not a share of their own withdrawal.

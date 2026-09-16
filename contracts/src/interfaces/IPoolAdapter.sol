@@ -10,10 +10,19 @@ pragma solidity 0.8.28;
 /// per-pool contract. Committing the vault to either shape would have to be
 /// undone later.
 interface IPoolAdapter {
-    /// @notice Stock units and USDG currently held by the position, valued at
-    /// the pool's own state. Used for delta, NOT for share price — see
-    /// `SubwayVault.navFloor`.
+    /// @notice Stock units and USDG of PRINCIPAL currently held by the
+    /// position, valued at the pool's own state. Excludes fees the position
+    /// has earned but not been paid — see `pendingFees`.
+    /// @dev Both legs depend on the pool's current price, because that is what
+    /// decides the mix a range is holding. A vault that marks this at a feed
+    /// price is therefore still reading pool state indirectly; it is a
+    /// quantity report, not a manipulation-resistant valuation.
     function positionAmounts() external view returns (uint256 stockAmount, uint256 usdgAmount);
+
+    /// @notice Fees the position has earned and not yet been paid.
+    /// @dev Must be counted by any vault that prices shares off this position:
+    /// they are real assets of the position that `positionAmounts` omits.
+    function pendingFees() external view returns (uint256 stockFees, uint256 usdgFees);
 
     /// @notice True while the pool price sits inside the position's range.
     /// A position out of range earns no fees and is entirely one-sided.
@@ -39,9 +48,14 @@ interface IPoolAdapter {
     /// @notice Withdraw part of the position back to the vault.
     /// @dev The unhedged base vault settles withdrawals directly out of the
     /// range rather than from a cash buffer, so it needs to take a redeemer's
-    /// share of the liquidity without disturbing the rest of it. Accrued fees
-    /// come out in the same proportion, which is what makes the remaining
-    /// holders' claim unchanged by someone else leaving.
+    /// share of the liquidity without disturbing the rest of it.
+    ///
+    /// **Fees do NOT come out in proportion.** On Uniswap v4 a liquidity
+    /// change pays the position's whole accrued fee balance to the caller
+    /// whatever fraction it removes, so the amounts returned here can include
+    /// fees earned on liquidity that is staying. A vault must therefore
+    /// realise fees with `collectFees` BEFORE it computes anybody's share,
+    /// rather than assume this call splits them.
     function decreaseLiquidity(uint128 liquidity)
         external
         returns (uint256 stockOut, uint256 usdgOut);
