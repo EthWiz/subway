@@ -1,0 +1,37 @@
+<!-- @dsCard group="Components" viewport="700x230" name="Core — buttons, badges, tags, stats" subtitle="Action controls, status labels and the figure block" -->
+<!DOCTYPE html><html><head><meta charset="utf-8"><link rel="stylesheet" href="../../styles.css">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="../../_ds_bundle.js"></script>
+<style>body{padding:20px;background:var(--bg-page)}.row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px}</style>
+</head><body><div id="root"></div>
+<script type="text/babel">
+const { Button, IconButton, Badge, Tag, Stat } = window.SubwayDesignSystem_44ed98;
+function Cardish(){return <div>
+<div className="row">
+  <Button>Deposit</Button>
+  <Button variant="secondary" icon="external-link">Blockscout</Button>
+  <Button variant="inverse">Enter app</Button>
+  <Button variant="ghost" icon="refresh-cw">Refresh</Button>
+  <Button variant="danger" icon="octagon-alert">Emergency redeem</Button>
+  <Button disabled>Feed stale</Button>
+  <IconButton name="x" label="Close" variant="outline" />
+</div>
+<div className="row">
+  <Button size="sm">Small</Button><Button size="sm" variant="secondary">Small</Button>
+  <Button size="lg">Large</Button>
+  <Badge tone="positive" icon="circle-check">In range</Badge>
+  <Badge tone="warning">Phase 3 — not built</Badge>
+  <Badge tone="negative" icon="octagon-alert">No hedge market</Badge>
+  <Badge tone="accent">Floor NAV</Badge>
+  <Badge tone="info" uppercase={false}>v4 · 0.30%</Badge>
+  <Tag selected>Hedgeable</Tag><Tag>v3 pools</Tag><Tag onRemove={()=>{}}>INTC</Tag>
+</div>
+<div className="row" style={{gap:40,marginBottom:0}}>
+  <Stat label="TVL" value="$412,800" delta="+3.1%" hint="1 pair, closed beta" />
+  <Stat label="Trailing 24h fee APR" value="10.3" unit="%" hint="decays; not a return" />
+  <Stat label="Hedge PnL, unsettled" value="−$1,204" deltaTone="negative" delta="-2.4%" size="sm" />
+</div></div>}
+ReactDOM.createRoot(document.getElementById('root')).render(<Cardish/>);
+</script></body></html>

@@ -1,0 +1,52 @@
+<!-- @dsCard group="App" viewport="1280x820" name="Vault list" subtitle="The app's default view: pairs, fee APR, hedge depth, state" -->
+<!DOCTYPE html><html><head><meta charset="utf-8"><title>Subway — app</title>
+<link rel="stylesheet" href="../../styles.css">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="../../_ds_bundle.js"></script>
+<script src="data.js"></script>
+<style>html,body{margin:0;min-height:100%}</style>
+</head><body>
+<div id="root"></div>
+<script type="text/babel" src="Shell.jsx"></script>
+<script type="text/babel" src="VaultList.jsx"></script>
+<script type="text/babel" src="VaultDetail.jsx"></script>
+<script type="text/babel" src="Portfolio.jsx"></script>
+<script type="text/babel" data-presets="react">
+function App(){
+  const [route,setRoute]=React.useState("vaults");
+  const [pair,setPair]=React.useState(null);
+  const [address,setAddress]=React.useState(null);
+  const [gate,setGate]=React.useState(false);
+  const open=(p)=>{setPair(p);setRoute("vault")};
+  return <Shell route={route==="vault"?"vaults":route} onNavigate={(r)=>{setRoute(r);setPair(null)}} address={address} onConnect={()=>setGate(true)}>
+    {route==="vaults" && <VaultList onOpen={open} />}
+    {route==="vault" && pair && <VaultDetail pair={pair} onBack={()=>setRoute("vaults")} />}
+    {route==="portfolio" && <Portfolio onOpen={open} />}
+    {route==="research" && <ResearchNote />}
+    {route==="docs" && <ResearchNote docs />}
+    <ConnectGate open={gate} onAccept={()=>{setAddress(window.SUBWAY_DATA.address);setGate(false)}} />
+  </Shell>;
+}
+function ResearchNote({docs}){
+  const { Card, Callout, KeyValue } = window.SubwayDesignSystem_44ed98;
+  return <>
+    <PageHead eyebrow={docs?"Docs":"Research"} title={docs?"Documentation":"Phase 0 evidence gate"}
+      lede={docs?"Not recreated in this kit — the source repository has no documentation site.":"The screen that graded the candidate pairs, reproduced from the repository's report."} />
+    {docs ? <Callout tone="neutral" title="Left blank on purpose">No docs surface exists in the source repository, so this design system does not invent one.</Callout>
+    : <Card title="0-for-3 on the named pairs" subtitle="Screened live 2026-09-16">
+        <KeyValue items={[
+          {label:"HOOD",value:"no registered stock token, no Lighter market",tone:"negative"},
+          {label:"MSTR",value:"registered, live pools, no Lighter perp",tone:"negative"},
+          {label:"AMC",value:"$47K/24h on 115 trades — a ~$1,880 vault",tone:"negative"},
+          {label:"Hedgeable names",value:"18 of 194 registered tokens"},
+          {label:"Cleared pool bars",value:"3, on a 15-minute pre-open window"},
+          {label:"Markouts run",value:"none, for any pair, ever",tone:"muted"},
+        ]} />
+      </Card>}
+  </>;
+}
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body></html>

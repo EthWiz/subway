@@ -1,0 +1,31 @@
+<!-- @dsCard group="Components" viewport="700x330" name="Forms — amount, text, mode, consent" subtitle="Deposit field, inputs, segmented mode switch, consent controls" -->
+<!DOCTYPE html><html><head><meta charset="utf-8"><link rel="stylesheet" href="../../styles.css">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="../../_ds_bundle.js"></script>
+<style>body{padding:20px;background:var(--bg-page)}.grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;align-items:start}</style>
+</head><body><div id="root"></div>
+<script type="text/babel">
+const { AmountInput, Input, Select, Switch, SegmentedControl, Checkbox } = window.SubwayDesignSystem_44ed98;
+function Demo(){
+  const [amt,setAmt]=React.useState("12480");
+  const [mode,setMode]=React.useState("x");
+  const [auto,setAuto]=React.useState(true);
+  const [ok,setOk]=React.useState(false);
+  return <div className="grid">
+    <div style={{display:"grid",gap:16}}>
+      <AmountInput label="Deposit" asset="USDG" value={amt} onChange={setAmt} balance="12,480.00" usdValue="≈ $12,480 at feed" onMax={()=>setAmt("12480")} />
+      <Input label="Recipient" mono value="0x4f2ab9c1…e77d" onChange={()=>{}} />
+      <Input label="Amount" size="sm" mono value="0.00" onChange={()=>{}} invalid hint="Exceeds the pair's TVL cap (15% of pool TVL)." />
+    </div>
+    <div style={{display:"grid",gap:16}}>
+      <SegmentedControl fullWidth value={mode} onChange={setMode} options={[{value:"x",label:"Unhedged",sublabel:"xNVDA"},{value:"h",label:"Hedged",sublabel:"hNVDA"}]} />
+      <Select label="NAV window" value="7d" onChange={()=>{}} options={["24h","7d","30d","All"]} />
+      <Switch checked={auto} onChange={setAuto} label="Auto-compound fees" description="Fees stay in the range instead of idling in the vault." />
+      <Checkbox checked={ok} onChange={setOk} label="I am not a US, UK, Canadian or Swiss person" description="Robinhood Stock Tokens are not offered in these jurisdictions." />
+    </div>
+  </div>;
+}
+ReactDOM.createRoot(document.getElementById('root')).render(<Demo/>);
+</script></body></html>

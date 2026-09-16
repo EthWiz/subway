@@ -1,0 +1,87 @@
+<!DOCTYPE html><html><head><meta charset="utf-8"><title>Subway — identity directions</title>
+<meta name="design_doc_mode" content="canvas">
+<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&family=Archivo:wght@400;500;600;700&family=Archivo+Expanded:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+body{background:#E9EBEF;font:var(--type-body)}
+.frame{position:absolute;width:560px}
+.card{background:#fff;border-radius:16px;box-shadow:0 30px 60px -24px rgba(18,26,36,.28);overflow:hidden}
+.badge{display:block;margin-bottom:10px;font:var(--fw-semibold) 13px/1 var(--font-ui);letter-spacing:.06em;text-transform:uppercase;color:#4a5568}
+.hero{height:190px;display:flex;align-items:center;justify-content:center}
+.meta{padding:20px 24px 24px;border-top:1px solid #E6E9EF}
+.meta h4{margin:0 0 6px;font:var(--fw-semibold) 15px/1.3 var(--font-ui);color:#121A24}
+.meta p{margin:0 0 14px;font:400 13.5px/1.5 var(--font-ui);color:#566173}
+.strip{display:flex;height:34px;border-radius:6px;overflow:hidden}.strip span{flex:1}
+.spec{display:flex;gap:18px;margin-top:14px;font:400 12px/1.4 var(--font-mono);color:#667085}
+.row{display:flex;align-items:center;gap:14px;padding:0 24px 20px}
+.chip{display:inline-flex;align-items:center;white-space:nowrap;height:30px;padding:0 12px;border-radius:8px;font:500 13px/1 var(--font-ui)}
+.num{font-variant-numeric:tabular-nums}
+</style></head><body>
+
+<div class="frame" id="1a" style="left:80px;top:90px">
+  <span class="badge">1a · Wide institutional</span>
+  <div class="card">
+  <div class="hero" style="background:#121A24">
+    <span style="font:600 62px/1 'Archivo Expanded','Archivo',sans-serif;letter-spacing:-.01em;color:#fff">SUBWAY</span>
+  </div>
+  <div class="row" style="padding-top:18px">
+    <span class="chip" style="background:#E8503A;color:#fff">Deposit</span>
+    <span class="chip" style="background:#F6F7F9;color:#121A24;border:1px solid #D4D9E2">Wrap to hNVDA</span>
+    <span class="num" style="margin-left:auto;font:600 20px/1 'Archivo',sans-serif;color:#121A24">$689,380</span>
+  </div>
+  <div class="meta">
+    <h4>Wide caps wordmark, kept in ink</h4>
+    <p>The name is set in an expanded grotesk, always uppercase, always on ink or white — never on the accent. Reads as infrastructure: exchange, clearing house, index provider.</p>
+    <div class="strip"><span style="background:#121A24"></span><span style="background:#E8503A"></span><span style="background:#0E7C56"></span><span style="background:#F6F7F9"></span></div>
+    <div class="spec"><span>Archivo Expanded 600</span><span>Ink #121A24</span><span>Accent #E8503A</span></div>
+  </div>
+  </div>
+</div>
+
+<div class="frame" id="1b" style="left:700px;top:90px">
+  <span class="badge">1b · Editorial research note</span>
+  <div class="card">
+  <div class="hero" style="background:#FBFAF7">
+    <span style="font:400 74px/1 'Instrument Serif',Georgia,serif;letter-spacing:-.015em;color:#14213A">Subway</span>
+  </div>
+  <div class="row" style="padding-top:18px">
+    <span class="chip" style="background:#14213A;color:#fff">Deposit</span>
+    <span class="chip" style="background:#fff;color:#14213A;border:1px solid #D9D5CC">Wrap to hNVDA</span>
+    <span class="num" style="margin-left:auto;font:500 20px/1 'Schibsted Grotesk',sans-serif;color:#14213A">$689,380</span>
+  </div>
+  <div class="meta" style="border-top-color:#EAE6DE">
+    <h4>Serif wordmark, grotesk everywhere else</h4>
+    <p>A single serif moment for the name and page titles; all data stays in the grotesk. Positions Subway as a research house that publishes its own evidence — closest to how the repo actually writes.</p>
+    <div class="strip"><span style="background:#14213A"></span><span style="background:#B3553B"></span><span style="background:#7C8B5A"></span><span style="background:#FBFAF7"></span></div>
+    <div class="spec"><span>Instrument Serif 400</span><span>Navy #14213A</span><span>Terracotta #B3553B</span></div>
+  </div>
+  </div>
+</div>
+
+<div class="frame" id="1c" style="left:1320px;top:90px">
+  <span class="badge">1c · Terminal</span>
+  <div class="card">
+  <div class="hero" style="background:#0E1116">
+    <span style="font:500 52px/1 'IBM Plex Mono',monospace;letter-spacing:-.02em;color:#E7ECF2">subway<span style="color:#37E2A0">_</span></span>
+  </div>
+  <div class="row" style="padding-top:18px;background:#0E1116">
+    <span class="chip" style="background:#37E2A0;color:#07120D">Deposit</span>
+    <span class="chip" style="background:#171B22;color:#E7ECF2;border:1px solid #2A3038">Wrap to hNVDA</span>
+    <span class="num" style="margin-left:auto;font:500 20px/1 'IBM Plex Mono',monospace;color:#E7ECF2">$689,380</span>
+  </div>
+  <div class="meta" style="background:#0E1116;border-top-color:#22272F">
+    <h4 style="color:#E7ECF2">Lowercase mono, dark by default</h4>
+    <p style="color:#98A1B0">The name as a command. Dark is the primary theme, figures are monospaced, the accent is a signal green. Speaks to arbitrageurs and market makers rather than allocators.</p>
+    <div class="strip"><span style="background:#0E1116"></span><span style="background:#37E2A0"></span><span style="background:#F0705A"></span><span style="background:#E7ECF2"></span></div>
+    <div class="spec" style="color:#667085"><span>IBM Plex Mono 500</span><span>Base #0E1116</span><span>Signal #37E2A0</span></div>
+  </div>
+  </div>
+</div>
+
+<div class="frame" style="left:80px;top:600px;width:1800px">
+  <p style="margin:0;max-width:760px;font:400 14px/1.6 var(--font-ui);color:#3C4757">
+    Three directions, all type-only — no mark has been drawn. <strong>1a</strong> keeps the current system and gives it a wordmark. <strong>1b</strong> changes the palette to warm navy and adds a serif. <strong>1c</strong> is a different product posture: dark-first and monospaced. Pick one and I'll rebuild the tokens, cards, thumbnail and app kit around it. A real licensed typeface can be swapped in later without redoing the choice.
+  </p>
+</div>
+
+</body></html>

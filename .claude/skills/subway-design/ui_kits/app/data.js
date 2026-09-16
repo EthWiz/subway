@@ -1,0 +1,36 @@
+window.SUBWAY_DATA = {
+  chain: "Robinhood Chain",
+  address: "0x4f2a…9c1b",
+  pairs: [
+    { id: "intc", ticker: "INTC", pool: "INTC / USDG · v3 0.30%", tvl: "$412,800", apr: "6.1%", state: "live", stateLabel: "In range",
+      price: 24.18, lower: 22.73, upper: 25.63, feedAge: "38s", hedge: "$3.1M/24h", hedged: true,
+      fees24h: "+$1,142", il: "−$486", share: "$1.0412", supply: "396,480", cap: "15% of pool TVL", epoch: 412 },
+    { id: "meta", ticker: "META", pool: "META / USDG · v3 0.30%", tvl: "$188,400", apr: "4.4%", state: "live", stateLabel: "In range",
+      price: 742.10, lower: 697.57, upper: 786.63, feedAge: "12s", hedge: "$11.4M/24h", hedged: true,
+      fees24h: "+$412", il: "−$180", share: "$1.0088", supply: "186,760", cap: "15% of pool TVL", epoch: 412 },
+    { id: "spcx", ticker: "SPCX", pool: "SPCX / USDG · v3 1.00%", tvl: "$61,200", apr: "18.2%", state: "pending", stateLabel: "Pre-open pull",
+      price: 88.40, lower: 83.10, upper: 93.70, feedAge: "2m", hedge: "$1.2M/24h", hedged: true,
+      fees24h: "+$308", il: "−$96", share: "$1.0031", supply: "61,010", cap: "15% of pool TVL", epoch: 412 },
+    { id: "amc", ticker: "AMC", pool: "AMC / USDG · v3 0.30%", tvl: "$1,880", apr: "—", state: "paused", stateLabel: "Hedge too thin",
+      price: 3.42, lower: 3.21, upper: 3.63, feedAge: "1m", hedge: "$47K/24h", hedged: false,
+      fees24h: "+$4", il: "−$1", share: "$1.0002", supply: "1,880", cap: "hedge depth", epoch: 412 },
+    { id: "mstr", ticker: "MSTR", pool: "MSTR / USDG · v3 0.30%", tvl: "$25,100", apr: "10.3%", state: "paused", stateLabel: "No Lighter perp",
+      price: 318.60, lower: 299.48, upper: 337.72, feedAge: "44s", hedge: "none", hedged: false,
+      fees24h: "+$71", il: "−$22", share: "$1.0119", supply: "24,800", cap: "unhedged only", epoch: 412 },
+  ],
+  positions: [
+    { id: "intc-x", ticker: "INTC", hedged: false, balance: "11,904.12", value: "$12,394", pnl: "+$214", pnlTone: "positive" },
+    { id: "intc-h", ticker: "INTC", hedged: true, balance: "4,000.00", value: "$4,061", pnl: "−$18", pnlTone: "negative" },
+    { id: "meta-x", ticker: "META", hedged: false, balance: "2,480.00", value: "$2,502", pnl: "+$22", pnlTone: "positive" },
+  ],
+  queue: [
+    { id: "q1", slot: "412 · slot 7", shares: "1,200.00 hINTC", requested: "2026-09-16 14:02", status: "Queued", state: "pending" },
+    { id: "q2", slot: "411 · slot 3", shares: "800.00 hINTC", requested: "2026-09-15 19:41", status: "Claimable", state: "live" },
+  ],
+  log: [
+    { id: "l1", at: "14:02:11", what: "Range recentred", why: "Feed drifted 3.1% from range centre", tx: "0x8a4c…12f9" },
+    { id: "l2", at: "13:44:02", what: "Fees collected", why: "Auto-compound on; $1,142 returned to the range", tx: "0x71bd…0ce1" },
+    { id: "l3", at: "09:15:00", what: "Liquidity pulled", why: "15 min before US open — gap risk", tx: "0x4fe2…9a77" },
+    { id: "l4", at: "08:59:40", what: "Hedge reduced 12%", why: "Delta band breach after overnight drift", tx: "0x2b19…d40a" },
+  ],
+};
