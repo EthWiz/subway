@@ -150,7 +150,7 @@ Learned the hard way; recorded so they are not relearned.
 ```
  user wallet ──wagmi/viem──▶ Next.js app ──read──▶ Backend API (vault stats, NAV history, queue)
       │                                                    ▲
-      │ tx: Router.deposit(pair, stock, usdg, hedged)       │ events + snapshots (Ponder)
+      │ tx: Router.deposit(pair, stock, usdg, minShares, hedged)  │ events + snapshots
       ▼                                                    │
    Router ── hedged=false ─▶ BaseVault  (xAMC)             │            ┐
       │                          │ owns  ┌───────────────────────────┐    │ TRACK A
@@ -225,21 +225,43 @@ priced"). Four faces:
    victim;
 4. no `minShares`, so a depositor cannot defend against any of the above.
 
-**Do regardless:** `minShares` on `deposit` and an OZ-style virtual-share
-offset. Closes (3) and gives (4); changes no product semantics.
+**Do regardless — DONE.** `minShares` on `deposit` (threaded through the
+Router) and an OZ-style virtual offset of `10 ** (18 − usdgDecimals)` shares
+against one virtual USDG unit. Closes (3), gives (4), changes no product
+semantics — and incidentally makes `decimals()` honest: a whole share opens at
+$1 rather than $1,000,000. The virtual terms are value-space only; `redeem`
+still divides physical contents by the real supply.
 
-**Decide:** how to close (1)+(2). Recommended: a **feed-vs-pool divergence
-gate** — `deposit` reverts while `|poolPriceWad − feed| > ε` (ε per pair,
-default 0.5%). Keeps single-asset deposits, which the product wants, and makes
-the mismatch small rather than redesigning the mint. Alternative: mint from
-quantities LP-token style (shares ∝ the binding leg against vault+pool
-inventory). Airtight, but kills single-asset deposits. This is a product-shape
-choice; run `/review-plan` on a two-page write-up before coding it.
+**Tests to add either way — DONE.** All four, in `BaseVault.t.sol`: the full
+manipulate → victim deposits → reverse sequence; donation with nonzero minted
+shares; deposit while fees are pending; both currency orderings through
+`BaseVault` rather than only the adapter.
 
-Tests to add either way: the full manipulate → victim deposits → reverse
-sequence measuring attacker profit; donation with nonzero minted shares;
-deposit while fees are pending (now counted, must stay counted); both currency
-orderings through `BaseVault`, not just the adapter.
+**Decide — STILL OPEN, and still the blocker.** How to close (1)+(2). The
+two-page write-up A1 asked for is `docs/a1-deposit-pricing.md`, now with
+measurements instead of estimates; **it has not been reviewed, and nothing
+from it should be coded until it is.** Its shape:
+
+- Recommended: a **feed-vs-pool divergence gate** — `deposit` reverts while
+  `|poolPriceWad − feed| > ε`. Keeps single-asset deposits, which the product
+  wants. But ε **cannot be tighter than the pool's fee tier**, because that is
+  the no-arbitrage band: a 1% pool (what the scan found for HOOD/USDG) forces
+  ε ≈ 1.2%. Residual mispricing ~2 bps on a 0.3% pool, ~11 bps on a 1% pool —
+  in both cases less than the 30–100 bps a depositor would pay to acquire the
+  other leg themselves, which is the comparison that matters.
+- Alternative: **mint from quantities**, LP-token style. Airtight, reads no
+  price at all, and would take A2's deposit half off the board with it. Loses
+  only because it kills single-asset deposits — so the review's real question
+  is whether that requirement is load-bearing or merely inherited.
+
+Two measured facts the decision should be argued against. The distortion is
+quadratic in the divergence and **capped by the range width** (1.79% at ±6%,
+8.04% at ±25%, confirming the paper estimate). And the end-to-end attack
+currently **loses money** — the attacker must move the price through the
+vault's own liquidity, and the fee is first order in the move while the
+distortion is second. That last one is not reassurance: it holds only because
+the vault is the pool's sole LP in the test, and A6's ≤15%-of-pool cap
+guarantees the opposite in production.
 
 ### A2. Off-hours feed policy
 

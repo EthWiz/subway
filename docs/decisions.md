@@ -129,6 +129,9 @@ fees, or the gas of the poke becomes material next to the redemption itself.
 
 ## 2026-09-16 — OPEN: how a deposit should be priced
 
+> Faces (3) and (4) settled 2026-09-16 by the entry below; (1) and (2) still
+> open, now with measured numbers in `docs/a1-deposit-pricing.md`.
+
 **Not decided.** Recorded so it is not mistaken for settled. Two reviewers
 (codex, grok) independently found the same family of problem in `BaseVault`,
 and it is one question with several faces:
@@ -231,3 +234,50 @@ the choice depends on who ends up holding the key.
 
 **Revisit if:** a vault is deployed with a real admin key, or the factory owner
 becomes anything other than a single operator wallet.
+
+---
+
+## 2026-09-16 — Virtual shares and `minShares`, and the mint distortion measured
+
+**Decided**, for the two halves of the entry above that needed no product
+choice; the other two are narrowed rather than closed.
+
+**Faces (3) and (4) are fixed.** `deposit` takes a `minShares` floor, and the
+mint and the `convertTo*` views carry an OpenZeppelin-style virtual offset of
+`10 ** (18 - usdgDecimals)` shares against one virtual USDG unit. The offset
+was chosen over dead shares because it costs nobody anything: dead shares
+require a real first deposit to be burned by someone, and leave a permanent
+unredeemable slice of the vault.
+
+Two things about it worth keeping. The virtual terms live **only in
+value-space** — `redeem` and `previewRedeemAmounts` still divide the physical
+contents by the REAL supply, because crediting phantom shares with real tokens
+would leave the last holder unable to empty the vault. And the offset
+incidentally makes `decimals()` honest: an 18-decimal share against a
+6-decimal asset minting `shares = value` priced a whole share at $1,000,000
+and `convertToAssets(1e18)` — what a lending market reads as price-per-share —
+at $1e12. A whole share now opens at $1.
+
+**Faces (1) and (2) are measured, not fixed.** Swept against the real
+`PoolManager`, the NAV distortion from pool-vs-feed divergence is quadratic in
+the divergence and capped by the range width: 1.79% for a ±6% range, 8.04% for
+a ±25% one — which confirms the ~8.6% figure the entry above derived on paper.
+At 0.5% divergence the residual is about 2 bps.
+
+Two findings that change how the remaining decision should be argued:
+
+- **The end-to-end attack currently loses money.** Shove the pool, let a victim
+  deposit, shove it back, exit: the attacker is down $3.41 on a $2,000 victim
+  deposit, because they must move the price through the vault's own liquidity
+  and the fee is first order in the move while the distortion is second order.
+  This is **not** a reason to relax: it holds only because the vault is the
+  pool's sole LP in the test, and A6's vault-≤-15%-of-pool-TVL cap guarantees
+  the opposite in production.
+- **A divergence gate's ε cannot be tighter than the pool's fee tier**, because
+  the no-arbitrage band is the fee tier. A 1% pool — what the scan found for
+  HOOD/USDG — forces ε ≈ 1.2% and a residual near 11 bps.
+
+**Revisit if:** the A1 recommendation in `docs/a1-deposit-pricing.md` is
+reviewed and either adopted or replaced; or the single-asset-deposit
+requirement is dropped, which would make minting from quantities win outright
+and take A2's deposit half off the board with it.

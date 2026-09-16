@@ -61,7 +61,7 @@ price — so moving the pool inside the range moves `convertToAssets` even with
 the feed still. The feed bounds the damage, because the inventory is always
 marked at an honest price rather than at a tick an attacker chose. It does not
 eliminate it. How deposits should be priced in the face of that is still open;
-see `docs/decisions.md`.
+see [`docs/a1-deposit-pricing.md`](docs/a1-deposit-pricing.md).
 
 The problem belongs to `hAMC`. Everything it owns is priceable — it holds
 `xAMC`, which prices itself — **except the hedge equity**, which lives inside
@@ -233,14 +233,22 @@ or NAV logic.
 
 **Known unfixed, and blocking any deposit path a stranger can reach.** A
 two-model review on 2026-09-16 found one blocker that is fixed (a redeemer
-taking every holder's Uniswap fees) and one family that is not: how a deposit
-should be priced. `deposit` mints in value-space at the feed while `redeem`
-pays a physical slice; the mint denominator moves with the pool's price inside
-the range; the first deposit has no virtual-share or dead-share defence against
-a donation attack; and there is no `minShares` for a depositor to defend
-themselves with. Each is written up, with worked numbers, in
-[`docs/decisions.md`](docs/decisions.md). Do not put third-party money through
-`deposit` until they are settled.
+taking every holder's Uniswap fees) and one family — how a deposit should be
+priced — that is now half fixed.
+
+Fixed: the first deposit has a virtual-share offset, so the donation attack
+costs the attacker rather than the victim, and `deposit` takes a `minShares`
+floor.
+
+Still open, and still the reason not to put third-party money through
+`deposit`: the mint denominator moves with the pool's price inside the range,
+so a deposit mints in value-space at the feed while a redemption pays a
+physical slice, and the two agree only while the vault's mix matches the
+feed's. Measured, the distortion is quadratic in the pool-vs-feed divergence
+and capped by the range width — 1.79% on a ±6% range, 8.04% on a ±25% one. The
+options, the measurements and a recommendation are in
+[`docs/a1-deposit-pricing.md`](docs/a1-deposit-pricing.md); the history is in
+[`docs/decisions.md`](docs/decisions.md).
 
 The invariants the design rests on are stated and tested in
 [`contracts/test/SubwayVault.t.sol`](contracts/test/SubwayVault.t.sol) and
