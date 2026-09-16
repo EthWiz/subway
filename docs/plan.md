@@ -118,10 +118,10 @@ US opens (`research/lib/markout.ts`, `gradeGate`).
 | Stock tokens                        | Issued by Robinhood Assets (Jersey); **not for US persons**; also restricted UK/CA/CH; minted only by the authorised participant; supply grows with demand                                                                                                                                                                                                                                                                                                                                                                                                          |
 | AA                                  | ERC-4337 EntryPoints v0.6/0.7/0.8 live; EIP-7702 live; Alchemy Gas Manager and ZeroDev paymasters available                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 
-Uniswap v3 is also deployed and carried the highest-fee stock pools at research
-time (AMC/USDG 0.3%, HOOD/USDG 1%), but its Robinhood addresses were never
-pinned, and the research scan is **v3-only** while the only adapter is **v4**.
-Resolving where the volume actually is comes before choosing pairs (A5).
+Uniswap v3 is also deployed. The Phase 0 scan was v3-only and named AMC/USDG
+0.3% and HOOD/USDG 1% as its highest-fee stock pools; the five-day v4 scan (A5)
+shows the same names with feeds paying more on v4, and HOOD does not exist as a
+registered stock token on either. **v4 is the venue; no v3 adapter is built.**
 
 ## Uniswap v4 facts the code depends on
 
@@ -356,18 +356,64 @@ fuzzer finds a 25.08% realised half-width within 150 runs.
   deployment parameter, publicly readable, and must be checked in the deploy
   path rather than by the contract, which would otherwise block testnet.
 
-### A5. Pool selection — where the volume actually is
+### A5. Pool selection — where the volume actually is — **DONE**
 
-The scan is v3-only; the adapter is v4-only. Before choosing pairs:
+`research/scan-v4.ts`, five days (Thu 10 Sep 12:00 → Tue 15 Sep 12:00 UTC:
+four US opens and a weekend) of v4 `Swap` events off the PoolManager, pool ids
+resolved through `Initialize`, tokens classified **by address** against the
+registry, volume split by session. 938,154 swaps across 402 registered
+stock/USDG pools; `research/generated/2026-09-16-pool-scan-v4.json`.
 
-1. Extend `research/scan.ts` to v4 `Swap` events off `PoolManager`, or pin the
-   v3 factory/NPM/router addresses and build `UniV3Adapter` — whichever the
-   volume says. Run it over a multi-day window (two US opens and a weekend) on
-   a paid RPC; the public endpoint cannot carry it.
-2. Rank pairs by volume, fee tier, and pool TVL for the vault-≤-15%-of-pool
-   cap. **This is ranking, not a go/no-go**; the label carries the risk.
-3. Classify pool tokens **by address** against the Robinhood Stock Token
-   registry, never by symbol — the HOOD lesson.
+**Three filters before ranking, each of which removed a pool the old report
+liked.** A Track A pair needs a Chainlink feed (there are 35; **no AMC, no
+HOOD** — AMC's best pool does $2.7k/day and cannot be priced, HOOD has no
+registered token at all), no hook (a hooked pool's fee and swap logic are a
+third party's code), and a static fee tier. What is left, ranked by pool fee
+income; `activeL` is the full-range-equivalent value of liquidity at the
+current tick, which is the denominator a fee share is set by; "max vault" is
+the 15%-of-pool cap in those units, before the concentration multiplier
+`lib/rank.ts` applies:
+
+| pool        | fees/day | activeL | pool APR | max vault (15%) | RTH / off-hrs / weekend |
+| ----------- | -------: | ------: | -------: | --------------: | ----------------------- |
+| GOOGL 0.30% |  $11,086 |  $59.5M |     6.8% |           $8.9M | 22% / 51% / 27%         |
+| SPY 0.30%   |   $8,808 | $146.8M |     2.2% |          $22.0M | 30% / 36% / 34%         |
+| MSTR 0.25%  |   $5,580 |  $18.9M |    10.8% |           $2.8M | 44% / 26% / 30%         |
+| META 0.30%  |   $4,103 | $159.4M |     0.9% |          $23.9M | 57% / 16% / 26%         |
+| PLTR 1.00%  |   $4,043 |  $21.5M |     6.9% |           $3.2M | 39% / 21% / 40%         |
+| AAPL 0.30%  |   $3,829 |  $41.9M |     3.3% |           $6.3M | 54% / 20% / 26%         |
+| SPCX 1.00%  |   $3,693 |  $35.6M |     3.8% |           $5.3M | 77% / 14% / 9%          |
+| MSFT 0.30%  |   $2,170 |  $12.4M |     6.4% |           $1.9M | 44% / 35% / 20%         |
+| MU 1.00%    |   $2,061 |  $11.2M |     6.7% |           $1.7M | 29% / 36% / 35%         |
+| TSLA 0.30%  |   $1,970 |  $24.8M |     2.9% |           $3.7M | 33% / 18% / 49%         |
+| AMD 1.00%   |   $1,898 |  $14.6M |     4.7% |           $2.2M | 27% / 25% / 48%         |
+| INTC 1.00%  |   $1,779 |   $5.0M |    12.9% |           $0.8M | 18% / 68% / 14%         |
+| COIN 1.00%  |   $1,358 |   $6.3M |     7.9% |           $0.9M | 40% / 28% / 32%         |
+
+Pools with the highest pool-level APR are the thin ones — EWY 5% (51% on
+$0.6M), RKLB 0.9% (38% on $0.7M), CRCL 0.24% (31% on $1.5M) — where a
+cap-sized vault is under $250k and the fee is mostly its own; ranking, not a
+recommendation.
+
+**What the ranking says.** Pool-level fee APR on active liquidity is single
+digits for every liquid name. The headline APRs in the Phase 0 report were
+concentration-multiplied vault figures, and that multiplier is real but it is
+the vault's to earn against everyone else who concentrates too. **Weekend
+volume is 25–50% on most pools** — the session in which the feed is frozen and
+the pool is the only price, i.e. where a vault's adverse selection is worst.
+That fraction is a ranking input for Track B's markout gate, not a Track A
+blocker; the label carries it.
+
+**Recommended first pair: MSTR/USDG 0.25%.** The best combination of income
+($5.6k/day), pool APR (10.8%), depth ($18.9M active → a $2.8M cap-sized
+vault) and session mix (44% RTH), with a feed. Second: GOOGL 0.30%, twice the
+income but 51% off-hours flow and a shallower APR. PLTR 1% and INTC 1% are the
+next tier; INTC's 68% off-hours share is the thing to look at before choosing
+it. AMC, the original pair, is out until Chainlink lists a feed.
+
+**Decided: v4 is the venue.** No v3 adapter. The old v3 window showed the
+same magnitudes for the same names, and every v4 candidate above has a feed
+and an adapter today.
 
 ### A6. Deposit pause and caps — **DONE**
 

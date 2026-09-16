@@ -498,3 +498,46 @@ surprising, and worth an alert (A7).
 (both are in the committed directory snapshot to diff against); a feed is
 observed printing on a weekend; or a pair is listed whose feed has a wider
 deviation than ε, at which point the gate is doing the feed's job.
+
+---
+
+## 2026-09-16 — v4 is the venue; first pair MSTR/USDG 0.25%; no AMC, no HOOD
+
+**Decided**, from a five-day v4 scan (`research/scan-v4.ts`, 938k swaps, 402
+registered stock/USDG pools, `research/generated/2026-09-16-pool-scan-v4.json`).
+
+**Why v4 and not a v3 adapter.** The Phase 0 scan was v3-only because the v3
+addresses were never pinned and the v4 discovery path did not exist. Built,
+the v4 path shows the same names paying the same or more, and every candidate
+that survives the feed filter has a v4 pool and an adapter today. A v3 adapter
+would be built to reach pools that are at best comparable.
+
+**Why MSTR/USDG 0.25% first.** $5.6k/day of pool fees on $18.9M of active
+liquidity — 10.8% pool-level, the best APR among pools deep enough for a
+cap-sized vault above $1M — with 44% of its volume in RTH and a Chainlink
+feed. GOOGL 0.30% earns twice as much but on three times the depth and with
+half its volume off-hours. This is a ranking; it is not a claim that LP beats
+holding on MSTR, which is Track B's question.
+
+**Why not AMC or HOOD, the pairs the project began with.** Chainlink lists 35
+equity feeds on Robinhood Chain and neither is among them. AMC's best pool does
+$2.7k/day on v4 and cannot be priced by the vault; HOOD's pools trade an
+unregistered synthetic and never had a registered token. Both facts were
+findable from the feed directory and the registry before any scan ran, and
+the plan's fixed-facts table carried "AMC/USDG 0.3%, HOOD/USDG 1%" as the top
+pools for a day longer than it should have.
+
+**Three facts about the venue worth keeping.** Pool-level fee APR on active
+liquidity is single digits for every liquid name; the 200–440% figures in the
+Phase 0 report were concentration-multiplied vault estimates, and the
+multiplier is real but shared with every other concentrated LP. Weekend
+volume is 25–50% on most pools, which is the frozen-feed session and where
+adverse selection is worst — a ranking input for Track B's gate. And v4 pools
+come with hooks and dynamic fees (SPCX, SPY, META, TSLA all have hooked
+variants earning real fees); those are excluded because a hooked pool's fee
+and swap logic is someone else's code, and that exclusion should be
+revisited on its own once the vault has run on a plain pool.
+
+**Revisit if:** Chainlink lists an AMC or HOOD feed; a hooked pool's hook is
+audited and its economics warrant it; or Track B's markout gate says MSTR's
+weekend flow costs more than its fees pay.
