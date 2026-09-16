@@ -15,8 +15,19 @@
  * throttles hard; the Dwellir archive node serves unlimited `eth_call` but no
  * logs at all on its plan. Logs go to one, state reads to the other.
  *
+ * Two passes, because the chain does ~50 v4 swaps a second and five days of
+ * them is ~25M logs — more than a throttled endpoint or memory will carry.
+ * Pass one DISCOVERS candidate pools from a handful of sampled windows spread
+ * across the range (`--samples`, `--sample-minutes`): every pool with flow in
+ * a sample is resolved and classified, and only the registered stock/USDG
+ * ones survive. Pass two scans the WHOLE range filtered to those ids — `id`
+ * is an indexed topic, so the 10k cap almost never bites and the chunks are
+ * enormous. A stock pool that traded in the window but in none of the samples
+ * is missed; with eight 45-minute samples across five days that is a pool too
+ * quiet to rank anyway.
+ *
  *   DWELLER_RPC_URL=... npx tsx research/scan-v4.ts --from 2026-09-10T12:00Z --to 2026-09-15T12:00Z
- *   npx tsx research/scan-v4.ts --minutes 30            # quick look, latest window
+ *   npx tsx research/scan-v4.ts --minutes 30            # quick look: one window, one pass
  *
  * Research tooling: run by hand, never imported by a runtime app.
  */
@@ -35,6 +46,7 @@ import {
   UNIV4_INITIALIZE_TOPIC,
   UNIV4_DYNAMIC_FEE_FLAG,
   type RpcTransport,
+  type RpcLog,
   type DecodedV4Initialize,
   type SessionBucket,
 } from "./lib/poolscan.ts";
@@ -220,18 +232,84 @@ async function main(): Promise<void> {
   );
   const clock = await makeClock(stateT, fromBlock, toBlock);
 
-  const swapLogs = await fetchLogs(
-    logsT,
-    { fromBlock, toBlock, address: POOL_MANAGER, topics: [UNIV4_SWAP_TOPIC] },
-    {
-      initialChunk: 2_000,
-      throttleMs: gapMs,
-      onProgress: (done, total, n) =>
-        process.stdout.write(`\r  Swap ${((done / total) * 100).toFixed(1)}%  ${n} swaps   `),
-    },
-  );
+  // ---- pass one: discover candidate pools from sampled windows ----
+  const sampleCount = arg("from") ? Number(arg("samples") ?? 8) : 1;
+  const sampleBlocks = arg("from")
+    ? Math.round(Number(arg("sample-minutes") ?? 45) * BLOCKS_PER_MINUTE)
+    : toBlock - fromBlock + 1;
+  const samples: { fromBlock: number; toBlock: number }[] = [];
+  for (let i = 0; i < sampleCount; i += 1) {
+    const start =
+      sampleCount === 1
+        ? fromBlock
+        : Math.round(fromBlock + ((toBlock - fromBlock - sampleBlocks) * i) / (sampleCount - 1));
+    samples.push({ fromBlock: start, toBlock: Math.min(start + sampleBlocks - 1, toBlock) });
+  }
+
+  const seenIds = new Set<string>();
+  let sampledSwaps = 0;
+  for (const [i, w] of samples.entries()) {
+    const logs = await fetchLogs(
+      logsT,
+      { ...w, address: POOL_MANAGER, topics: [UNIV4_SWAP_TOPIC] },
+      {
+        initialChunk: 2_000,
+        throttleMs: gapMs,
+        onProgress: (done, total, n) =>
+          process.stdout.write(
+            `\r  discover ${i + 1}/${samples.length} ${((done / total) * 100).toFixed(0)}%  ${n} swaps   `,
+          ),
+      },
+    );
+    sampledSwaps += logs.length;
+    for (const l of logs) seenIds.add(decodeV4Swap(l).id);
+  }
   process.stdout.write("\n");
-  console.log(`v4 swaps in window: ${swapLogs.length}`);
+  console.log(
+    `discovery: ${sampledSwaps} swaps in ${samples.length} sample(s); ${seenIds.size} distinct pools`,
+  );
+
+  const pools = await resolvePools(logsT, [...seenIds], tip, gapMs);
+
+  const candidates: string[] = [];
+  for (const id of seenIds) {
+    const init = pools.get(id);
+    if (!init) continue;
+    const c0 = classifyPoolToken(init.currency0, assets);
+    const c1 = classifyPoolToken(init.currency1, assets);
+    if (
+      (c0.class === "REGISTERED_STOCK_TOKEN" && c1.class === "USDG") ||
+      (c1.class === "REGISTERED_STOCK_TOKEN" && c0.class === "USDG")
+    ) {
+      candidates.push(id);
+    }
+  }
+  console.log(`candidates (registered stock/USDG): ${candidates.length}`);
+
+  // ---- pass two: every swap in the window for the candidate pools only ----
+  const swapLogs: RpcLog[] = [];
+  const IDS_PER_QUERY = 150;
+  const batches = Math.ceil(candidates.length / IDS_PER_QUERY);
+  for (let i = 0; i < candidates.length; i += IDS_PER_QUERY) {
+    const batch = candidates.slice(i, i + IDS_PER_QUERY);
+    const b = Math.floor(i / IDS_PER_QUERY) + 1;
+    const logs = await fetchLogs(
+      logsT,
+      { fromBlock, toBlock, address: POOL_MANAGER, topics: [UNIV4_SWAP_TOPIC, batch] },
+      {
+        initialChunk: 200_000,
+        minChunk: 500,
+        throttleMs: gapMs,
+        onProgress: (done, total, n) =>
+          process.stdout.write(
+            `\r  Swap batch ${b}/${batches} ${((done / total) * 100).toFixed(1)}%  ${n} swaps   `,
+          ),
+      },
+    );
+    swapLogs.push(...logs);
+  }
+  process.stdout.write("\n");
+  console.log(`v4 swaps in window (candidate pools): ${swapLogs.length}`);
 
   const byId = new Map<string, ReturnType<typeof decodeV4Swap>[]>();
   for (const l of swapLogs) {
@@ -240,9 +318,6 @@ async function main(): Promise<void> {
     if (arr) arr.push(d);
     else byId.set(d.id, [d]);
   }
-  console.log(`distinct v4 pools with flow: ${byId.size}`);
-
-  const pools = await resolvePools(logsT, [...byId.keys()], tip, gapMs);
 
   const results: Record<string, unknown>[] = [];
   const decimalsCache = new Map<string, Promise<bigint>>();
@@ -378,10 +453,12 @@ async function main(): Promise<void> {
         stateUrl: stateUrl === logsUrl ? logsUrl : "dwellir robinhood-mainnet-archive",
         window: { fromBlock, toBlock, minutes: windowMinutes, fromTsMs, toTsMs },
         counts: {
+          discoverySamples: samples,
+          discoveredPools: seenIds.size,
+          candidates: candidates.length,
           swaps: swapLogs.length,
           pools: byId.size,
           admissible: admissible.length,
-          poolsKnown: pools.size,
         },
         pools: results,
       },
