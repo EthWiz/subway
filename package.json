@@ -1,0 +1,36 @@
+{
+  "name": "subway",
+  "version": "0.0.0",
+  "private": false,
+  "license": "MIT",
+  "description": "Delta-hedged AMM liquidity provision on Robinhood Chain: shared ERC-4626 vaults that LP a stock token against USDG and hedge the delta on Lighter.",
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "packageManager": "pnpm@10.27.0",
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "node --import ./tests/support/no-network.mjs --import tsx --test tests/*.test.ts",
+    "lint": "eslint .",
+    "format": "prettier --write \"**/*.{ts,tsx,md,json}\"",
+    "format:check": "prettier --check \"**/*.{ts,tsx,md,json}\"",
+    "contracts:build": "forge build --root contracts",
+    "contracts:test": "forge test --root contracts",
+    "contracts:fmt": "forge fmt --root contracts",
+    "contracts:fmt:check": "forge fmt --check --root contracts",
+    "research:probe": "tsx research/probe.ts",
+    "research:scan": "tsx research/scan.ts",
+    "research:rank": "tsx research/rank.ts",
+    "check": "pnpm run format:check && pnpm run lint && pnpm run typecheck && pnpm run test && pnpm run contracts:fmt:check && pnpm run contracts:build && pnpm run contracts:test"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.20.0",
+    "@types/node": "^22.13.0",
+    "eslint": "^9.20.0",
+    "prettier": "^3.5.0",
+    "tsx": "^4.21.0",
+    "typescript": "^5.7.0",
+    "typescript-eslint": "^8.24.0"
+  }
+}

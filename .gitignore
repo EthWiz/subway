@@ -1,0 +1,20 @@
+node_modules/
+dist/
+.next/
+*.tsbuildinfo
+.eslintcache
+
+# Foundry
+contracts/out/
+contracts/cache/
+contracts/broadcast/
+
+# Secrets and local config — never commit these.
+.env
+.env.*
+!.env.example
+
+# Local research scratch. Committed evidence lives in research/generated/.
+research/scratch/
+
+.DS_Store
