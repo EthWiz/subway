@@ -28,3 +28,7 @@ research/scratch/
 .claude/settings.local.json
 .codex/worktrees/
 .cursor/worktrees/
+
+# Source archive for the vendored design-system export; the extracted bundle
+# under .claude/skills/subway-design/ is what the repo tracks.
+subway-design.zip

@@ -4,3 +4,8 @@ contracts/lib/
 research/generated/
 pnpm-lock.yaml
 .claude/worktrees/
+
+# Vendored design-system export (extracted from subway-design.zip). It is
+# regenerated wholesale, so reformatting it would churn against the source
+# bundle on every re-export. Same reasoning as contracts/lib/ above.
+.claude/skills/subway-design/
