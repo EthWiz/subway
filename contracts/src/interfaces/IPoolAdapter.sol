@@ -30,12 +30,31 @@ interface IPoolAdapter {
 
     /// @notice Open a position over [lowerPrice, upperPrice], both expressed as
     /// USDG per whole stock token scaled by 1e18.
+    ///
+    /// @return stockUsed Raw stock actually consumed.
+    /// @return usdgUsed Raw USDG actually consumed.
+    /// @return realisedLower The position's ACTUAL lower bound, in the same
+    /// vault units as `lowerPrice`.
+    /// @return realisedUpper The position's ACTUAL upper bound, likewise.
+    ///
+    /// @dev The realised bounds are returned because they are not the
+    /// requested ones. An AMM with a tick grid cannot place an arbitrary
+    /// price, and this adapter rounds OUTWARD so the position contains what
+    /// was asked for — which means the range it opens can be up to one tick
+    /// spacing wider on each side. A vault whose `RangePolicy` is a safety
+    /// bound rather than a suggestion has to check the position it got, not
+    /// the position it asked for, and it can only do that if the adapter says
+    /// what it got. Returned from the call rather than exposed as a view so
+    /// the vault validates the range this call opened and not whatever is
+    /// open by the time it looks.
     function openRange(
         uint256 lowerPrice,
         uint256 upperPrice,
         uint256 stockAmount,
         uint256 usdgAmount
-    ) external returns (uint256 stockUsed, uint256 usdgUsed);
+    )
+        external
+        returns (uint256 stockUsed, uint256 usdgUsed, uint256 realisedLower, uint256 realisedUpper);
 
     /// @notice Withdraw the whole position back to the vault, fees included.
     function closeRange() external returns (uint256 stockOut, uint256 usdgOut);

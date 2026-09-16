@@ -247,7 +247,11 @@ contract UniV4Adapter is IPoolAdapter, IUnlockCallback {
         uint256 upperPrice,
         uint256 stockAmount,
         uint256 usdgAmount
-    ) external onlyVault returns (uint256 stockUsed, uint256 usdgUsed) {
+    )
+        external
+        onlyVault
+        returns (uint256 stockUsed, uint256 usdgUsed, uint256 realisedLower, uint256 realisedUpper)
+    {
         if (positionLiquidity != 0) revert PositionAlreadyOpen();
 
         (int24 lower, int24 upper) = _ticksFor(lowerPrice, upperPrice);
@@ -277,8 +281,32 @@ contract UniV4Adapter is IPoolAdapter, IUnlockCallback {
         // more of the vault's balance than the keeper authorised.
         assert(stockDelta <= stockAmount && usdgDelta <= usdgAmount);
 
+        (realisedLower, realisedUpper) = _realisedBounds(lower, upper);
+
         emit RangeOpened(lower, upper, liq, stockDelta, usdgDelta);
-        return (stockDelta, usdgDelta);
+        return (stockDelta, usdgDelta, realisedLower, realisedUpper);
+    }
+
+    /// @dev The grid-aligned ticks converted back into the vault's units.
+    ///
+    /// The `min`/`max` is not defensive tidying: when USDG sorts as currency0
+    /// the price axis is inverted, so `tickLower` is the HIGHER stock price.
+    /// Returning the pair in tick order would hand the vault a range whose
+    /// bounds are the wrong way round on exactly the pool ordering the vault
+    /// tests least, and `RangePolicy` would then reject every valid range on
+    /// that side — or, worse, accept an invalid one.
+    function _realisedBounds(int24 lower, int24 upper)
+        private
+        view
+        returns (uint256 lo, uint256 hi)
+    {
+        uint256 a = PriceTick.toWadPrice(
+            TickMath.getSqrtPriceAtTick(lower), stockIsCurrency0, stockDecimals, usdgDecimals
+        );
+        uint256 b = PriceTick.toWadPrice(
+            TickMath.getSqrtPriceAtTick(upper), stockIsCurrency0, stockDecimals, usdgDecimals
+        );
+        return a < b ? (a, b) : (b, a);
     }
 
     function decreaseLiquidity(uint128 liquidity)

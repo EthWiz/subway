@@ -284,14 +284,31 @@ no price — and that property is kept.
 3. Pull-before-open / weekend-pull policy (see Policies) is a keeper behaviour
    and lands with A7; it is not a contract change.
 
-### A3. Realised range must satisfy `RangePolicy`
+### A3. Realised range must satisfy `RangePolicy` — **DONE**
 
-`openRange` validates the keeper's _requested_ prices; the adapter then rounds
-ticks outward onto the grid, and the realised half-width can exceed
+`openRange` validated the keeper's _requested_ prices; the adapter then rounded
+ticks outward onto the grid, and the realised half-width could exceed
 `maxHalfWidth` (worked case in `docs/decisions.md`). A safety bound must bind
-the position, not the request. Have the adapter return its realised bounds in
-vault units and re-validate them in the vault, or define and enforce an
-explicit rounding tolerance. Fuzz it against the real `PoolManager`.
+the position, not the request.
+
+Taken the first way: `IPoolAdapter.openRange` now returns its realised bounds
+in vault units — returned from the call rather than exposed as a view, so the
+vault validates the range that call opened and not whatever is open by the time
+it looks — and `BaseVault.openRange` re-checks them against `RangePolicy` at
+the same feed price the request was judged on. The rounding only ever widens,
+so the second check can only fail as `RangeTooWide`; straddling and
+`minHalfWidth` survive widening by construction.
+
+**Consequence for A7:** the keeper now needs headroom. A request at exactly
+`maxHalfWidth` always reverts, and one within a tick spacing of it usually
+will. `lp-manager` must ask for less than the bound.
+
+Tested three ways against the real `PoolManager`: the documented $150–$250 case
+now reverts, a request with headroom still opens, and a fuzz run asserts that
+every range the vault ends up holding satisfies the policy — recomputed from
+the adapter's own ticks, so an adapter that reported bounds it had not opened
+would still be caught. Removing the guard fails both concrete tests and the
+fuzzer finds a 25.08% realised half-width within 150 runs.
 
 ### A4. Keys: admin rotation and a timelock on policy
 

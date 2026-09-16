@@ -200,6 +200,9 @@ slips much further, delete the file instead — git keeps it.
 
 ## 2026-09-16 — OPEN: tick alignment can widen a range past its approved bound
 
+> Settled 2026-09-16 by the entry below: the realised bounds come back from
+> `openRange` and the vault re-validates them.
+
 **Not decided.** `BaseVault.openRange` validates the keeper's requested prices
 against `RangePolicy`, and `UniV4Adapter._ticksFor` then rounds the lower tick
 down and the upper tick up onto the spacing grid. Rounding outward can push the
@@ -281,3 +284,39 @@ Two findings that change how the remaining decision should be argued:
 reviewed and either adopted or replaced; or the single-asset-deposit
 requirement is dropped, which would make minting from quantities win outright
 and take A2's deposit half off the board with it.
+
+---
+
+## 2026-09-16 — `RangePolicy` binds the position, not the request
+
+**Decided.** `IPoolAdapter.openRange` returns the realised bounds in vault
+units and `BaseVault.openRange` re-validates them against the same feed price
+the request was judged on. The alternative the plan offered — an explicit
+rounding tolerance — was rejected: a tolerance is a second number to get right,
+it has to be re-derived whenever tick spacing changes, and it still leaves the
+bound checked against something other than the position.
+
+Returned from the call rather than read back through a view, so the vault
+validates the range that call opened rather than whatever is open by the time
+it looks.
+
+Two things this surfaced that are worth keeping:
+
+- **The rounding only ever widens**, because `toAlignedTick` rounds outward so
+  the realised range contains the request. So the second check can fail only as
+  `RangeTooWide` — straddling and `minHalfWidth` cannot be broken by widening.
+  That is what makes one extra check sufficient rather than a new policy.
+- **The realised bounds must come back in stock-price order, not tick order.**
+  When USDG sorts as currency0 the price axis inverts and `tickLower` is the
+  HIGHER stock price, so an adapter returning them tick-first would hand the
+  vault a reversed range on exactly the pool ordering the vault tests least.
+
+**Cost, accepted:** the keeper needs headroom. A request at exactly
+`maxHalfWidth` now always reverts and one within a tick spacing of it usually
+will, so `lp-manager` (A7) must ask for less than the bound. Moving the problem
+to the keeper is correct — the contract's job is to be sure, not to guess how
+much slack the grid needs.
+
+**Revisit if:** an adapter is added whose grid rounds inward, which would make
+`RangeTooNarrow` reachable from the second check and invalidate the argument
+that one check is enough.

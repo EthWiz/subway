@@ -389,8 +389,13 @@ contract SubwayVault is ERC20, ReentrancyGuard {
 
         if (stockAmount > 0) stock.forceApprove(address(pool), stockAmount);
         if (usdgAmount > 0) usdg.forceApprove(address(pool), usdgAmount);
-        (uint256 stockUsed, uint256 usdgUsed) =
+        (uint256 stockUsed, uint256 usdgUsed, uint256 realisedLower, uint256 realisedUpper) =
             pool.openRange(lower, upper, stockAmount, usdgAmount);
+        // The realised range, not the requested one, has to satisfy the
+        // policy — see `BaseVault.openRange`. Carried here too rather than
+        // left behind, so this file is not a weaker copy of the live rule if
+        // Track B ever revives it.
+        RangePolicy.requireValidRange(realisedLower, realisedUpper, price, bounds);
 
         // Leaving an allowance alive is a standing claim on vault funds.
         stock.forceApprove(address(pool), 0);

@@ -133,7 +133,14 @@ contract BaseVault is ERC20, ReentrancyGuard {
         uint256 stockOut,
         uint256 usdgOut
     );
-    event RangeOpened(uint256 lower, uint256 upper, uint256 stockUsed, uint256 usdgUsed);
+    event RangeOpened(
+        uint256 lower,
+        uint256 upper,
+        uint256 realisedLower,
+        uint256 realisedUpper,
+        uint256 stockUsed,
+        uint256 usdgUsed
+    );
     event RangeClosed(uint256 stockOut, uint256 usdgOut);
     event FeesCollected(uint256 stockFees, uint256 usdgFees);
     event KeeperChanged(address indexed from, address indexed to);
@@ -431,6 +438,30 @@ contract BaseVault is ERC20, ReentrancyGuard {
 
     // ---------------------------------------------------------------- keeper
 
+    /// @notice Place the vault's inventory in a range.
+    ///
+    /// The policy is checked TWICE, against two different things, and the
+    /// second check is the one that matters.
+    ///
+    /// The first is on the keeper's request, before any money moves: it is
+    /// cheap, and it makes a bad request fail with an error naming what the
+    /// keeper asked for. The second is on the range the adapter actually
+    /// opened. An AMM with a tick grid cannot place an arbitrary price, and
+    /// the adapter rounds OUTWARD so the position contains the request — so
+    /// the realised range can be up to one tick spacing wider on each side
+    /// than the one that passed the first check. With a $200 feed, a requested
+    /// $150–$250 at `maxHalfWidth` 25% and spacing 60, the realised range is
+    /// about $149.33–$250.17, and its narrow side already exceeds the bound
+    /// that approved it.
+    ///
+    /// A bound the position does not have to satisfy is not a bound, so the
+    /// realised range is re-validated and the transaction reverts if the grid
+    /// pushed it out. The rounding only ever widens, so this can only fail as
+    /// `RangeTooWide` — straddling and `minHalfWidth` survive widening by
+    /// construction. **The keeper therefore needs headroom**: a request at
+    /// exactly `maxHalfWidth` will now always revert, and one within a tick
+    /// spacing of it usually will. That is the keeper's problem to solve by
+    /// asking for less, which is the correct place for it.
     function openRange(uint256 lower, uint256 upper, uint256 stockAmount, uint256 usdgAmount)
         external
         onlyKeeper
@@ -440,13 +471,17 @@ contract BaseVault is ERC20, ReentrancyGuard {
 
         if (stockAmount > 0) stock.forceApprove(address(pool), stockAmount);
         if (usdgAmount > 0) usdg.forceApprove(address(pool), usdgAmount);
-        (uint256 stockUsed, uint256 usdgUsed) =
+        (uint256 stockUsed, uint256 usdgUsed, uint256 realisedLower, uint256 realisedUpper) =
             pool.openRange(lower, upper, stockAmount, usdgAmount);
+
+        // Against the SAME price the request was judged on, so the two checks
+        // cannot disagree about where the market is.
+        RangePolicy.requireValidRange(realisedLower, realisedUpper, price, bounds);
 
         // Leaving an allowance alive is a standing claim on vault funds.
         stock.forceApprove(address(pool), 0);
         usdg.forceApprove(address(pool), 0);
-        emit RangeOpened(lower, upper, stockUsed, usdgUsed);
+        emit RangeOpened(lower, upper, realisedLower, realisedUpper, stockUsed, usdgUsed);
     }
 
     function closeRange() external onlyKeeper returns (uint256 stockOut, uint256 usdgOut) {

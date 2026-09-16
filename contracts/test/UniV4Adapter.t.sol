@@ -79,7 +79,15 @@ contract UniV4AdapterTest is Test {
         uint256 stockBefore = stock.balanceOf(vault);
         uint256 usdgBefore = usdg.balanceOf(vault);
 
-        (uint256 stockUsed, uint256 usdgUsed) = adapter.openRange(188e18, 212e18, 100e18, 20_000e6);
+        (uint256 stockUsed, uint256 usdgUsed, uint256 realisedLower, uint256 realisedUpper) =
+            adapter.openRange(188e18, 212e18, 100e18, 20_000e6);
+
+        // A3: the grid rounds OUTWARD, so the realised range contains the
+        // request and is never narrower than it. The vault relies on exactly
+        // this direction to know that re-validation can only fail as
+        // `RangeTooWide`.
+        assertLe(realisedLower, 188e18, "realised lower shrank inside the request");
+        assertGe(realisedUpper, 212e18, "realised upper shrank inside the request");
 
         assertTrue(adapter.hasPosition(), "position should exist");
         assertGt(adapter.positionLiquidity(), 0, "liquidity should be placed");
@@ -166,7 +174,16 @@ contract UniV4AdapterTest is Test {
         usdg.approve(address(alt), type(uint256).max);
         poolManager.initialize(alt.poolKey(), PriceTick.toSqrtPriceX96(PRICE, false, 18, 6));
 
-        (uint256 stockUsed, uint256 usdgUsed) = alt.openRange(188e18, 212e18, 100e18, 20_000e6);
+        (uint256 stockUsed, uint256 usdgUsed, uint256 realisedLower, uint256 realisedUpper) =
+            alt.openRange(188e18, 212e18, 100e18, 20_000e6);
+
+        // The bounds come back in STOCK-PRICE order, not tick order. With USDG
+        // as currency0 the price axis is inverted and `tickLower` is the
+        // higher stock price, so an adapter that returned them tick-first
+        // would hand the vault a reversed range on this ordering alone.
+        assertLt(realisedLower, realisedUpper, "realised bounds came back reversed");
+        assertLe(realisedLower, 188e18, "realised lower shrank inside the request");
+        assertGe(realisedUpper, 212e18, "realised upper shrank inside the request");
         assertGt(stockUsed, 0, "stock leg unused in the flipped ordering");
         assertGt(usdgUsed, 0, "usdg leg unused in the flipped ordering");
         assertTrue(alt.inRange(), "flipped range does not straddle the price");

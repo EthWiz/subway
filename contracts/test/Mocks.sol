@@ -141,16 +141,19 @@ contract MockPool is IPoolAdapter {
         usdgHeld += usdgAmount;
     }
 
-    function openRange(uint256, uint256, uint256 stockAmount, uint256 usdgAmount)
+    /// @dev No tick grid, so the realised bounds are the requested ones. The
+    /// widening this mock cannot produce is exactly why A3's guard is tested
+    /// against the real `PoolManager` instead.
+    function openRange(uint256 lower, uint256 upper, uint256 stockAmount, uint256 usdgAmount)
         external
-        returns (uint256, uint256)
+        returns (uint256, uint256, uint256, uint256)
     {
         if (stockAmount > 0) stock.transferFrom(msg.sender, address(this), stockAmount);
         if (usdgAmount > 0) usdg.transferFrom(msg.sender, address(this), usdgAmount);
         stockHeld += stockAmount;
         usdgHeld += usdgAmount;
         open = true;
-        return (stockAmount, usdgAmount);
+        return (stockAmount, usdgAmount, lower, upper);
     }
 
     function closeRange() external returns (uint256 stockOut, uint256 usdgOut) {

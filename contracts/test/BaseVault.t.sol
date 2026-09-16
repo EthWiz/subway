@@ -13,6 +13,7 @@ import {VaultFactory} from "../src/VaultFactory.sol";
 import {UniV4Adapter} from "../src/adapters/UniV4Adapter.sol";
 import {RangePolicy} from "../src/policy/RangePolicy.sol";
 import {PriceTick} from "../src/libraries/PriceTick.sol";
+import {TickMath} from "v4-core/src/libraries/TickMath.sol";
 import {MockERC20, MockFeed} from "./Mocks.sol";
 import {Swapper} from "./v4/Swapper.sol";
 
@@ -810,5 +811,106 @@ contract BaseVaultTest is Test {
         poolManager.initialize(altAdapter.poolKey(), PriceTick.toSqrtPriceX96(PRICE, false, 18, 6));
         altStock.mint(alice, 10_000e18);
         altStock.mint(address(swapper), 10_000e18);
+    }
+
+    // ------------------------------------------- A3: the policy binds the POSITION
+
+    /// @dev The case written up in `docs/decisions.md`, now a revert.
+    ///
+    /// A $200 feed, `maxHalfWidth` 25%, and a request for exactly $150–$250.
+    /// The request is legal — its half-width is exactly the bound, and the
+    /// check rejects only what exceeds it. The tick grid then rounds both
+    /// edges outward onto spacing 60, and the realised range is about
+    /// $149.33–$250.17, whose NARROW side is already past 25%.
+    ///
+    /// Before A3 this opened. `RangePolicy` was checked against the keeper's
+    /// request, and the position the vault actually held was nobody's
+    /// business. A safety bound the position does not have to satisfy is not
+    /// a safety bound, so now the second check catches it and the whole
+    /// transaction reverts.
+    function test_gridWideningPastTheBoundIsRejected() public {
+        _deposit(alice, 100e18, 20_000e6);
+        uint256 sBal = stock.balanceOf(address(vault));
+        uint256 uBal = usdg.balanceOf(address(vault));
+
+        // The request itself is within the policy: exactly at the bound.
+        assertEq((PRICE - 150e18) * 1e18 / PRICE, 0.25e18, "test lost its worked case");
+
+        vm.prank(keeper);
+        vm.expectPartialRevert(RangePolicy.RangeTooWide.selector);
+        vault.openRange(150e18, 250e18, sBal, uBal);
+
+        assertFalse(adapter.hasPosition(), "a rejected range still opened a position");
+        assertEq(stock.allowance(address(vault), address(adapter)), 0, "allowance survived");
+        assertEq(usdg.allowance(address(vault), address(adapter)), 0, "allowance survived");
+    }
+
+    /// @dev And the headroom rule that follows from it: back the request off
+    /// by more than one tick spacing and the same range opens fine. The
+    /// keeper's job is to ask for less than the bound, which is the right
+    /// place for the problem — the contract's job is to make sure it did.
+    function test_aRequestWithHeadroomStillOpens() public {
+        _deposit(alice, 100e18, 20_000e6);
+        uint256 sBal = stock.balanceOf(address(vault));
+        uint256 uBal = usdg.balanceOf(address(vault));
+
+        vm.prank(keeper);
+        vault.openRange(155e18, 245e18, sBal, uBal);
+        assertTrue(adapter.hasPosition(), "a range with headroom was rejected");
+
+        (uint256 rLo, uint256 rHi) = _realisedBounds();
+        assertLe(_halfWidth(rLo, rHi), 0.25e18, "opened range exceeds the bound");
+    }
+
+    /// @dev A3 asks for this fuzzed against the real `PoolManager`, because
+    /// the widening is a property of the tick grid and a mock has no grid.
+    ///
+    /// The invariant is the whole point of the item: whatever the keeper asks
+    /// for, either the call reverts or the range the vault is now holding
+    /// satisfies `RangePolicy`. The half-width is recomputed here from the
+    /// adapter's own ticks rather than from what `openRange` returned, so the
+    /// test would still catch an adapter that reported bounds it had not
+    /// opened.
+    function testFuzz_realisedRangeAlwaysSatisfiesThePolicy(uint256 lowerRaw, uint256 upperRaw)
+        public
+    {
+        _deposit(alice, 100e18, 20_000e6);
+        uint256 lower = bound(lowerRaw, PRICE * 60 / 100, PRICE * 99 / 100);
+        uint256 upper = bound(upperRaw, PRICE * 101 / 100, PRICE * 140 / 100);
+
+        uint256 sBal = stock.balanceOf(address(vault));
+        uint256 uBal = usdg.balanceOf(address(vault));
+
+        vm.prank(keeper);
+        try vault.openRange(lower, upper, sBal, uBal) {
+            (uint256 rLo, uint256 rHi) = _realisedBounds();
+            assertLt(rLo, PRICE, "opened a range that does not straddle the feed");
+            assertGt(rHi, PRICE, "opened a range that does not straddle the feed");
+
+            uint256 half = _halfWidth(rLo, rHi);
+            assertLe(half, 0.25e18, "opened a range wider than maxHalfWidth");
+            assertGe(half, 0.01e18, "opened a range narrower than minHalfWidth");
+        } catch {
+            assertFalse(adapter.hasPosition(), "a reverted open left a position behind");
+        }
+    }
+
+    /// @dev The adapter's live ticks, read back as vault-unit prices.
+    function _realisedBounds() internal view returns (uint256 lo, uint256 hi) {
+        uint256 a = PriceTick.toWadPrice(
+            TickMath.getSqrtPriceAtTick(adapter.tickLower()), adapter.stockIsCurrency0(), 18, 6
+        );
+        uint256 b = PriceTick.toWadPrice(
+            TickMath.getSqrtPriceAtTick(adapter.tickUpper()), adapter.stockIsCurrency0(), 18, 6
+        );
+        return a < b ? (a, b) : (b, a);
+    }
+
+    /// @dev `RangePolicy`'s rule, re-derived rather than imported: a range is
+    /// judged on its NARROWER side.
+    function _halfWidth(uint256 lo, uint256 hi) internal pure returns (uint256) {
+        uint256 down = (PRICE - lo) * 1e18 / PRICE;
+        uint256 up = (hi - PRICE) * 1e18 / PRICE;
+        return down < up ? down : up;
     }
 }
