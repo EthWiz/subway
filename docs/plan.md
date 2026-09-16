@@ -96,27 +96,27 @@ US opens (`research/lib/markout.ts`, `gradeGate`).
 
 ## Fixed facts (verified 2026-09-15/16; re-read before coding)
 
-| Item                                | Value                                                                                                                                                                                                                                      |
-| ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Chain                               | Robinhood Chain, id `4663`, Arbitrum Orbit/Nitro, ETH gas, ~100 ms blocks, FCFS sequencer                                                                                                                                                  |
-| Testnet                             | id `46630`, `https://rpc.testnet.chain.robinhood.com`, explorer `explorer.testnet.chain.robinhood.com`                                                                                                                                     |
-| RPC                                 | Alchemy `robinhood-mainnet.g.alchemy.com/v2/{key}` (HTTP+WSS); public `rpc.mainnet.chain.robinhood.com` (rate-limited; `eth_getLogs` caps at 10k, escalates 429 → 403)                                                                     |
-| Explorer                            | `robinhoodchain.blockscout.com`                                                                                                                                                                                                            |
-| USDG                                | `0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168` (**6 dp** — stock tokens are 18; every stock valuation goes through one `stockValueDivisor`)                                                                                                  |
-| Uniswap v4 PoolManager              | `0x8366a39cc670b4001a1121b8f6a443a643e40951`                                                                                                                                                                                               |
-| Uniswap v4 PositionManager          | `0x58daec3116aae6d93017baaea7749052e8a04fa7` (not used — the adapter holds liquidity directly)                                                                                                                                             |
-| Uniswap v4 StateView                | `0xf3334192d15450cdd385c8b70e03f9a6bd9e673b`                                                                                                                                                                                               |
-| Uniswap v4 Quoter                   | `0x8dc178efb8111bb0973dd9d722ebeff267c98f94`                                                                                                                                                                                               |
-| Universal Router                    | `0x8876789976decbfcbbbe364623c63652db8c0904`                                                                                                                                                                                               |
-| Permit2                             | `0x000000000022D473030F116dDEE9F6B43aC78BA3`                                                                                                                                                                                               |
-| Lighter RH escrow (ZkLighter proxy) | `0x94bAB9693Ba2f6358507eFfcbd372b0660AFfF9d`                                                                                                                                                                                               |
-| Lighter RH selectors                | `deposit` `0x8a857083`, `withdraw` (secure/forced) `0xd20191bd`, `changePubKey` `0x17010c68`, `cancelAllOrders` `0xa4b6f756`                                                                                                               |
-| Lighter RH API                      | `https://api.rh.lighter.xyz`; Standard tier 0/0 bps, 300 ms taker/cancel delay; Premium 140 ms                                                                                                                                             |
-| Lighter RH batch cadence            | ~1 batch/min commit→verify→execute; escape hatch after 14 days of unprocessed priority requests; **no upgrade delay on the escrow**                                                                                                        |
-| Oracle                              | Chainlink per-token feeds, `AggregatorV3Interface`, value = equity price × `uiMultiplier()`; 24/5, **no heartbeat off-hours**, `oraclePaused()` during corporate actions. Addresses from Chainlink's Robinhood feeds page, never hardcoded |
-| Lending                             | Morpho Blue live on Robinhood Chain (curated USDG vaults behind Robinhood Earn)                                                                                                                                                            |
-| Stock tokens                        | Issued by Robinhood Assets (Jersey); **not for US persons**; also restricted UK/CA/CH; minted only by the authorised participant; supply grows with demand                                                                                 |
-| AA                                  | ERC-4337 EntryPoints v0.6/0.7/0.8 live; EIP-7702 live; Alchemy Gas Manager and ZeroDev paymasters available                                                                                                                                |
+| Item                                | Value                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Chain                               | Robinhood Chain, id `4663`, Arbitrum Orbit/Nitro, ETH gas, ~100 ms blocks, FCFS sequencer                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| Testnet                             | id `46630`, `https://rpc.testnet.chain.robinhood.com`, explorer `explorer.testnet.chain.robinhood.com`                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| RPC                                 | Alchemy `robinhood-mainnet.g.alchemy.com/v2/{key}` (HTTP+WSS); public `rpc.mainnet.chain.robinhood.com` (rate-limited; `eth_getLogs` caps at 10k, escalates 429 → 403)                                                                                                                                                                                                                                                                                                                                                                                              |
+| Explorer                            | `robinhoodchain.blockscout.com`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| USDG                                | `0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168` (**6 dp** — stock tokens are 18; every stock valuation goes through one `stockValueDivisor`)                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| Uniswap v4 PoolManager              | `0x8366a39cc670b4001a1121b8f6a443a643e40951`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| Uniswap v4 PositionManager          | `0x58daec3116aae6d93017baaea7749052e8a04fa7` (not used — the adapter holds liquidity directly)                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| Uniswap v4 StateView                | `0xf3334192d15450cdd385c8b70e03f9a6bd9e673b`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| Uniswap v4 Quoter                   | `0x8dc178efb8111bb0973dd9d722ebeff267c98f94`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| Universal Router                    | `0x8876789976decbfcbbbe364623c63652db8c0904`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| Permit2                             | `0x000000000022D473030F116dDEE9F6B43aC78BA3`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| Lighter RH escrow (ZkLighter proxy) | `0x94bAB9693Ba2f6358507eFfcbd372b0660AFfF9d`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| Lighter RH selectors                | `deposit` `0x8a857083`, `withdraw` (secure/forced) `0xd20191bd`, `changePubKey` `0x17010c68`, `cancelAllOrders` `0xa4b6f756`                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| Lighter RH API                      | `https://api.rh.lighter.xyz`; Standard tier 0/0 bps, 300 ms taker/cancel delay; Premium 140 ms                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| Lighter RH batch cadence            | ~1 batch/min commit→verify→execute; escape hatch after 14 days of unprocessed priority requests; **no upgrade delay on the escrow**                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| Oracle                              | Chainlink per-token feeds, `AggregatorV3Interface`, value = equity price × `uiMultiplier()`; **35 equity feeds, listed in `research/generated/2026-09-16-chainlink-feeds.json` — no AMC, no HOOD**; all at 24 h heartbeat / 0.5% deviation, market hours `us_equities_24/5`. Measured on chain (A2): one print at 00:00 UTC each weekday, otherwise deviation-only; no prints from the last Friday deviation print until Sunday 20:00 ET (up to ~58 h stale); `oraclePaused()` during corporate actions. Addresses from Chainlink's feed directory, never hardcoded |
+| Lending                             | Morpho Blue live on Robinhood Chain (curated USDG vaults behind Robinhood Earn)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| Stock tokens                        | Issued by Robinhood Assets (Jersey); **not for US persons**; also restricted UK/CA/CH; minted only by the authorised participant; supply grows with demand                                                                                                                                                                                                                                                                                                                                                                                                          |
+| AA                                  | ERC-4337 EntryPoints v0.6/0.7/0.8 live; EIP-7702 live; Alchemy Gas Manager and ZeroDev paymasters available                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 
 Uniswap v3 is also deployed and carried the highest-fee stock pools at research
 time (AMC/USDG 0.3%, HOOD/USDG 1%), but its Robinhood addresses were never
@@ -269,26 +269,42 @@ Outside the gate the deposit reverts and **redemption is untouched**: the same
 asymmetry as the feed check, since it is always safe to refuse new money and
 never safe to trap existing money.
 
-### A2. Off-hours feed policy
+### A2. Off-hours feed policy — **DONE (measured; decided (b))**
 
-Chainlink equity feeds on 4663 have **no off-hours heartbeat**. Every `deposit`
-and every keeper range action goes through `requireFreshPrice` with a 2-hour
-`maxFeedAge`, so as written **deposits and range changes are blocked nights
-and weekends** while the pool trades 24/7. Redemption is unaffected — it reads
-no price — and that property is kept.
+Read from the chain with `research/feed-offhours.ts` against the archive node:
+every equity feed sampled at twelve wall-clock points across the 11–15 Sep
+weekend, and five feeds' update cadence reconstructed at 30-minute resolution
+(`research/generated/2026-09-16-feed-offhours.json`). What the feeds do:
 
-1. **Verify on chain** what the feed actually does off-hours: does
-   `updatedAt` freeze at the close, does `answer` hold the last print, does
-   `oraclePaused()` flip? Read a real feed across a Friday close before
-   deciding anything.
-2. **Decide** between: (a) `xAMC` is an RTH product — deposits and range
-   moves only while the feed is live, stated on the label; (b) accept the last
-   close for deposits under a wider `maxFeedAge` **and** a tighter divergence
-   gate (A1), since off-hours the pool is the only live price and the feed is
-   the only sane one. The plan's earlier answer, "use Lighter mid as fair
-   off-hours", is a Track B answer — `xAMC` has no Lighter.
-3. Pull-before-open / weekend-pull policy (see Policies) is a keeper behaviour
-   and lands with A7; it is not a contract change.
+- **They are 24/5, and the "no off-hours heartbeat" fact was half right.**
+  Every feed prints once at 00:00 UTC (20:00 ET) on weekdays — the 24 h
+  heartbeat, aligned to the session — and otherwise updates only on 0.5%
+  deviation. Weekday overnight updates are real (INTC printed at 01:12, 05:17,
+  07:33 UTC on a Monday). There are **no prints at all from the last Friday
+  deviation print to Sunday 20:00 ET**: at Sunday noon every feed was 36–47 h
+  stale; TSLA's last Friday print was at 14:50 UTC, five hours before the
+  close.
+- **Age says nothing about validity inside a session.** SPY printed five times
+  in four days; even mid-RTH, only 23–31 of 35 feeds were under 2 h old. A
+  deviation feed that has not printed for three hours is saying the price has
+  not moved 0.5%, which is information, not staleness. The 2 h `maxFeedAge`
+  in the defaults would have blocked deposits on a third of names during RTH.
+- `oraclePaused()` never flipped across the window.
+
+**Decided: (b).** Accept the last print under `maxFeedAge` = **26 h** (the
+weekday heartbeat plus slack) and let the divergence gate (A1) be the live
+check. The gate is the right instrument: off-hours the pool is the only live
+price and the feed is the only sane one, and the gate blocks a deposit exactly
+when they disagree by more than ε — which over a weekend with news is most of
+the time, and over a quiet weekend is not. Redemption still reads no price.
+
+Consequences, stated: from about Saturday 22:00 ET to Sunday 20:00 ET deposits
+are blocked by age regardless of the pool; a 26 h bound is what makes a
+weekday holiday (no 00:00 UTC print) block deposits the next evening rather
+than silently pricing off a two-day-old mark. Keeper range moves use the same
+check, and the weekend-pull policy (A7) means there should be no range to move
+then anyway. Option (a), an RTH-only product, would have refused deposits for
+two thirds of the hours in which the feed is demonstrably live.
 
 ### A3. Realised range must satisfy `RangePolicy` — **DONE**
 
@@ -658,16 +674,16 @@ balances per pair and the implied hedge ratio). Deposit = one Permit2 signature
 
 **Track A**
 
-| Policy         | Default                                                                      | Why                                            |
-| -------------- | ---------------------------------------------------------------------------- | ---------------------------------------------- |
-| Range preset   | ±6% around feed, recenter at ±3% drift                                       | survives intraday moves, still earns           |
-| Feed staleness | hold deposits and range moves if `updatedAt` > 2 h in RTH; off-hours: **A2** | Chainlink has no off-hours heartbeat           |
-| Divergence     | refuse deposits while \|pool − feed\| > ε; ε = fee tier + 20 bps (**A1**)    | value-space mint vs quantity-space redeem      |
-| Open gap       | pull liquidity 15 min before US open, reopen 10 min after                    | jumps through a range are the dominant LP loss |
-| Weekend        | pull liquidity Fri 20:00 ET → Sun 20:00 ET                                   | no reference price                             |
-| Earnings       | pull liquidity from the close before to the open after                       | gap risk                                       |
-| Caps           | vault ≤ 15% of pool TVL; per-pair TVL cap; deposits pausable (**A6**)        | fee dilution and unwind depth                  |
-| Policy delay   | `boundsDelay` 2 days, immutable per vault; **never 0 on mainnet** (A4)       | a bound widened on demand is not a bound       |
+| Policy         | Default                                                                                                | Why                                            |
+| -------------- | ------------------------------------------------------------------------------------------------------ | ---------------------------------------------- |
+| Range preset   | ±6% around feed, recenter at ±3% drift                                                                 | survives intraday moves, still earns           |
+| Feed staleness | `maxFeedAge` **26 h** (24 h weekday heartbeat + slack); the divergence gate is the live check (**A2**) | feeds are deviation-driven, not time-driven    |
+| Divergence     | refuse deposits while \|pool − feed\| > ε; ε = fee tier + 20 bps (**A1**)                              | value-space mint vs quantity-space redeem      |
+| Open gap       | pull liquidity 15 min before US open, reopen 10 min after                                              | jumps through a range are the dominant LP loss |
+| Weekend        | pull liquidity Fri 20:00 ET → Sun 20:00 ET                                                             | no reference price                             |
+| Earnings       | pull liquidity from the close before to the open after                                                 | gap risk                                       |
+| Caps           | vault ≤ 15% of pool TVL; per-pair TVL cap; deposits pausable (**A6**)                                  | fee dilution and unwind depth                  |
+| Policy delay   | `boundsDelay` 2 days, immutable per vault; **never 0 on mainnet** (A4)                                 | a bound widened on demand is not a bound       |
 
 **Track B**
 

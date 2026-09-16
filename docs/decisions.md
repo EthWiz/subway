@@ -453,3 +453,48 @@ of the range, not of who else is in the pool.
 **Revisit if:** a pair's pool has liquidity concentrated far from the feed
 price, where active liquidity at the current tick is a poor proxy for the depth
 an unwind would actually find.
+
+---
+
+## 2026-09-16 — Feed staleness is 26 h, and the divergence gate is the off-hours check
+
+**Decided**, from chain reads rather than the feeds page. `research/feed-offhours.ts`
+sampled all 35 Robinhood equity feeds at twelve points across the 11–15 Sep
+weekend and reconstructed five feeds' update cadence at 30-minute resolution.
+
+**What the feeds actually do.** One heartbeat print at 00:00 UTC (20:00 ET) on
+weekdays; otherwise deviation-only at 0.5%. Weekday overnight updates happen.
+Nothing prints from the last Friday deviation print until Sunday 20:00 ET, so
+by Sunday noon every feed is 36–47 h old. `oraclePaused()` stayed false
+throughout. The fixed-facts table used to say "no heartbeat off-hours", which
+was true of the weekend and false of weekday nights, and it missed the thing
+that matters more: **there is no time-based heartbeat under 24 h at all**.
+SPY printed five times in four days. Even mid-RTH only 23–31 of 35 feeds were
+under two hours old.
+
+**Why the old default was wrong.** `maxFeedAge` = 2 h treats a deviation feed
+as if it were a heartbeat feed. A feed that has not printed for three hours is
+reporting that the price has not moved 0.5% — that is information, not
+staleness — and the old bound would have refused deposits on a third of names
+in the middle of the trading day.
+
+**The decision.** `maxFeedAge` = 26 h: the weekday heartbeat plus slack. That
+bounds the mark to one session on weekdays and, because the heartbeat does not
+run on weekends, blocks deposits by age from roughly Saturday 22:00 ET until the
+Sunday-evening reopen. Inside that bound the **divergence gate** is the live
+check: off-hours the pool is the only live price and the feed the only sane
+one, and a deposit is refused exactly when they disagree by more than ε. The
+plan's option (a), deposits only while the feed is "live", was rejected because
+the feed is live for two thirds of the week and a 2 h test cannot tell.
+
+**What this does not fix.** A stale-but-converged weekend: pool and Friday
+print agree, deposit lands, Monday gaps. The depositor bought at Friday's price
+into a position that will reprice at the open — the same bet every LP in the
+pool is making, and the label says so. Also, holidays: no 00:00 UTC print on a
+weekday holiday means deposits block the following evening; correct, if
+surprising, and worth an alert (A7).
+
+**Revisit if:** Chainlink changes the heartbeat or deviation on these feeds
+(both are in the committed directory snapshot to diff against); a feed is
+observed printing on a weekend; or a pair is listed whose feed has a wider
+deviation than ε, at which point the gate is doing the feed's job.

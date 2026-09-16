@@ -1,0 +1,5547 @@
+{
+  "capturedAt": "2026-09-16T20:12:49.963Z",
+  "rpc": "dwellir robinhood-mainnet-archive",
+  "tip": 64785432,
+  "selectors": {
+    "latestRoundData": "0xfeaf968c",
+    "decimals": "0x313ce567",
+    "description": "0x7284e416",
+    "oraclePaused": "0x7706ba52",
+    "uiMultiplier": "0xa60bf13d"
+  },
+  "samples": [
+    {
+      "label": "Fri RTH",
+      "iso": "2026-09-11T19:30:00Z",
+      "atSec": 1789155000,
+      "block": 60504944,
+      "rows": [
+        {
+          "feed": "AAPL",
+          "block": 60504944,
+          "answer": "33424110017",
+          "price": 334.24110017,
+          "updatedAt": 1789142183,
+          "ageSec": 12817,
+          "roundId": "18446744073709552237",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "AMD",
+          "block": 60504944,
+          "answer": "51594225000",
+          "price": 515.94225,
+          "updatedAt": 1789153737,
+          "ageSec": 1263,
+          "roundId": "18446744073709554340",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "AMZN",
+          "block": 60504944,
+          "answer": "25713000000",
+          "price": 257.13,
+          "updatedAt": 1789148084,
+          "ageSec": 6916,
+          "roundId": "18446744073709552361",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "ASML",
+          "block": 60504944,
+          "answer": "170057229005",
+          "price": 1700.57229005,
+          "updatedAt": 1789154649,
+          "ageSec": 351,
+          "roundId": "18446744073709553350",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "BABA",
+          "block": 60504944,
+          "answer": "10939500000",
+          "price": 109.395,
+          "updatedAt": 1789137229,
+          "ageSec": 17771,
+          "roundId": "18446744073709553227",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "CLSK",
+          "block": 60504944,
+          "answer": "1358500000",
+          "price": 13.585,
+          "updatedAt": 1789154822,
+          "ageSec": 178,
+          "roundId": "18446744073709556116",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "COIN",
+          "block": 60504944,
+          "answer": "17483000000",
+          "price": 174.83,
+          "updatedAt": 1789149928,
+          "ageSec": 5072,
+          "roundId": "18446744073709554241",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "CRCL",
+          "block": 60504944,
+          "answer": "9060000000",
+          "price": 90.6,
+          "updatedAt": 1789152860,
+          "ageSec": 2140,
+          "roundId": "18446744073709555483",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "CRWV",
+          "block": 60504944,
+          "answer": "8931500000",
+          "price": 89.315,
+          "updatedAt": 1789154875,
+          "ageSec": 125,
+          "roundId": "18446744073709555496",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "DELL",
+          "block": 60504944,
+          "answer": "55930543030",
+          "price": 559.3054303,
+          "updatedAt": 1789153164,
+          "ageSec": 1836,
+          "roundId": "18446744073709553740",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "EWY",
+          "block": 60504944,
+          "answer": "18864045000",
+          "price": 188.64045,
+          "updatedAt": 1789152375,
+          "ageSec": 2625,
+          "roundId": "18446744073709554773",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "GME",
+          "block": 60504944,
+          "answer": "2114500000",
+          "price": 21.145,
+          "updatedAt": 1789153604,
+          "ageSec": 1396,
+          "roundId": "18446744073709552395",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "GOOGL",
+          "block": 60504944,
+          "answer": "33904500000",
+          "price": 339.045,
+          "updatedAt": 1789152321,
+          "ageSec": 2679,
+          "roundId": "18446744073709552353",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "INTC",
+          "block": 60504944,
+          "answer": "10303000000",
+          "price": 103.03,
+          "updatedAt": 1789153361,
+          "ageSec": 1639,
+          "roundId": "18446744073709555415",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "IONQ",
+          "block": 60504944,
+          "answer": "3711480000",
+          "price": 37.1148,
+          "updatedAt": 1789153984,
+          "ageSec": 1016,
+          "roundId": "18446744073709555429",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "META",
+          "block": 60504944,
+          "answer": "65073500000",
+          "price": 650.735,
+          "updatedAt": 1789141758,
+          "ageSec": 13242,
+          "roundId": "18446744073709552746",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "MSFT",
+          "block": 60504944,
+          "answer": "49666186313",
+          "price": 496.66186313,
+          "updatedAt": 1789140441,
+          "ageSec": 14559,
+          "roundId": "18446744073709552339",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "MSTR",
+          "block": 60504944,
+          "answer": "13094030000",
+          "price": 130.9403,
+          "updatedAt": 1789154184,
+          "ageSec": 816,
+          "roundId": "18446744073709555322",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "MU",
+          "block": 60504944,
+          "answer": "97668307310",
+          "price": 976.6830731,
+          "updatedAt": 1789145991,
+          "ageSec": 9009,
+          "roundId": "18446744073709556415",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "NBIS",
+          "block": 60504944,
+          "answer": "22477960000",
+          "price": 224.7796,
+          "updatedAt": 1789152810,
+          "ageSec": 2190,
+          "roundId": "18446744073709557887",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "NVDA",
+          "block": 60504944,
+          "answer": "21948000015",
+          "price": 219.48000015,
+          "updatedAt": 1789143549,
+          "ageSec": 11451,
+          "roundId": "18446744073709552640",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "ORCL",
+          "block": 60504944,
+          "answer": "15186000889",
+          "price": 151.86000889,
+          "updatedAt": 1789154951,
+          "ageSec": 49,
+          "roundId": "18446744073709553568",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "PLTR",
+          "block": 60504944,
+          "answer": "16744000000",
+          "price": 167.44,
+          "updatedAt": 1789151592,
+          "ageSec": 3408,
+          "roundId": "18446744073709553458",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "QQQ",
+          "block": 60504944,
+          "answer": "71492435000",
+          "price": 714.92435,
+          "updatedAt": 1789130942,
+          "ageSec": 24058,
+          "roundId": "18446744073709551957",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "RGTI",
+          "block": 60504944,
+          "answer": "1544500000",
+          "price": 15.445,
+          "updatedAt": 1789153969,
+          "ageSec": 1031,
+          "roundId": "18446744073709555253",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "RKLB",
+          "block": 60504944,
+          "answer": "6368670000",
+          "price": 63.6867,
+          "updatedAt": 1789153993,
+          "ageSec": 1007,
+          "roundId": "18446744073709555685",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "SGOV",
+          "block": 60504944,
+          "answer": "10104790644",
+          "price": 101.04790644,
+          "updatedAt": 1789084872,
+          "ageSec": 70128,
+          "roundId": "18446744073709551671",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "SLV",
+          "block": 60504944,
+          "answer": "5809500000",
+          "price": 58.095,
+          "updatedAt": 1789150474,
+          "ageSec": 4526,
+          "roundId": "18446744073709552952",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "SNDK",
+          "block": 60504944,
+          "answer": "163511000000",
+          "price": 1635.11,
+          "updatedAt": 1789146464,
+          "ageSec": 8536,
+          "roundId": "18446744073709558520",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "SPCX",
+          "block": 60504944,
+          "answer": "14999000000",
+          "price": 149.99,
+          "updatedAt": 1789151327,
+          "ageSec": 3673,
+          "roundId": "18446744073709554765",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "SPY",
+          "block": 60504944,
+          "answer": "76526375000",
+          "price": 765.26375,
+          "updatedAt": 1789131362,
+          "ageSec": 23638,
+          "roundId": "18446744073709551742",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "TSLA",
+          "block": 60504944,
+          "answer": "36591499999",
+          "price": 365.91499999,
+          "updatedAt": 1789138212,
+          "ageSec": 16788,
+          "roundId": "18446744073709552805",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "TSM",
+          "block": 60504944,
+          "answer": "43258055000",
+          "price": 432.58055,
+          "updatedAt": 1789144620,
+          "ageSec": 10380,
+          "roundId": "18446744073709552973",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "USAR",
+          "block": 60504944,
+          "answer": "1563500000",
+          "price": 15.635,
+          "updatedAt": 1789154826,
+          "ageSec": 174,
+          "roundId": "18446744073709554461",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "USO",
+          "block": 60504944,
+          "answer": "15453055000",
+          "price": 154.53055,
+          "updatedAt": 1789150896,
+          "ageSec": 4104,
+          "roundId": "18446744073709553017",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        }
+      ]
+    },
+    {
+      "label": "Fri +15m after close",
+      "iso": "2026-09-11T20:15:00Z",
+      "atSec": 1789157700,
+      "block": 60531331,
+      "rows": [
+        {
+          "feed": "AAPL",
+          "block": 60531331,
+          "answer": "33252277801",
+          "price": 332.52277801,
+          "updatedAt": 1789156288,
+          "ageSec": 1412,
+          "roundId": "18446744073709552238",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "AMD",
+          "block": 60531331,
+          "answer": "51594225000",
+          "price": 515.94225,
+          "updatedAt": 1789153737,
+          "ageSec": 3963,
+          "roundId": "18446744073709554340",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "AMZN",
+          "block": 60531331,
+          "answer": "25713000000",
+          "price": 257.13,
+          "updatedAt": 1789148084,
+          "ageSec": 9616,
+          "roundId": "18446744073709552361",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "ASML",
+          "block": 60531331,
+          "answer": "170057229005",
+          "price": 1700.57229005,
+          "updatedAt": 1789154649,
+          "ageSec": 3051,
+          "roundId": "18446744073709553350",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "BABA",
+          "block": 60531331,
+          "answer": "10939500000",
+          "price": 109.395,
+          "updatedAt": 1789137229,
+          "ageSec": 20471,
+          "roundId": "18446744073709553227",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "CLSK",
+          "block": 60531331,
+          "answer": "1361376580",
+          "price": 13.6137658,
+          "updatedAt": 1789156863,
+          "ageSec": 837,
+          "roundId": "18446744073709556120",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "COIN",
+          "block": 60531331,
+          "answer": "17497000000",
+          "price": 174.97,
+          "updatedAt": 1789155630,
+          "ageSec": 2070,
+          "roundId": "18446744073709554243",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "CRCL",
+          "block": 60531331,
+          "answer": "9108390000",
+          "price": 91.0839,
+          "updatedAt": 1789156281,
+          "ageSec": 1419,
+          "roundId": "18446744073709555484",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "CRWV",
+          "block": 60531331,
+          "answer": "8883000000",
+          "price": 88.83,
+          "updatedAt": 1789156646,
+          "ageSec": 1054,
+          "roundId": "18446744073709555497",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "DELL",
+          "block": 60531331,
+          "answer": "56521500677",
+          "price": 565.21500677,
+          "updatedAt": 1789156554,
+          "ageSec": 1146,
+          "roundId": "18446744073709553742",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "EWY",
+          "block": 60531331,
+          "answer": "18864045000",
+          "price": 188.64045,
+          "updatedAt": 1789152375,
+          "ageSec": 5325,
+          "roundId": "18446744073709554773",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "GME",
+          "block": 60531331,
+          "answer": "2111500000",
+          "price": 21.115,
+          "updatedAt": 1789156245,
+          "ageSec": 1455,
+          "roundId": "18446744073709552397",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "GOOGL",
+          "block": 60531331,
+          "answer": "33904500000",
+          "price": 339.045,
+          "updatedAt": 1789152321,
+          "ageSec": 5379,
+          "roundId": "18446744073709552353",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "INTC",
+          "block": 60531331,
+          "answer": "10303000000",
+          "price": 103.03,
+          "updatedAt": 1789153361,
+          "ageSec": 4339,
+          "roundId": "18446744073709555415",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "IONQ",
+          "block": 60531331,
+          "answer": "3687345000",
+          "price": 36.87345,
+          "updatedAt": 1789155215,
+          "ageSec": 2485,
+          "roundId": "18446744073709555430",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "META",
+          "block": 60531331,
+          "answer": "64696960000",
+          "price": 646.9696,
+          "updatedAt": 1789156222,
+          "ageSec": 1478,
+          "roundId": "18446744073709552747",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "MSFT",
+          "block": 60531331,
+          "answer": "49666186313",
+          "price": 496.66186313,
+          "updatedAt": 1789140441,
+          "ageSec": 17259,
+          "roundId": "18446744073709552339",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "MSTR",
+          "block": 60531331,
+          "answer": "13082500000",
+          "price": 130.825,
+          "updatedAt": 1789156555,
+          "ageSec": 1145,
+          "roundId": "18446744073709555324",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "MU",
+          "block": 60531331,
+          "answer": "97668307310",
+          "price": 976.6830731,
+          "updatedAt": 1789145991,
+          "ageSec": 11709,
+          "roundId": "18446744073709556415",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "NBIS",
+          "block": 60531331,
+          "answer": "22477960000",
+          "price": 224.7796,
+          "updatedAt": 1789152810,
+          "ageSec": 4890,
+          "roundId": "18446744073709557887",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "NVDA",
+          "block": 60531331,
+          "answer": "21829793457",
+          "price": 218.29793457,
+          "updatedAt": 1789157023,
+          "ageSec": 677,
+          "roundId": "18446744073709552641",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "ORCL",
+          "block": 60531331,
+          "answer": "15099294611",
+          "price": 150.99294611,
+          "updatedAt": 1789155822,
+          "ageSec": 1878,
+          "roundId": "18446744073709553569",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "PLTR",
+          "block": 60531331,
+          "answer": "16744000000",
+          "price": 167.44,
+          "updatedAt": 1789151592,
+          "ageSec": 6108,
+          "roundId": "18446744073709553458",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "QQQ",
+          "block": 60531331,
+          "answer": "71492435000",
+          "price": 714.92435,
+          "updatedAt": 1789130942,
+          "ageSec": 26758,
+          "roundId": "18446744073709551957",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "RGTI",
+          "block": 60531331,
+          "answer": "1528290000",
+          "price": 15.2829,
+          "updatedAt": 1789156730,
+          "ageSec": 970,
+          "roundId": "18446744073709555255",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "RKLB",
+          "block": 60531331,
+          "answer": "6293975000",
+          "price": 62.93975,
+          "updatedAt": 1789156664,
+          "ageSec": 1036,
+          "roundId": "18446744073709555687",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "SGOV",
+          "block": 60531331,
+          "answer": "10104790644",
+          "price": 101.04790644,
+          "updatedAt": 1789084872,
+          "ageSec": 72828,
+          "roundId": "18446744073709551671",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "SLV",
+          "block": 60531331,
+          "answer": "5809500000",
+          "price": 58.095,
+          "updatedAt": 1789150474,
+          "ageSec": 7226,
+          "roundId": "18446744073709552952",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "SNDK",
+          "block": 60531331,
+          "answer": "163511000000",
+          "price": 1635.11,
+          "updatedAt": 1789146464,
+          "ageSec": 11236,
+          "roundId": "18446744073709558520",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "SPCX",
+          "block": 60531331,
+          "answer": "15088880000",
+          "price": 150.8888,
+          "updatedAt": 1789156158,
+          "ageSec": 1542,
+          "roundId": "18446744073709554768",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "SPY",
+          "block": 60531331,
+          "answer": "76526375000",
+          "price": 765.26375,
+          "updatedAt": 1789131362,
+          "ageSec": 26338,
+          "roundId": "18446744073709551742",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "TSLA",
+          "block": 60531331,
+          "answer": "36591499999",
+          "price": 365.91499999,
+          "updatedAt": 1789138212,
+          "ageSec": 19488,
+          "roundId": "18446744073709552805",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "TSM",
+          "block": 60531331,
+          "answer": "43258055000",
+          "price": 432.58055,
+          "updatedAt": 1789144620,
+          "ageSec": 13080,
+          "roundId": "18446744073709552973",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "USAR",
+          "block": 60531331,
+          "answer": "1555600000",
+          "price": 15.556,
+          "updatedAt": 1789155426,
+          "ageSec": 2274,
+          "roundId": "18446744073709554462",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "USO",
+          "block": 60531331,
+          "answer": "15453055000",
+          "price": 154.53055,
+          "updatedAt": 1789150896,
+          "ageSec": 6804,
+          "roundId": "18446744073709553017",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        }
+      ]
+    },
+    {
+      "label": "Fri late evening",
+      "iso": "2026-09-11T23:30:00Z",
+      "atSec": 1789169400,
+      "block": 60646293,
+      "rows": [
+        {
+          "feed": "AAPL",
+          "block": 60646293,
+          "answer": "33252277801",
+          "price": 332.52277801,
+          "updatedAt": 1789156288,
+          "ageSec": 13112,
+          "roundId": "18446744073709552238",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "AMD",
+          "block": 60646293,
+          "answer": "51594225000",
+          "price": 515.94225,
+          "updatedAt": 1789153737,
+          "ageSec": 15663,
+          "roundId": "18446744073709554340",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "AMZN",
+          "block": 60646293,
+          "answer": "25713000000",
+          "price": 257.13,
+          "updatedAt": 1789148084,
+          "ageSec": 21316,
+          "roundId": "18446744073709552361",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "ASML",
+          "block": 60646293,
+          "answer": "170057229005",
+          "price": 1700.57229005,
+          "updatedAt": 1789154649,
+          "ageSec": 14751,
+          "roundId": "18446744073709553350",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "BABA",
+          "block": 60646293,
+          "answer": "10939500000",
+          "price": 109.395,
+          "updatedAt": 1789137229,
+          "ageSec": 32171,
+          "roundId": "18446744073709553227",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "CLSK",
+          "block": 60646293,
+          "answer": "1368285000",
+          "price": 13.68285,
+          "updatedAt": 1789159053,
+          "ageSec": 10347,
+          "roundId": "18446744073709556121",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "COIN",
+          "block": 60646293,
+          "answer": "17497000000",
+          "price": 174.97,
+          "updatedAt": 1789155630,
+          "ageSec": 13770,
+          "roundId": "18446744073709554243",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "CRCL",
+          "block": 60646293,
+          "answer": "9108390000",
+          "price": 91.0839,
+          "updatedAt": 1789156281,
+          "ageSec": 13119,
+          "roundId": "18446744073709555484",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "CRWV",
+          "block": 60646293,
+          "answer": "8883000000",
+          "price": 88.83,
+          "updatedAt": 1789156646,
+          "ageSec": 12754,
+          "roundId": "18446744073709555497",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "DELL",
+          "block": 60646293,
+          "answer": "56824374971",
+          "price": 568.24374971,
+          "updatedAt": 1789168948,
+          "ageSec": 452,
+          "roundId": "18446744073709553743",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "EWY",
+          "block": 60646293,
+          "answer": "18864045000",
+          "price": 188.64045,
+          "updatedAt": 1789152375,
+          "ageSec": 17025,
+          "roundId": "18446744073709554773",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "GME",
+          "block": 60646293,
+          "answer": "2111500000",
+          "price": 21.115,
+          "updatedAt": 1789156245,
+          "ageSec": 13155,
+          "roundId": "18446744073709552397",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "GOOGL",
+          "block": 60646293,
+          "answer": "33904500000",
+          "price": 339.045,
+          "updatedAt": 1789152321,
+          "ageSec": 17079,
+          "roundId": "18446744073709552353",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "INTC",
+          "block": 60646293,
+          "answer": "10303000000",
+          "price": 103.03,
+          "updatedAt": 1789153361,
+          "ageSec": 16039,
+          "roundId": "18446744073709555415",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "IONQ",
+          "block": 60646293,
+          "answer": "3687345000",
+          "price": 36.87345,
+          "updatedAt": 1789155215,
+          "ageSec": 14185,
+          "roundId": "18446744073709555430",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "META",
+          "block": 60646293,
+          "answer": "64696960000",
+          "price": 646.9696,
+          "updatedAt": 1789156222,
+          "ageSec": 13178,
+          "roundId": "18446744073709552747",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "MSFT",
+          "block": 60646293,
+          "answer": "49666186313",
+          "price": 496.66186313,
+          "updatedAt": 1789140441,
+          "ageSec": 28959,
+          "roundId": "18446744073709552339",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "MSTR",
+          "block": 60646293,
+          "answer": "13082500000",
+          "price": 130.825,
+          "updatedAt": 1789156555,
+          "ageSec": 12845,
+          "roundId": "18446744073709555324",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "MU",
+          "block": 60646293,
+          "answer": "97668307310",
+          "price": 976.6830731,
+          "updatedAt": 1789145991,
+          "ageSec": 23409,
+          "roundId": "18446744073709556415",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "NBIS",
+          "block": 60646293,
+          "answer": "22477960000",
+          "price": 224.7796,
+          "updatedAt": 1789152810,
+          "ageSec": 16590,
+          "roundId": "18446744073709557887",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "NVDA",
+          "block": 60646293,
+          "answer": "21829793457",
+          "price": 218.29793457,
+          "updatedAt": 1789157023,
+          "ageSec": 12377,
+          "roundId": "18446744073709552641",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "ORCL",
+          "block": 60646293,
+          "answer": "14829434289",
+          "price": 148.29434289,
+          "updatedAt": 1789164645,
+          "ageSec": 4755,
+          "roundId": "18446744073709553572",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "PLTR",
+          "block": 60646293,
+          "answer": "16744000000",
+          "price": 167.44,
+          "updatedAt": 1789151592,
+          "ageSec": 17808,
+          "roundId": "18446744073709553458",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "QQQ",
+          "block": 60646293,
+          "answer": "71492435000",
+          "price": 714.92435,
+          "updatedAt": 1789130942,
+          "ageSec": 38458,
+          "roundId": "18446744073709551957",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "RGTI",
+          "block": 60646293,
+          "answer": "1528290000",
+          "price": 15.2829,
+          "updatedAt": 1789156730,
+          "ageSec": 12670,
+          "roundId": "18446744073709555255",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "RKLB",
+          "block": 60646293,
+          "answer": "6293975000",
+          "price": 62.93975,
+          "updatedAt": 1789156664,
+          "ageSec": 12736,
+          "roundId": "18446744073709555687",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "SGOV",
+          "block": 60646293,
+          "answer": "10104790644",
+          "price": 101.04790644,
+          "updatedAt": 1789084872,
+          "ageSec": 84528,
+          "roundId": "18446744073709551671",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "SLV",
+          "block": 60646293,
+          "answer": "5809500000",
+          "price": 58.095,
+          "updatedAt": 1789150474,
+          "ageSec": 18926,
+          "roundId": "18446744073709552952",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "SNDK",
+          "block": 60646293,
+          "answer": "163511000000",
+          "price": 1635.11,
+          "updatedAt": 1789146464,
+          "ageSec": 22936,
+          "roundId": "18446744073709558520",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "SPCX",
+          "block": 60646293,
+          "answer": "15088880000",
+          "price": 150.8888,
+          "updatedAt": 1789156158,
+          "ageSec": 13242,
+          "roundId": "18446744073709554768",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "SPY",
+          "block": 60646293,
+          "answer": "76526375000",
+          "price": 765.26375,
+          "updatedAt": 1789131362,
+          "ageSec": 38038,
+          "roundId": "18446744073709551742",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "TSLA",
+          "block": 60646293,
+          "answer": "36591499999",
+          "price": 365.91499999,
+          "updatedAt": 1789138212,
+          "ageSec": 31188,
+          "roundId": "18446744073709552805",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "TSM",
+          "block": 60646293,
+          "answer": "43258055000",
+          "price": 432.58055,
+          "updatedAt": 1789144620,
+          "ageSec": 24780,
+          "roundId": "18446744073709552973",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "USAR",
+          "block": 60646293,
+          "answer": "1563620000",
+          "price": 15.6362,
+          "updatedAt": 1789167790,
+          "ageSec": 1610,
+          "roundId": "18446744073709554463",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "USO",
+          "block": 60646293,
+          "answer": "15453055000",
+          "price": 154.53055,
+          "updatedAt": 1789150896,
+          "ageSec": 18504,
+          "roundId": "18446744073709553017",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        }
+      ]
+    },
+    {
+      "label": "Sat noon",
+      "iso": "2026-09-12T12:00:00Z",
+      "atSec": 1789214400,
+      "block": 61089389,
+      "rows": [
+        {
+          "feed": "AAPL",
+          "block": 61089389,
+          "answer": "33252277801",
+          "price": 332.52277801,
+          "updatedAt": 1789156288,
+          "ageSec": 58112,
+          "roundId": "18446744073709552238",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "AMD",
+          "block": 61089389,
+          "answer": "51594225000",
+          "price": 515.94225,
+          "updatedAt": 1789153737,
+          "ageSec": 60663,
+          "roundId": "18446744073709554340",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "AMZN",
+          "block": 61089389,
+          "answer": "25713000000",
+          "price": 257.13,
+          "updatedAt": 1789148084,
+          "ageSec": 66316,
+          "roundId": "18446744073709552361",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "ASML",
+          "block": 61089389,
+          "answer": "170057229005",
+          "price": 1700.57229005,
+          "updatedAt": 1789154649,
+          "ageSec": 59751,
+          "roundId": "18446744073709553350",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "BABA",
+          "block": 61089389,
+          "answer": "10939500000",
+          "price": 109.395,
+          "updatedAt": 1789137229,
+          "ageSec": 77171,
+          "roundId": "18446744073709553227",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "CLSK",
+          "block": 61089389,
+          "answer": "1368285000",
+          "price": 13.68285,
+          "updatedAt": 1789159053,
+          "ageSec": 55347,
+          "roundId": "18446744073709556121",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "COIN",
+          "block": 61089389,
+          "answer": "17497000000",
+          "price": 174.97,
+          "updatedAt": 1789155630,
+          "ageSec": 58770,
+          "roundId": "18446744073709554243",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "CRCL",
+          "block": 61089389,
+          "answer": "9108390000",
+          "price": 91.0839,
+          "updatedAt": 1789156281,
+          "ageSec": 58119,
+          "roundId": "18446744073709555484",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "CRWV",
+          "block": 61089389,
+          "answer": "8883000000",
+          "price": 88.83,
+          "updatedAt": 1789156646,
+          "ageSec": 57754,
+          "roundId": "18446744073709555497",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "DELL",
+          "block": 61089389,
+          "answer": "56824374971",
+          "price": 568.24374971,
+          "updatedAt": 1789168948,
+          "ageSec": 45452,
+          "roundId": "18446744073709553743",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "EWY",
+          "block": 61089389,
+          "answer": "18864045000",
+          "price": 188.64045,
+          "updatedAt": 1789152375,
+          "ageSec": 62025,
+          "roundId": "18446744073709554773",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "GME",
+          "block": 61089389,
+          "answer": "2111500000",
+          "price": 21.115,
+          "updatedAt": 1789156245,
+          "ageSec": 58155,
+          "roundId": "18446744073709552397",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "GOOGL",
+          "block": 61089389,
+          "answer": "33904500000",
+          "price": 339.045,
+          "updatedAt": 1789152321,
+          "ageSec": 62079,
+          "roundId": "18446744073709552353",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "INTC",
+          "block": 61089389,
+          "answer": "10303000000",
+          "price": 103.03,
+          "updatedAt": 1789153361,
+          "ageSec": 61039,
+          "roundId": "18446744073709555415",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "IONQ",
+          "block": 61089389,
+          "answer": "3687345000",
+          "price": 36.87345,
+          "updatedAt": 1789155215,
+          "ageSec": 59185,
+          "roundId": "18446744073709555430",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "META",
+          "block": 61089389,
+          "answer": "64696960000",
+          "price": 646.9696,
+          "updatedAt": 1789156222,
+          "ageSec": 58178,
+          "roundId": "18446744073709552747",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "MSFT",
+          "block": 61089389,
+          "answer": "49666186313",
+          "price": 496.66186313,
+          "updatedAt": 1789140441,
+          "ageSec": 73959,
+          "roundId": "18446744073709552339",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "MSTR",
+          "block": 61089389,
+          "answer": "13082500000",
+          "price": 130.825,
+          "updatedAt": 1789156555,
+          "ageSec": 57845,
+          "roundId": "18446744073709555324",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "MU",
+          "block": 61089389,
+          "answer": "97668307310",
+          "price": 976.6830731,
+          "updatedAt": 1789145991,
+          "ageSec": 68409,
+          "roundId": "18446744073709556415",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "NBIS",
+          "block": 61089389,
+          "answer": "22477960000",
+          "price": 224.7796,
+          "updatedAt": 1789152810,
+          "ageSec": 61590,
+          "roundId": "18446744073709557887",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "NVDA",
+          "block": 61089389,
+          "answer": "21829793457",
+          "price": 218.29793457,
+          "updatedAt": 1789157023,
+          "ageSec": 57377,
+          "roundId": "18446744073709552641",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "ORCL",
+          "block": 61089389,
+          "answer": "14829434289",
+          "price": 148.29434289,
+          "updatedAt": 1789164645,
+          "ageSec": 49755,
+          "roundId": "18446744073709553572",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "PLTR",
+          "block": 61089389,
+          "answer": "16744000000",
+          "price": 167.44,
+          "updatedAt": 1789151592,
+          "ageSec": 62808,
+          "roundId": "18446744073709553458",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "QQQ",
+          "block": 61089389,
+          "answer": "71492435000",
+          "price": 714.92435,
+          "updatedAt": 1789130942,
+          "ageSec": 83458,
+          "roundId": "18446744073709551957",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "RGTI",
+          "block": 61089389,
+          "answer": "1528290000",
+          "price": 15.2829,
+          "updatedAt": 1789156730,
+          "ageSec": 57670,
+          "roundId": "18446744073709555255",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "RKLB",
+          "block": 61089389,
+          "answer": "6293975000",
+          "price": 62.93975,
+          "updatedAt": 1789156664,
+          "ageSec": 57736,
+          "roundId": "18446744073709555687",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "SGOV",
+          "block": 61089389,
+          "answer": "10102780441",
+          "price": 101.02780441,
+          "updatedAt": 1789171285,
+          "ageSec": 43115,
+          "roundId": "18446744073709551672",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "SLV",
+          "block": 61089389,
+          "answer": "5809500000",
+          "price": 58.095,
+          "updatedAt": 1789150474,
+          "ageSec": 63926,
+          "roundId": "18446744073709552952",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "SNDK",
+          "block": 61089389,
+          "answer": "163511000000",
+          "price": 1635.11,
+          "updatedAt": 1789146464,
+          "ageSec": 67936,
+          "roundId": "18446744073709558520",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "SPCX",
+          "block": 61089389,
+          "answer": "14996885000",
+          "price": 149.96885,
+          "updatedAt": 1789169992,
+          "ageSec": 44408,
+          "roundId": "18446744073709554769",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "SPY",
+          "block": 61089389,
+          "answer": "76526375000",
+          "price": 765.26375,
+          "updatedAt": 1789131362,
+          "ageSec": 83038,
+          "roundId": "18446744073709551742",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "TSLA",
+          "block": 61089389,
+          "answer": "36591499999",
+          "price": 365.91499999,
+          "updatedAt": 1789138212,
+          "ageSec": 76188,
+          "roundId": "18446744073709552805",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "TSM",
+          "block": 61089389,
+          "answer": "43258055000",
+          "price": 432.58055,
+          "updatedAt": 1789144620,
+          "ageSec": 69780,
+          "roundId": "18446744073709552973",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "USAR",
+          "block": 61089389,
+          "answer": "1563620000",
+          "price": 15.6362,
+          "updatedAt": 1789167790,
+          "ageSec": 46610,
+          "roundId": "18446744073709554463",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "USO",
+          "block": 61089389,
+          "answer": "15453055000",
+          "price": 154.53055,
+          "updatedAt": 1789150896,
+          "ageSec": 63504,
+          "roundId": "18446744073709553017",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        }
+      ]
+    },
+    {
+      "label": "Sun noon",
+      "iso": "2026-09-13T12:00:00Z",
+      "atSec": 1789300800,
+      "block": 61940196,
+      "rows": [
+        {
+          "feed": "AAPL",
+          "block": 61940196,
+          "answer": "33252277801",
+          "price": 332.52277801,
+          "updatedAt": 1789156288,
+          "ageSec": 144512,
+          "roundId": "18446744073709552238",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "AMD",
+          "block": 61940196,
+          "answer": "51594225000",
+          "price": 515.94225,
+          "updatedAt": 1789153737,
+          "ageSec": 147063,
+          "roundId": "18446744073709554340",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "AMZN",
+          "block": 61940196,
+          "answer": "25713000000",
+          "price": 257.13,
+          "updatedAt": 1789148084,
+          "ageSec": 152716,
+          "roundId": "18446744073709552361",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "ASML",
+          "block": 61940196,
+          "answer": "170057229005",
+          "price": 1700.57229005,
+          "updatedAt": 1789154649,
+          "ageSec": 146151,
+          "roundId": "18446744073709553350",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "BABA",
+          "block": 61940196,
+          "answer": "10939500000",
+          "price": 109.395,
+          "updatedAt": 1789137229,
+          "ageSec": 163571,
+          "roundId": "18446744073709553227",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "CLSK",
+          "block": 61940196,
+          "answer": "1368285000",
+          "price": 13.68285,
+          "updatedAt": 1789159053,
+          "ageSec": 141747,
+          "roundId": "18446744073709556121",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "COIN",
+          "block": 61940196,
+          "answer": "17497000000",
+          "price": 174.97,
+          "updatedAt": 1789155630,
+          "ageSec": 145170,
+          "roundId": "18446744073709554243",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "CRCL",
+          "block": 61940196,
+          "answer": "9108390000",
+          "price": 91.0839,
+          "updatedAt": 1789156281,
+          "ageSec": 144519,
+          "roundId": "18446744073709555484",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "CRWV",
+          "block": 61940196,
+          "answer": "8883000000",
+          "price": 88.83,
+          "updatedAt": 1789156646,
+          "ageSec": 144154,
+          "roundId": "18446744073709555497",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "DELL",
+          "block": 61940196,
+          "answer": "56824374971",
+          "price": 568.24374971,
+          "updatedAt": 1789168948,
+          "ageSec": 131852,
+          "roundId": "18446744073709553743",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "EWY",
+          "block": 61940196,
+          "answer": "18864045000",
+          "price": 188.64045,
+          "updatedAt": 1789152375,
+          "ageSec": 148425,
+          "roundId": "18446744073709554773",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "GME",
+          "block": 61940196,
+          "answer": "2111500000",
+          "price": 21.115,
+          "updatedAt": 1789156245,
+          "ageSec": 144555,
+          "roundId": "18446744073709552397",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "GOOGL",
+          "block": 61940196,
+          "answer": "33904500000",
+          "price": 339.045,
+          "updatedAt": 1789152321,
+          "ageSec": 148479,
+          "roundId": "18446744073709552353",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "INTC",
+          "block": 61940196,
+          "answer": "10303000000",
+          "price": 103.03,
+          "updatedAt": 1789153361,
+          "ageSec": 147439,
+          "roundId": "18446744073709555415",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "IONQ",
+          "block": 61940196,
+          "answer": "3687345000",
+          "price": 36.87345,
+          "updatedAt": 1789155215,
+          "ageSec": 145585,
+          "roundId": "18446744073709555430",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "META",
+          "block": 61940196,
+          "answer": "64696960000",
+          "price": 646.9696,
+          "updatedAt": 1789156222,
+          "ageSec": 144578,
+          "roundId": "18446744073709552747",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "MSFT",
+          "block": 61940196,
+          "answer": "49666186313",
+          "price": 496.66186313,
+          "updatedAt": 1789140441,
+          "ageSec": 160359,
+          "roundId": "18446744073709552339",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "MSTR",
+          "block": 61940196,
+          "answer": "13082500000",
+          "price": 130.825,
+          "updatedAt": 1789156555,
+          "ageSec": 144245,
+          "roundId": "18446744073709555324",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "MU",
+          "block": 61940196,
+          "answer": "97668307310",
+          "price": 976.6830731,
+          "updatedAt": 1789145991,
+          "ageSec": 154809,
+          "roundId": "18446744073709556415",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "NBIS",
+          "block": 61940196,
+          "answer": "22477960000",
+          "price": 224.7796,
+          "updatedAt": 1789152810,
+          "ageSec": 147990,
+          "roundId": "18446744073709557887",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "NVDA",
+          "block": 61940196,
+          "answer": "21829793457",
+          "price": 218.29793457,
+          "updatedAt": 1789157023,
+          "ageSec": 143777,
+          "roundId": "18446744073709552641",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "ORCL",
+          "block": 61940196,
+          "answer": "14829434289",
+          "price": 148.29434289,
+          "updatedAt": 1789164645,
+          "ageSec": 136155,
+          "roundId": "18446744073709553572",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "PLTR",
+          "block": 61940196,
+          "answer": "16744000000",
+          "price": 167.44,
+          "updatedAt": 1789151592,
+          "ageSec": 149208,
+          "roundId": "18446744073709553458",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "QQQ",
+          "block": 61940196,
+          "answer": "71492435000",
+          "price": 714.92435,
+          "updatedAt": 1789130942,
+          "ageSec": 169858,
+          "roundId": "18446744073709551957",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "RGTI",
+          "block": 61940196,
+          "answer": "1528290000",
+          "price": 15.2829,
+          "updatedAt": 1789156730,
+          "ageSec": 144070,
+          "roundId": "18446744073709555255",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "RKLB",
+          "block": 61940196,
+          "answer": "6293975000",
+          "price": 62.93975,
+          "updatedAt": 1789156664,
+          "ageSec": 144136,
+          "roundId": "18446744073709555687",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "SGOV",
+          "block": 61940196,
+          "answer": "10102780441",
+          "price": 101.02780441,
+          "updatedAt": 1789171285,
+          "ageSec": 129515,
+          "roundId": "18446744073709551672",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "SLV",
+          "block": 61940196,
+          "answer": "5809500000",
+          "price": 58.095,
+          "updatedAt": 1789150474,
+          "ageSec": 150326,
+          "roundId": "18446744073709552952",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "SNDK",
+          "block": 61940196,
+          "answer": "163511000000",
+          "price": 1635.11,
+          "updatedAt": 1789146464,
+          "ageSec": 154336,
+          "roundId": "18446744073709558520",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "SPCX",
+          "block": 61940196,
+          "answer": "14996885000",
+          "price": 149.96885,
+          "updatedAt": 1789169992,
+          "ageSec": 130808,
+          "roundId": "18446744073709554769",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "SPY",
+          "block": 61940196,
+          "answer": "76526375000",
+          "price": 765.26375,
+          "updatedAt": 1789131362,
+          "ageSec": 169438,
+          "roundId": "18446744073709551742",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "TSLA",
+          "block": 61940196,
+          "answer": "36591499999",
+          "price": 365.91499999,
+          "updatedAt": 1789138212,
+          "ageSec": 162588,
+          "roundId": "18446744073709552805",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "TSM",
+          "block": 61940196,
+          "answer": "43258055000",
+          "price": 432.58055,
+          "updatedAt": 1789144620,
+          "ageSec": 156180,
+          "roundId": "18446744073709552973",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "USAR",
+          "block": 61940196,
+          "answer": "1563620000",
+          "price": 15.6362,
+          "updatedAt": 1789167790,
+          "ageSec": 133010,
+          "roundId": "18446744073709554463",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "USO",
+          "block": 61940196,
+          "answer": "15453055000",
+          "price": 154.53055,
+          "updatedAt": 1789150896,
+          "ageSec": 149904,
+          "roundId": "18446744073709553017",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        }
+      ]
+    },
+    {
+      "label": "Sun 23:30 (before 20:00 ET reopen?)",
+      "iso": "2026-09-13T23:30:00Z",
+      "atSec": 1789342200,
+      "block": 62347783,
+      "rows": [
+        {
+          "feed": "AAPL",
+          "block": 62347783,
+          "answer": "33252277801",
+          "price": 332.52277801,
+          "updatedAt": 1789156288,
+          "ageSec": 185912,
+          "roundId": "18446744073709552238",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "AMD",
+          "block": 62347783,
+          "answer": "51594225000",
+          "price": 515.94225,
+          "updatedAt": 1789153737,
+          "ageSec": 188463,
+          "roundId": "18446744073709554340",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "AMZN",
+          "block": 62347783,
+          "answer": "25713000000",
+          "price": 257.13,
+          "updatedAt": 1789148084,
+          "ageSec": 194116,
+          "roundId": "18446744073709552361",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "ASML",
+          "block": 62347783,
+          "answer": "170057229005",
+          "price": 1700.57229005,
+          "updatedAt": 1789154649,
+          "ageSec": 187551,
+          "roundId": "18446744073709553350",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "BABA",
+          "block": 62347783,
+          "answer": "10939500000",
+          "price": 109.395,
+          "updatedAt": 1789137229,
+          "ageSec": 204971,
+          "roundId": "18446744073709553227",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "CLSK",
+          "block": 62347783,
+          "answer": "1368285000",
+          "price": 13.68285,
+          "updatedAt": 1789159053,
+          "ageSec": 183147,
+          "roundId": "18446744073709556121",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "COIN",
+          "block": 62347783,
+          "answer": "17497000000",
+          "price": 174.97,
+          "updatedAt": 1789155630,
+          "ageSec": 186570,
+          "roundId": "18446744073709554243",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "CRCL",
+          "block": 62347783,
+          "answer": "9108390000",
+          "price": 91.0839,
+          "updatedAt": 1789156281,
+          "ageSec": 185919,
+          "roundId": "18446744073709555484",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "CRWV",
+          "block": 62347783,
+          "answer": "8883000000",
+          "price": 88.83,
+          "updatedAt": 1789156646,
+          "ageSec": 185554,
+          "roundId": "18446744073709555497",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "DELL",
+          "block": 62347783,
+          "answer": "56824374971",
+          "price": 568.24374971,
+          "updatedAt": 1789168948,
+          "ageSec": 173252,
+          "roundId": "18446744073709553743",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "EWY",
+          "block": 62347783,
+          "answer": "18864045000",
+          "price": 188.64045,
+          "updatedAt": 1789152375,
+          "ageSec": 189825,
+          "roundId": "18446744073709554773",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "GME",
+          "block": 62347783,
+          "answer": "2111500000",
+          "price": 21.115,
+          "updatedAt": 1789156245,
+          "ageSec": 185955,
+          "roundId": "18446744073709552397",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "GOOGL",
+          "block": 62347783,
+          "answer": "33904500000",
+          "price": 339.045,
+          "updatedAt": 1789152321,
+          "ageSec": 189879,
+          "roundId": "18446744073709552353",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "INTC",
+          "block": 62347783,
+          "answer": "10303000000",
+          "price": 103.03,
+          "updatedAt": 1789153361,
+          "ageSec": 188839,
+          "roundId": "18446744073709555415",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "IONQ",
+          "block": 62347783,
+          "answer": "3687345000",
+          "price": 36.87345,
+          "updatedAt": 1789155215,
+          "ageSec": 186985,
+          "roundId": "18446744073709555430",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "META",
+          "block": 62347783,
+          "answer": "64696960000",
+          "price": 646.9696,
+          "updatedAt": 1789156222,
+          "ageSec": 185978,
+          "roundId": "18446744073709552747",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "MSFT",
+          "block": 62347783,
+          "answer": "49666186313",
+          "price": 496.66186313,
+          "updatedAt": 1789140441,
+          "ageSec": 201759,
+          "roundId": "18446744073709552339",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "MSTR",
+          "block": 62347783,
+          "answer": "13082500000",
+          "price": 130.825,
+          "updatedAt": 1789156555,
+          "ageSec": 185645,
+          "roundId": "18446744073709555324",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "MU",
+          "block": 62347783,
+          "answer": "97668307310",
+          "price": 976.6830731,
+          "updatedAt": 1789145991,
+          "ageSec": 196209,
+          "roundId": "18446744073709556415",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "NBIS",
+          "block": 62347783,
+          "answer": "22477960000",
+          "price": 224.7796,
+          "updatedAt": 1789152810,
+          "ageSec": 189390,
+          "roundId": "18446744073709557887",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "NVDA",
+          "block": 62347783,
+          "answer": "21829793457",
+          "price": 218.29793457,
+          "updatedAt": 1789157023,
+          "ageSec": 185177,
+          "roundId": "18446744073709552641",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "ORCL",
+          "block": 62347783,
+          "answer": "14829434289",
+          "price": 148.29434289,
+          "updatedAt": 1789164645,
+          "ageSec": 177555,
+          "roundId": "18446744073709553572",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "PLTR",
+          "block": 62347783,
+          "answer": "16744000000",
+          "price": 167.44,
+          "updatedAt": 1789151592,
+          "ageSec": 190608,
+          "roundId": "18446744073709553458",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "QQQ",
+          "block": 62347783,
+          "answer": "71492435000",
+          "price": 714.92435,
+          "updatedAt": 1789130942,
+          "ageSec": 211258,
+          "roundId": "18446744073709551957",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "RGTI",
+          "block": 62347783,
+          "answer": "1528290000",
+          "price": 15.2829,
+          "updatedAt": 1789156730,
+          "ageSec": 185470,
+          "roundId": "18446744073709555255",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "RKLB",
+          "block": 62347783,
+          "answer": "6293975000",
+          "price": 62.93975,
+          "updatedAt": 1789156664,
+          "ageSec": 185536,
+          "roundId": "18446744073709555687",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "SGOV",
+          "block": 62347783,
+          "answer": "10102780441",
+          "price": 101.02780441,
+          "updatedAt": 1789171285,
+          "ageSec": 170915,
+          "roundId": "18446744073709551672",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "SLV",
+          "block": 62347783,
+          "answer": "5809500000",
+          "price": 58.095,
+          "updatedAt": 1789150474,
+          "ageSec": 191726,
+          "roundId": "18446744073709552952",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "SNDK",
+          "block": 62347783,
+          "answer": "163511000000",
+          "price": 1635.11,
+          "updatedAt": 1789146464,
+          "ageSec": 195736,
+          "roundId": "18446744073709558520",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "SPCX",
+          "block": 62347783,
+          "answer": "14996885000",
+          "price": 149.96885,
+          "updatedAt": 1789169992,
+          "ageSec": 172208,
+          "roundId": "18446744073709554769",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "SPY",
+          "block": 62347783,
+          "answer": "76526375000",
+          "price": 765.26375,
+          "updatedAt": 1789131362,
+          "ageSec": 210838,
+          "roundId": "18446744073709551742",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "TSLA",
+          "block": 62347783,
+          "answer": "36591499999",
+          "price": 365.91499999,
+          "updatedAt": 1789138212,
+          "ageSec": 203988,
+          "roundId": "18446744073709552805",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "TSM",
+          "block": 62347783,
+          "answer": "43258055000",
+          "price": 432.58055,
+          "updatedAt": 1789144620,
+          "ageSec": 197580,
+          "roundId": "18446744073709552973",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "USAR",
+          "block": 62347783,
+          "answer": "1563620000",
+          "price": 15.6362,
+          "updatedAt": 1789167790,
+          "ageSec": 174410,
+          "roundId": "18446744073709554463",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "USO",
+          "block": 62347783,
+          "answer": "15453055000",
+          "price": 154.53055,
+          "updatedAt": 1789150896,
+          "ageSec": 191304,
+          "roundId": "18446744073709553017",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        }
+      ]
+    },
+    {
+      "label": "Mon 01:00 (after 20:00 ET Sun)",
+      "iso": "2026-09-14T01:00:00Z",
+      "atSec": 1789347600,
+      "block": 62400965,
+      "rows": [
+        {
+          "feed": "AAPL",
+          "block": 62400965,
+          "answer": "33168765554",
+          "price": 331.68765554,
+          "updatedAt": 1789344049,
+          "ageSec": 3551,
+          "roundId": "18446744073709552239",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "AMD",
+          "block": 62400965,
+          "answer": "50150000000",
+          "price": 501.5,
+          "updatedAt": 1789345639,
+          "ageSec": 1961,
+          "roundId": "18446744073709554343",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "AMZN",
+          "block": 62400965,
+          "answer": "25410000000",
+          "price": 254.1,
+          "updatedAt": 1789344038,
+          "ageSec": 3562,
+          "roundId": "18446744073709552362",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "ASML",
+          "block": 62400965,
+          "answer": "166698888762",
+          "price": 1666.98888762,
+          "updatedAt": 1789344925,
+          "ageSec": 2675,
+          "roundId": "18446744073709553354",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "BABA",
+          "block": 62400965,
+          "answer": "10878999999",
+          "price": 108.78999999,
+          "updatedAt": 1789344045,
+          "ageSec": 3555,
+          "roundId": "18446744073709553228",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "CLSK",
+          "block": 62400965,
+          "answer": "1342000000",
+          "price": 13.42,
+          "updatedAt": 1789346214,
+          "ageSec": 1386,
+          "roundId": "18446744073709556127",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "COIN",
+          "block": 62400965,
+          "answer": "17227500000",
+          "price": 172.275,
+          "updatedAt": 1789345714,
+          "ageSec": 1886,
+          "roundId": "18446744073709554245",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "CRCL",
+          "block": 62400965,
+          "answer": "8900500000",
+          "price": 89.005,
+          "updatedAt": 1789345992,
+          "ageSec": 1608,
+          "roundId": "18446744073709555490",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "CRWV",
+          "block": 62400965,
+          "answer": "8577500000",
+          "price": 85.775,
+          "updatedAt": 1789345020,
+          "ageSec": 2580,
+          "roundId": "18446744073709555500",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "DELL",
+          "block": 62400965,
+          "answer": "56000567491",
+          "price": 560.00567491,
+          "updatedAt": 1789344045,
+          "ageSec": 3555,
+          "roundId": "18446744073709553744",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "EWY",
+          "block": 62400965,
+          "answer": "18188500000",
+          "price": 181.885,
+          "updatedAt": 1789344038,
+          "ageSec": 3562,
+          "roundId": "18446744073709554774",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "GME",
+          "block": 62400965,
+          "answer": "2104500000",
+          "price": 21.045,
+          "updatedAt": 1789345296,
+          "ageSec": 2304,
+          "roundId": "18446744073709552399",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "GOOGL",
+          "block": 62400965,
+          "answer": "33523500000",
+          "price": 335.235,
+          "updatedAt": 1789345663,
+          "ageSec": 1937,
+          "roundId": "18446744073709552355",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "INTC",
+          "block": 62400965,
+          "answer": "9896000000",
+          "price": 98.96,
+          "updatedAt": 1789345799,
+          "ageSec": 1801,
+          "roundId": "18446744073709555418",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "IONQ",
+          "block": 62400965,
+          "answer": "3554500000",
+          "price": 35.545,
+          "updatedAt": 1789346619,
+          "ageSec": 981,
+          "roundId": "18446744073709555435",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "META",
+          "block": 62400965,
+          "answer": "64090500000",
+          "price": 640.905,
+          "updatedAt": 1789344043,
+          "ageSec": 3557,
+          "roundId": "18446744073709552748",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "MSFT",
+          "block": 62400965,
+          "answer": "49301850922",
+          "price": 493.01850922,
+          "updatedAt": 1789344047,
+          "ageSec": 3553,
+          "roundId": "18446744073709552340",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "MSTR",
+          "block": 62400965,
+          "answer": "12806500000",
+          "price": 128.065,
+          "updatedAt": 1789345966,
+          "ageSec": 1634,
+          "roundId": "18446744073709555328",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "MU",
+          "block": 62400965,
+          "answer": "93866522869",
+          "price": 938.66522869,
+          "updatedAt": 1789345726,
+          "ageSec": 1874,
+          "roundId": "18446744073709556418",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "NBIS",
+          "block": 62400965,
+          "answer": "21409500000",
+          "price": 214.095,
+          "updatedAt": 1789347052,
+          "ageSec": 548,
+          "roundId": "18446744073709557894",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "NVDA",
+          "block": 62400965,
+          "answer": "21472631815",
+          "price": 214.72631815,
+          "updatedAt": 1789345379,
+          "ageSec": 2221,
+          "roundId": "18446744073709552643",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "ORCL",
+          "block": 62400965,
+          "answer": "14745529191",
+          "price": 147.45529191,
+          "updatedAt": 1789346597,
+          "ageSec": 1003,
+          "roundId": "18446744073709553577",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "PLTR",
+          "block": 62400965,
+          "answer": "16632500000",
+          "price": 166.325,
+          "updatedAt": 1789346701,
+          "ageSec": 899,
+          "roundId": "18446744073709553460",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "QQQ",
+          "block": 62400965,
+          "answer": "70651000000",
+          "price": 706.51,
+          "updatedAt": 1789344025,
+          "ageSec": 3575,
+          "roundId": "18446744073709551958",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "RGTI",
+          "block": 62400965,
+          "answer": "1493000000",
+          "price": 14.93,
+          "updatedAt": 1789346471,
+          "ageSec": 1129,
+          "roundId": "18446744073709555259",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "RKLB",
+          "block": 62400965,
+          "answer": "6154000000",
+          "price": 61.54,
+          "updatedAt": 1789346461,
+          "ageSec": 1139,
+          "roundId": "18446744073709555693",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "SGOV",
+          "block": 62400965,
+          "answer": "10104790644",
+          "price": 101.04790644,
+          "updatedAt": 1789344042,
+          "ageSec": 3558,
+          "roundId": "18446744073709551673",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "SLV",
+          "block": 62400965,
+          "answer": "5769499999",
+          "price": 57.69499999,
+          "updatedAt": 1789345617,
+          "ageSec": 1983,
+          "roundId": "18446744073709552955",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "SNDK",
+          "block": 62400965,
+          "answer": "154883000000",
+          "price": 1548.83,
+          "updatedAt": 1789346397,
+          "ageSec": 1203,
+          "roundId": "18446744073709558525",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "SPCX",
+          "block": 62400965,
+          "answer": "14870500000",
+          "price": 148.705,
+          "updatedAt": 1789344039,
+          "ageSec": 3561,
+          "roundId": "18446744073709554770",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "SPY",
+          "block": 62400965,
+          "answer": "76004000000",
+          "price": 760.04,
+          "updatedAt": 1789344026,
+          "ageSec": 3574,
+          "roundId": "18446744073709551743",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "TSLA",
+          "block": 62400965,
+          "answer": "36003999999",
+          "price": 360.03999999,
+          "updatedAt": 1789345600,
+          "ageSec": 2000,
+          "roundId": "18446744073709552807",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "TSM",
+          "block": 62400965,
+          "answer": "42474500000",
+          "price": 424.745,
+          "updatedAt": 1789345778,
+          "ageSec": 1822,
+          "roundId": "18446744073709552975",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "USAR",
+          "block": 62400965,
+          "answer": "1529500000",
+          "price": 15.295,
+          "updatedAt": 1789346423,
+          "ageSec": 1177,
+          "roundId": "18446744073709554466",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "USO",
+          "block": 62400965,
+          "answer": "15782000000",
+          "price": 157.82,
+          "updatedAt": 1789344023,
+          "ageSec": 3577,
+          "roundId": "18446744073709553018",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        }
+      ]
+    },
+    {
+      "label": "Mon 08:00 overnight",
+      "iso": "2026-09-14T08:00:00Z",
+      "atSec": 1789372800,
+      "block": 62649418,
+      "rows": [
+        {
+          "feed": "AAPL",
+          "block": 62649418,
+          "answer": "32995167339",
+          "price": 329.95167339,
+          "updatedAt": 1789352661,
+          "ageSec": 20139,
+          "roundId": "18446744073709552240",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "AMD",
+          "block": 62649418,
+          "answer": "49383500000",
+          "price": 493.835,
+          "updatedAt": 1789370907,
+          "ageSec": 1893,
+          "roundId": "18446744073709554348",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "AMZN",
+          "block": 62649418,
+          "answer": "25410000000",
+          "price": 254.1,
+          "updatedAt": 1789344038,
+          "ageSec": 28762,
+          "roundId": "18446744073709552362",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "ASML",
+          "block": 62649418,
+          "answer": "163586573444",
+          "price": 1635.86573444,
+          "updatedAt": 1789369353,
+          "ageSec": 3447,
+          "roundId": "18446744073709553357",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "BABA",
+          "block": 62649418,
+          "answer": "10820500000",
+          "price": 108.205,
+          "updatedAt": 1789352808,
+          "ageSec": 19992,
+          "roundId": "18446744073709553235",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "CLSK",
+          "block": 62649418,
+          "answer": "1319500000",
+          "price": 13.195,
+          "updatedAt": 1789369260,
+          "ageSec": 3540,
+          "roundId": "18446744073709556134",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "COIN",
+          "block": 62649418,
+          "answer": "17688000000",
+          "price": 176.88,
+          "updatedAt": 1789355647,
+          "ageSec": 17153,
+          "roundId": "18446744073709554250",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "CRCL",
+          "block": 62649418,
+          "answer": "9201000000",
+          "price": 92.01,
+          "updatedAt": 1789369549,
+          "ageSec": 3251,
+          "roundId": "18446744073709555504",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "CRWV",
+          "block": 62649418,
+          "answer": "8407500000",
+          "price": 84.075,
+          "updatedAt": 1789371248,
+          "ageSec": 1552,
+          "roundId": "18446744073709555508",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "DELL",
+          "block": 62649418,
+          "answer": "55090509516",
+          "price": 550.90509516,
+          "updatedAt": 1789369823,
+          "ageSec": 2977,
+          "roundId": "18446744073709553749",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "EWY",
+          "block": 62649418,
+          "answer": "18195999999",
+          "price": 181.95999999,
+          "updatedAt": 1789363003,
+          "ageSec": 9797,
+          "roundId": "18446744073709554778",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "GME",
+          "block": 62649418,
+          "answer": "2104500000",
+          "price": 21.045,
+          "updatedAt": 1789345296,
+          "ageSec": 27504,
+          "roundId": "18446744073709552399",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "GOOGL",
+          "block": 62649418,
+          "answer": "33523500000",
+          "price": 335.235,
+          "updatedAt": 1789345663,
+          "ageSec": 27137,
+          "roundId": "18446744073709552355",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "INTC",
+          "block": 62649418,
+          "answer": "9792500000",
+          "price": 97.925,
+          "updatedAt": 1789371186,
+          "ageSec": 1614,
+          "roundId": "18446744073709555422",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "IONQ",
+          "block": 62649418,
+          "answer": "3557500000",
+          "price": 35.575,
+          "updatedAt": 1789372055,
+          "ageSec": 745,
+          "roundId": "18446744073709555439",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "META",
+          "block": 62649418,
+          "answer": "63697000000",
+          "price": 636.97,
+          "updatedAt": 1789372688,
+          "ageSec": 112,
+          "roundId": "18446744073709552749",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "MSFT",
+          "block": 62649418,
+          "answer": "49301850922",
+          "price": 493.01850922,
+          "updatedAt": 1789344047,
+          "ageSec": 28753,
+          "roundId": "18446744073709552340",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "MSTR",
+          "block": 62649418,
+          "answer": "13089000000",
+          "price": 130.89,
+          "updatedAt": 1789372554,
+          "ageSec": 246,
+          "roundId": "18446744073709555338",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "MU",
+          "block": 62649418,
+          "answer": "93382986692",
+          "price": 933.82986692,
+          "updatedAt": 1789369883,
+          "ageSec": 2917,
+          "roundId": "18446744073709556423",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "NBIS",
+          "block": 62649418,
+          "answer": "21080000000",
+          "price": 210.8,
+          "updatedAt": 1789371059,
+          "ageSec": 1741,
+          "roundId": "18446744073709557901",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "NVDA",
+          "block": 62649418,
+          "answer": "21363547322",
+          "price": 213.63547322,
+          "updatedAt": 1789369836,
+          "ageSec": 2964,
+          "roundId": "18446744073709552644",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "ORCL",
+          "block": 62649418,
+          "answer": "14670864478",
+          "price": 146.70864478,
+          "updatedAt": 1789371474,
+          "ageSec": 1326,
+          "roundId": "18446744073709553584",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "PLTR",
+          "block": 62649418,
+          "answer": "16717500000",
+          "price": 167.175,
+          "updatedAt": 1789366657,
+          "ageSec": 6143,
+          "roundId": "18446744073709553461",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "QQQ",
+          "block": 62649418,
+          "answer": "70651000000",
+          "price": 706.51,
+          "updatedAt": 1789344025,
+          "ageSec": 28775,
+          "roundId": "18446744073709551958",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "RGTI",
+          "block": 62649418,
+          "answer": "1476000000",
+          "price": 14.76,
+          "updatedAt": 1789371995,
+          "ageSec": 805,
+          "roundId": "18446744073709555261",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "RKLB",
+          "block": 62649418,
+          "answer": "6118000000",
+          "price": 61.18,
+          "updatedAt": 1789370348,
+          "ageSec": 2452,
+          "roundId": "18446744073709555696",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "SGOV",
+          "block": 62649418,
+          "answer": "10104790644",
+          "price": 101.04790644,
+          "updatedAt": 1789344042,
+          "ageSec": 28758,
+          "roundId": "18446744073709551673",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "SLV",
+          "block": 62649418,
+          "answer": "5740500000",
+          "price": 57.405,
+          "updatedAt": 1789369414,
+          "ageSec": 3386,
+          "roundId": "18446744073709552958",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "SNDK",
+          "block": 62649418,
+          "answer": "155097500000",
+          "price": 1550.975,
+          "updatedAt": 1789370734,
+          "ageSec": 2066,
+          "roundId": "18446744073709558529",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "SPCX",
+          "block": 62649418,
+          "answer": "14798500000",
+          "price": 147.985,
+          "updatedAt": 1789372458,
+          "ageSec": 342,
+          "roundId": "18446744073709554773",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "SPY",
+          "block": 62649418,
+          "answer": "76004000000",
+          "price": 760.04,
+          "updatedAt": 1789344026,
+          "ageSec": 28774,
+          "roundId": "18446744073709551743",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "TSLA",
+          "block": 62649418,
+          "answer": "36003999999",
+          "price": 360.03999999,
+          "updatedAt": 1789345600,
+          "ageSec": 27200,
+          "roundId": "18446744073709552807",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "TSM",
+          "block": 62649418,
+          "answer": "42245000000",
+          "price": 422.45,
+          "updatedAt": 1789348448,
+          "ageSec": 24352,
+          "roundId": "18446744073709552976",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "USAR",
+          "block": 62649418,
+          "answer": "1513500000",
+          "price": 15.135,
+          "updatedAt": 1789371677,
+          "ageSec": 1123,
+          "roundId": "18446744073709554468",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "USO",
+          "block": 62649418,
+          "answer": "15869000000",
+          "price": 158.69,
+          "updatedAt": 1789371721,
+          "ageSec": 1079,
+          "roundId": "18446744073709553025",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        }
+      ]
+    },
+    {
+      "label": "Mon 13:00 premarket",
+      "iso": "2026-09-14T13:00:00Z",
+      "atSec": 1789390800,
+      "block": 62826852,
+      "rows": [
+        {
+          "feed": "AAPL",
+          "block": 62826852,
+          "answer": "33357752475",
+          "price": 333.57752475,
+          "updatedAt": 1789383750,
+          "ageSec": 7050,
+          "roundId": "18446744073709552242",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "AMD",
+          "block": 62826852,
+          "answer": "48569520000",
+          "price": 485.6952,
+          "updatedAt": 1789387459,
+          "ageSec": 3341,
+          "roundId": "18446744073709554351",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "AMZN",
+          "block": 62826852,
+          "answer": "25414600000",
+          "price": 254.146,
+          "updatedAt": 1789389712,
+          "ageSec": 1088,
+          "roundId": "18446744073709552366",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "ASML",
+          "block": 62826852,
+          "answer": "160042844418",
+          "price": 1600.42844418,
+          "updatedAt": 1789386517,
+          "ageSec": 4283,
+          "roundId": "18446744073709553363",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "BABA",
+          "block": 62826852,
+          "answer": "10764780000",
+          "price": 107.6478,
+          "updatedAt": 1789386537,
+          "ageSec": 4263,
+          "roundId": "18446744073709553236",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "CLSK",
+          "block": 62826852,
+          "answer": "1283990000",
+          "price": 12.8399,
+          "updatedAt": 1789389384,
+          "ageSec": 1416,
+          "roundId": "18446744073709556148",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "COIN",
+          "block": 62826852,
+          "answer": "17870600000",
+          "price": 178.706,
+          "updatedAt": 1789390458,
+          "ageSec": 342,
+          "roundId": "18446744073709554264",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "CRCL",
+          "block": 62826852,
+          "answer": "9163405000",
+          "price": 91.63405,
+          "updatedAt": 1789390675,
+          "ageSec": 125,
+          "roundId": "18446744073709555515",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "CRWV",
+          "block": 62826852,
+          "answer": "8152480000",
+          "price": 81.5248,
+          "updatedAt": 1789390785,
+          "ageSec": 15,
+          "roundId": "18446744073709555518",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "DELL",
+          "block": 62826852,
+          "answer": "53903298886",
+          "price": 539.03298886,
+          "updatedAt": 1789389508,
+          "ageSec": 1292,
+          "roundId": "18446744073709553755",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "EWY",
+          "block": 62826852,
+          "answer": "17901655000",
+          "price": 179.01655,
+          "updatedAt": 1789389415,
+          "ageSec": 1385,
+          "roundId": "18446744073709554781",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "GME",
+          "block": 62826852,
+          "answer": "2093265000",
+          "price": 20.93265,
+          "updatedAt": 1789377885,
+          "ageSec": 12915,
+          "roundId": "18446744073709552400",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "GOOGL",
+          "block": 62826852,
+          "answer": "34312270000",
+          "price": 343.1227,
+          "updatedAt": 1789388817,
+          "ageSec": 1983,
+          "roundId": "18446744073709552363",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "INTC",
+          "block": 62826852,
+          "answer": "9575840000",
+          "price": 95.7584,
+          "updatedAt": 1789389462,
+          "ageSec": 1338,
+          "roundId": "18446744073709555432",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "IONQ",
+          "block": 62826852,
+          "answer": "3536290000",
+          "price": 35.3629,
+          "updatedAt": 1789389356,
+          "ageSec": 1444,
+          "roundId": "18446744073709555444",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "META",
+          "block": 62826852,
+          "answer": "65595500000",
+          "price": 655.955,
+          "updatedAt": 1789390634,
+          "ageSec": 166,
+          "roundId": "18446744073709552758",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "MSFT",
+          "block": 62826852,
+          "answer": "49831644611",
+          "price": 498.31644611,
+          "updatedAt": 1789384950,
+          "ageSec": 5850,
+          "roundId": "18446744073709552342",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "MSTR",
+          "block": 62826852,
+          "answer": "13055400000",
+          "price": 130.554,
+          "updatedAt": 1789390590,
+          "ageSec": 210,
+          "roundId": "18446744073709555355",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "MU",
+          "block": 62826852,
+          "answer": "91440586367",
+          "price": 914.40586367,
+          "updatedAt": 1789389994,
+          "ageSec": 806,
+          "roundId": "18446744073709556427",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "NBIS",
+          "block": 62826852,
+          "answer": "20548485000",
+          "price": 205.48485,
+          "updatedAt": 1789390264,
+          "ageSec": 536,
+          "roundId": "18446744073709557909",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "NVDA",
+          "block": 62826852,
+          "answer": "21246326528",
+          "price": 212.46326528,
+          "updatedAt": 1789383567,
+          "ageSec": 7233,
+          "roundId": "18446744073709552647",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "ORCL",
+          "block": 62826852,
+          "answer": "14325532663",
+          "price": 143.25532663,
+          "updatedAt": 1789388069,
+          "ageSec": 2731,
+          "roundId": "18446744073709553590",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "PLTR",
+          "block": 62826852,
+          "answer": "16935150000",
+          "price": 169.3515,
+          "updatedAt": 1789390754,
+          "ageSec": 46,
+          "roundId": "18446744073709553467",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "QQQ",
+          "block": 62826852,
+          "answer": "70283645000",
+          "price": 702.83645,
+          "updatedAt": 1789374574,
+          "ageSec": 16226,
+          "roundId": "18446744073709551959",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "RGTI",
+          "block": 62826852,
+          "answer": "1460505000",
+          "price": 14.60505,
+          "updatedAt": 1789389731,
+          "ageSec": 1069,
+          "roundId": "18446744073709555269",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "RKLB",
+          "block": 62826852,
+          "answer": "6085750000",
+          "price": 60.8575,
+          "updatedAt": 1789387692,
+          "ageSec": 3108,
+          "roundId": "18446744073709555697",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "SGOV",
+          "block": 62826852,
+          "answer": "10104790644",
+          "price": 101.04790644,
+          "updatedAt": 1789344042,
+          "ageSec": 46758,
+          "roundId": "18446744073709551673",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "SLV",
+          "block": 62826852,
+          "answer": "5673000000",
+          "price": 56.73,
+          "updatedAt": 1789381555,
+          "ageSec": 9245,
+          "roundId": "18446744073709552962",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "SNDK",
+          "block": 62826852,
+          "answer": "153638495000",
+          "price": 1536.38495,
+          "updatedAt": 1789386128,
+          "ageSec": 4672,
+          "roundId": "18446744073709558537",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "SPCX",
+          "block": 62826852,
+          "answer": "14717650000",
+          "price": 147.1765,
+          "updatedAt": 1789387372,
+          "ageSec": 3428,
+          "roundId": "18446744073709554776",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "SPY",
+          "block": 62826852,
+          "answer": "76004000000",
+          "price": 760.04,
+          "updatedAt": 1789344026,
+          "ageSec": 46774,
+          "roundId": "18446744073709551743",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "TSLA",
+          "block": 62826852,
+          "answer": "36013870000",
+          "price": 360.1387,
+          "updatedAt": 1789383921,
+          "ageSec": 6879,
+          "roundId": "18446744073709552809",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "TSM",
+          "block": 62826852,
+          "answer": "41780475000",
+          "price": 417.80475,
+          "updatedAt": 1789387357,
+          "ageSec": 3443,
+          "roundId": "18446744073709552980",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "USAR",
+          "block": 62826852,
+          "answer": "1523640000",
+          "price": 15.2364,
+          "updatedAt": 1789386712,
+          "ageSec": 4088,
+          "roundId": "18446744073709554473",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "USO",
+          "block": 62826852,
+          "answer": "15954170000",
+          "price": 159.5417,
+          "updatedAt": 1789390297,
+          "ageSec": 503,
+          "roundId": "18446744073709553034",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        }
+      ]
+    },
+    {
+      "label": "Mon 13:45 just after open",
+      "iso": "2026-09-14T13:45:00Z",
+      "atSec": 1789393500,
+      "block": 62853369,
+      "rows": [
+        {
+          "feed": "AAPL",
+          "block": 62853369,
+          "answer": "33367127779",
+          "price": 333.67127779,
+          "updatedAt": 1789393352,
+          "ageSec": 148,
+          "roundId": "18446744073709552244",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "AMD",
+          "block": 62853369,
+          "answer": "48509500000",
+          "price": 485.095,
+          "updatedAt": 1789393010,
+          "ageSec": 490,
+          "roundId": "18446744073709554355",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "AMZN",
+          "block": 62853369,
+          "answer": "25503000000",
+          "price": 255.03,
+          "updatedAt": 1789393343,
+          "ageSec": 157,
+          "roundId": "18446744073709552371",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "ASML",
+          "block": 62853369,
+          "answer": "158770085471",
+          "price": 1587.70085471,
+          "updatedAt": 1789392638,
+          "ageSec": 862,
+          "roundId": "18446744073709553364",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "BABA",
+          "block": 62853369,
+          "answer": "10824500000",
+          "price": 108.245,
+          "updatedAt": 1789393053,
+          "ageSec": 447,
+          "roundId": "18446744073709553239",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "CLSK",
+          "block": 62853369,
+          "answer": "1316800000",
+          "price": 13.168,
+          "updatedAt": 1789393422,
+          "ageSec": 78,
+          "roundId": "18446744073709556165",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "COIN",
+          "block": 62853369,
+          "answer": "18520000000",
+          "price": 185.2,
+          "updatedAt": 1789393309,
+          "ageSec": 191,
+          "roundId": "18446744073709554278",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "CRCL",
+          "block": 62853369,
+          "answer": "9410740000",
+          "price": 94.1074,
+          "updatedAt": 1789393166,
+          "ageSec": 334,
+          "roundId": "18446744073709555529",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "CRWV",
+          "block": 62853369,
+          "answer": "8318500000",
+          "price": 83.185,
+          "updatedAt": 1789393442,
+          "ageSec": 58,
+          "roundId": "18446744073709555526",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "DELL",
+          "block": 62853369,
+          "answer": "53212889903",
+          "price": 532.12889903,
+          "updatedAt": 1789392869,
+          "ageSec": 631,
+          "roundId": "18446744073709553760",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "EWY",
+          "block": 62853369,
+          "answer": "17813235000",
+          "price": 178.13235,
+          "updatedAt": 1789393123,
+          "ageSec": 377,
+          "roundId": "18446744073709554784",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "GME",
+          "block": 62853369,
+          "answer": "2097999999",
+          "price": 20.97999999,
+          "updatedAt": 1789393130,
+          "ageSec": 370,
+          "roundId": "18446744073709552403",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "GOOGL",
+          "block": 62853369,
+          "answer": "34496600000",
+          "price": 344.966,
+          "updatedAt": 1789393498,
+          "ageSec": 2,
+          "roundId": "18446744073709552366",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "INTC",
+          "block": 62853369,
+          "answer": "9571985000",
+          "price": 95.71985,
+          "updatedAt": 1789393201,
+          "ageSec": 299,
+          "roundId": "18446744073709555434",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "IONQ",
+          "block": 62853369,
+          "answer": "3797015000",
+          "price": 37.97015,
+          "updatedAt": 1789393498,
+          "ageSec": 2,
+          "roundId": "18446744073709555453",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "META",
+          "block": 62853369,
+          "answer": "66098125000",
+          "price": 660.98125,
+          "updatedAt": 1789393244,
+          "ageSec": 256,
+          "roundId": "18446744073709552766",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "MSFT",
+          "block": 62853369,
+          "answer": "49581966549",
+          "price": 495.81966549,
+          "updatedAt": 1789392859,
+          "ageSec": 641,
+          "roundId": "18446744073709552343",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "MSTR",
+          "block": 62853369,
+          "answer": "13230940000",
+          "price": 132.3094,
+          "updatedAt": 1789393410,
+          "ageSec": 90,
+          "roundId": "18446744073709555368",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "MU",
+          "block": 62853369,
+          "answer": "90588777635",
+          "price": 905.88777635,
+          "updatedAt": 1789392904,
+          "ageSec": 596,
+          "roundId": "18446744073709556430",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "NBIS",
+          "block": 62853369,
+          "answer": "21251500000",
+          "price": 212.515,
+          "updatedAt": 1789393475,
+          "ageSec": 25,
+          "roundId": "18446744073709557917",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "NVDA",
+          "block": 62853369,
+          "answer": "20955396185",
+          "price": 209.55396185,
+          "updatedAt": 1789392802,
+          "ageSec": 698,
+          "roundId": "18446744073709552649",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "ORCL",
+          "block": 62853369,
+          "answer": "14262583796",
+          "price": 142.62583796,
+          "updatedAt": 1789393321,
+          "ageSec": 179,
+          "roundId": "18446744073709553595",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "PLTR",
+          "block": 62853369,
+          "answer": "16687500000",
+          "price": 166.875,
+          "updatedAt": 1789393185,
+          "ageSec": 315,
+          "roundId": "18446744073709553472",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "QQQ",
+          "block": 62853369,
+          "answer": "70283645000",
+          "price": 702.83645,
+          "updatedAt": 1789374574,
+          "ageSec": 18926,
+          "roundId": "18446744073709551959",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "RGTI",
+          "block": 62853369,
+          "answer": "1523505000",
+          "price": 15.23505,
+          "updatedAt": 1789393246,
+          "ageSec": 254,
+          "roundId": "18446744073709555277",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "RKLB",
+          "block": 62853369,
+          "answer": "6244500000",
+          "price": 62.445,
+          "updatedAt": 1789393051,
+          "ageSec": 449,
+          "roundId": "18446744073709555701",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "SGOV",
+          "block": 62853369,
+          "answer": "10104790644",
+          "price": 101.04790644,
+          "updatedAt": 1789344042,
+          "ageSec": 49458,
+          "roundId": "18446744073709551673",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "SLV",
+          "block": 62853369,
+          "answer": "5673000000",
+          "price": 56.73,
+          "updatedAt": 1789381555,
+          "ageSec": 11945,
+          "roundId": "18446744073709552962",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "SNDK",
+          "block": 62853369,
+          "answer": "151115500000",
+          "price": 1511.155,
+          "updatedAt": 1789393018,
+          "ageSec": 482,
+          "roundId": "18446744073709558542",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "SPCX",
+          "block": 62853369,
+          "answer": "14917055000",
+          "price": 149.17055,
+          "updatedAt": 1789393241,
+          "ageSec": 259,
+          "roundId": "18446744073709554780",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "SPY",
+          "block": 62853369,
+          "answer": "76004000000",
+          "price": 760.04,
+          "updatedAt": 1789344026,
+          "ageSec": 49474,
+          "roundId": "18446744073709551743",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "TSLA",
+          "block": 62853369,
+          "answer": "36205010000",
+          "price": 362.0501,
+          "updatedAt": 1789393044,
+          "ageSec": 456,
+          "roundId": "18446744073709552816",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "TSM",
+          "block": 62853369,
+          "answer": "41795000000",
+          "price": 417.95,
+          "updatedAt": 1789392909,
+          "ageSec": 591,
+          "roundId": "18446744073709552982",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "USAR",
+          "block": 62853369,
+          "answer": "1556400000",
+          "price": 15.564,
+          "updatedAt": 1789393468,
+          "ageSec": 32,
+          "roundId": "18446744073709554477",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "USO",
+          "block": 62853369,
+          "answer": "15954170000",
+          "price": 159.5417,
+          "updatedAt": 1789390297,
+          "ageSec": 3203,
+          "roundId": "18446744073709553034",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        }
+      ]
+    },
+    {
+      "label": "Mon 20:30 after close",
+      "iso": "2026-09-14T20:30:00Z",
+      "atSec": 1789417800,
+      "block": 63091880,
+      "rows": [
+        {
+          "feed": "AAPL",
+          "block": 63091880,
+          "answer": "33343364334",
+          "price": 333.43364334,
+          "updatedAt": 1789415730,
+          "ageSec": 2070,
+          "roundId": "18446744073709552246",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "AMD",
+          "block": 63091880,
+          "answer": "49473000000",
+          "price": 494.73,
+          "updatedAt": 1789414574,
+          "ageSec": 3226,
+          "roundId": "18446744073709554372",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "AMZN",
+          "block": 63091880,
+          "answer": "25373145000",
+          "price": 253.73145,
+          "updatedAt": 1789412416,
+          "ageSec": 5384,
+          "roundId": "18446744073709552376",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "ASML",
+          "block": 63091880,
+          "answer": "158086516217",
+          "price": 1580.86516217,
+          "updatedAt": 1789414472,
+          "ageSec": 3328,
+          "roundId": "18446744073709553373",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "BABA",
+          "block": 63091880,
+          "answer": "10943300000",
+          "price": 109.433,
+          "updatedAt": 1789413010,
+          "ageSec": 4790,
+          "roundId": "18446744073709553243",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "CLSK",
+          "block": 63091880,
+          "answer": "1330410000",
+          "price": 13.3041,
+          "updatedAt": 1789417480,
+          "ageSec": 320,
+          "roundId": "18446744073709556220",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "COIN",
+          "block": 63091880,
+          "answer": "19212500000",
+          "price": 192.125,
+          "updatedAt": 1789417054,
+          "ageSec": 746,
+          "roundId": "18446744073709554313",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "CRCL",
+          "block": 63091880,
+          "answer": "9754660000",
+          "price": 97.5466,
+          "updatedAt": 1789415539,
+          "ageSec": 2261,
+          "roundId": "18446744073709555568",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "CRWV",
+          "block": 63091880,
+          "answer": "8289618761",
+          "price": 82.89618761,
+          "updatedAt": 1789416061,
+          "ageSec": 1739,
+          "roundId": "18446744073709555555",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "DELL",
+          "block": 63091880,
+          "answer": "53944041481",
+          "price": 539.44041481,
+          "updatedAt": 1789417434,
+          "ageSec": 366,
+          "roundId": "18446744073709553774",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "EWY",
+          "block": 63091880,
+          "answer": "17651000000",
+          "price": 176.51,
+          "updatedAt": 1789415745,
+          "ageSec": 2055,
+          "roundId": "18446744073709554798",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "GME",
+          "block": 63091880,
+          "answer": "2170500000",
+          "price": 21.705,
+          "updatedAt": 1789415342,
+          "ageSec": 2458,
+          "roundId": "18446744073709552415",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "GOOGL",
+          "block": 63091880,
+          "answer": "34855385000",
+          "price": 348.55385,
+          "updatedAt": 1789414221,
+          "ageSec": 3579,
+          "roundId": "18446744073709552374",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "INTC",
+          "block": 63091880,
+          "answer": "9748500000",
+          "price": 97.485,
+          "updatedAt": 1789414795,
+          "ageSec": 3005,
+          "roundId": "18446744073709555451",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "IONQ",
+          "block": 63091880,
+          "answer": "3744505000",
+          "price": 37.44505,
+          "updatedAt": 1789416142,
+          "ageSec": 1658,
+          "roundId": "18446744073709555484",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "META",
+          "block": 63091880,
+          "answer": "66768340000",
+          "price": 667.6834,
+          "updatedAt": 1789409183,
+          "ageSec": 8617,
+          "roundId": "18446744073709552772",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "MSFT",
+          "block": 63091880,
+          "answer": "50595735014",
+          "price": 505.95735014,
+          "updatedAt": 1789412606,
+          "ageSec": 5194,
+          "roundId": "18446744073709552350",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "MSTR",
+          "block": 63091880,
+          "answer": "13729800000",
+          "price": 137.298,
+          "updatedAt": 1789417662,
+          "ageSec": 138,
+          "roundId": "18446744073709555395",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "MU",
+          "block": 63091880,
+          "answer": "92443916433",
+          "price": 924.43916433,
+          "updatedAt": 1789415698,
+          "ageSec": 2102,
+          "roundId": "18446744073709556442",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "NBIS",
+          "block": 63091880,
+          "answer": "21272095000",
+          "price": 212.72095,
+          "updatedAt": 1789416809,
+          "ageSec": 991,
+          "roundId": "18446744073709557949",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "NVDA",
+          "block": 63091880,
+          "answer": "21086557778",
+          "price": 210.86557778,
+          "updatedAt": 1789416154,
+          "ageSec": 1646,
+          "roundId": "18446744073709552652",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "ORCL",
+          "block": 63091880,
+          "answer": "14456391342",
+          "price": 144.56391342,
+          "updatedAt": 1789415874,
+          "ageSec": 1926,
+          "roundId": "18446744073709553608",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "PLTR",
+          "block": 63091880,
+          "answer": "17348615000",
+          "price": 173.48615,
+          "updatedAt": 1789414058,
+          "ageSec": 3742,
+          "roundId": "18446744073709553485",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "QQQ",
+          "block": 63091880,
+          "answer": "71024500000",
+          "price": 710.245,
+          "updatedAt": 1789400532,
+          "ageSec": 17268,
+          "roundId": "18446744073709551961",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "RGTI",
+          "block": 63091880,
+          "answer": "1523500000",
+          "price": 15.235,
+          "updatedAt": 1789413802,
+          "ageSec": 3998,
+          "roundId": "18446744073709555298",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "RKLB",
+          "block": 63091880,
+          "answer": "6272480000",
+          "price": 62.7248,
+          "updatedAt": 1789417255,
+          "ageSec": 545,
+          "roundId": "18446744073709555719",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "SGOV",
+          "block": 63091880,
+          "answer": "10104790644",
+          "price": 101.04790644,
+          "updatedAt": 1789344042,
+          "ageSec": 73758,
+          "roundId": "18446744073709551673",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "SLV",
+          "block": 63091880,
+          "answer": "5684375000",
+          "price": 56.84375,
+          "updatedAt": 1789416142,
+          "ageSec": 1658,
+          "roundId": "18446744073709552970",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "SNDK",
+          "block": 63091880,
+          "answer": "155961180000",
+          "price": 1559.6118,
+          "updatedAt": 1789417449,
+          "ageSec": 351,
+          "roundId": "18446744073709558571",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "SPCX",
+          "block": 63091880,
+          "answer": "14830000000",
+          "price": 148.3,
+          "updatedAt": 1789415597,
+          "ageSec": 2203,
+          "roundId": "18446744073709554797",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "SPY",
+          "block": 63091880,
+          "answer": "76004000000",
+          "price": 760.04,
+          "updatedAt": 1789344026,
+          "ageSec": 73774,
+          "roundId": "18446744073709551743",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "TSLA",
+          "block": 63091880,
+          "answer": "35861370000",
+          "price": 358.6137,
+          "updatedAt": 1789416155,
+          "ageSec": 1645,
+          "roundId": "18446744073709552824",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "TSM",
+          "block": 63091880,
+          "answer": "41821975000",
+          "price": 418.21975,
+          "updatedAt": 1789416286,
+          "ageSec": 1514,
+          "roundId": "18446744073709552988",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "USAR",
+          "block": 63091880,
+          "answer": "1569500000",
+          "price": 15.695,
+          "updatedAt": 1789415842,
+          "ageSec": 1958,
+          "roundId": "18446744073709554497",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "USO",
+          "block": 63091880,
+          "answer": "15611000000",
+          "price": 156.11,
+          "updatedAt": 1789414664,
+          "ageSec": 3136,
+          "roundId": "18446744073709553044",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        }
+      ]
+    },
+    {
+      "label": "Tue 03:00 weekday overnight",
+      "iso": "2026-09-15T03:00:00Z",
+      "atSec": 1789441200,
+      "block": 63322272,
+      "rows": [
+        {
+          "feed": "AAPL",
+          "block": 63322272,
+          "answer": "33343364334",
+          "price": 333.43364334,
+          "updatedAt": 1789415730,
+          "ageSec": 25470,
+          "roundId": "18446744073709552246",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "AMD",
+          "block": 63322272,
+          "answer": "49473000000",
+          "price": 494.73,
+          "updatedAt": 1789414574,
+          "ageSec": 26626,
+          "roundId": "18446744073709554372",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "AMZN",
+          "block": 63322272,
+          "answer": "25373145000",
+          "price": 253.73145,
+          "updatedAt": 1789412416,
+          "ageSec": 28784,
+          "roundId": "18446744073709552376",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "ASML",
+          "block": 63322272,
+          "answer": "158930951769",
+          "price": 1589.30951769,
+          "updatedAt": 1789425126,
+          "ageSec": 16074,
+          "roundId": "18446744073709553374",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "BABA",
+          "block": 63322272,
+          "answer": "11071000000",
+          "price": 110.71,
+          "updatedAt": 1789439015,
+          "ageSec": 2185,
+          "roundId": "18446744073709553250",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "CLSK",
+          "block": 63322272,
+          "answer": "1325000000",
+          "price": 13.25,
+          "updatedAt": 1789430624,
+          "ageSec": 10576,
+          "roundId": "18446744073709556222",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "COIN",
+          "block": 63322272,
+          "answer": "18762500000",
+          "price": 187.625,
+          "updatedAt": 1789435569,
+          "ageSec": 5631,
+          "roundId": "18446744073709554319",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "CRCL",
+          "block": 63322272,
+          "answer": "9344500000",
+          "price": 93.445,
+          "updatedAt": 1789440897,
+          "ageSec": 303,
+          "roundId": "18446744073709555576",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "CRWV",
+          "block": 63322272,
+          "answer": "8376000000",
+          "price": 83.76,
+          "updatedAt": 1789432601,
+          "ageSec": 8599,
+          "roundId": "18446744073709555557",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "DELL",
+          "block": 63322272,
+          "answer": "53901433767",
+          "price": 539.01433767,
+          "updatedAt": 1789435770,
+          "ageSec": 5430,
+          "roundId": "18446744073709553786",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "EWY",
+          "block": 63322272,
+          "answer": "18024000000",
+          "price": 180.24,
+          "updatedAt": 1789430990,
+          "ageSec": 10210,
+          "roundId": "18446744073709554802",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "GME",
+          "block": 63322272,
+          "answer": "2158080000",
+          "price": 21.5808,
+          "updatedAt": 1789420503,
+          "ageSec": 20697,
+          "roundId": "18446744073709552416",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "GOOGL",
+          "block": 63322272,
+          "answer": "34667999999",
+          "price": 346.67999999,
+          "updatedAt": 1789430816,
+          "ageSec": 10384,
+          "roundId": "18446744073709552375",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "INTC",
+          "block": 63322272,
+          "answer": "9798500000",
+          "price": 97.985,
+          "updatedAt": 1789432530,
+          "ageSec": 8670,
+          "roundId": "18446744073709555452",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "IONQ",
+          "block": 63322272,
+          "answer": "3763945000",
+          "price": 37.63945,
+          "updatedAt": 1789418920,
+          "ageSec": 22280,
+          "roundId": "18446744073709555485",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "META",
+          "block": 63322272,
+          "answer": "66431835000",
+          "price": 664.31835,
+          "updatedAt": 1789418173,
+          "ageSec": 23027,
+          "roundId": "18446744073709552773",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "MSFT",
+          "block": 63322272,
+          "answer": "50338778947",
+          "price": 503.38778947,
+          "updatedAt": 1789439914,
+          "ageSec": 1286,
+          "roundId": "18446744073709552351",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "MSTR",
+          "block": 63322272,
+          "answer": "13401999999",
+          "price": 134.01999999,
+          "updatedAt": 1789435367,
+          "ageSec": 5833,
+          "roundId": "18446744073709555401",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "MU",
+          "block": 63322272,
+          "answer": "93413488975",
+          "price": 934.13488975,
+          "updatedAt": 1789436127,
+          "ageSec": 5073,
+          "roundId": "18446744073709556446",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "NBIS",
+          "block": 63322272,
+          "answer": "21394000000",
+          "price": 213.94,
+          "updatedAt": 1789436286,
+          "ageSec": 4914,
+          "roundId": "18446744073709557954",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "NVDA",
+          "block": 63322272,
+          "answer": "21192775049",
+          "price": 211.92775049,
+          "updatedAt": 1789418195,
+          "ageSec": 23005,
+          "roundId": "18446744073709552653",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "ORCL",
+          "block": 63322272,
+          "answer": "14456391342",
+          "price": 144.56391342,
+          "updatedAt": 1789415874,
+          "ageSec": 25326,
+          "roundId": "18446744073709553608",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "PLTR",
+          "block": 63322272,
+          "answer": "17261370000",
+          "price": 172.6137,
+          "updatedAt": 1789425071,
+          "ageSec": 16129,
+          "roundId": "18446744073709553486",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "QQQ",
+          "block": 63322272,
+          "answer": "71024500000",
+          "price": 710.245,
+          "updatedAt": 1789400532,
+          "ageSec": 40668,
+          "roundId": "18446744073709551961",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "RGTI",
+          "block": 63322272,
+          "answer": "1531500000",
+          "price": 15.315,
+          "updatedAt": 1789432995,
+          "ageSec": 8205,
+          "roundId": "18446744073709555299",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "RKLB",
+          "block": 63322272,
+          "answer": "6272480000",
+          "price": 62.7248,
+          "updatedAt": 1789417255,
+          "ageSec": 23945,
+          "roundId": "18446744073709555719",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "SGOV",
+          "block": 63322272,
+          "answer": "10103785542",
+          "price": 101.03785542,
+          "updatedAt": 1789430450,
+          "ageSec": 10750,
+          "roundId": "18446744073709551674",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "SLV",
+          "block": 63322272,
+          "answer": "5715500000",
+          "price": 57.155,
+          "updatedAt": 1789434268,
+          "ageSec": 6932,
+          "roundId": "18446744073709552973",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "SNDK",
+          "block": 63322272,
+          "answer": "157583500000",
+          "price": 1575.835,
+          "updatedAt": 1789440620,
+          "ageSec": 580,
+          "roundId": "18446744073709558575",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "SPCX",
+          "block": 63322272,
+          "answer": "14830000000",
+          "price": 148.3,
+          "updatedAt": 1789415597,
+          "ageSec": 25603,
+          "roundId": "18446744073709554797",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "SPY",
+          "block": 63322272,
+          "answer": "76136550517",
+          "price": 761.36550517,
+          "updatedAt": 1789430449,
+          "ageSec": 10751,
+          "roundId": "18446744073709551744",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "TSLA",
+          "block": 63322272,
+          "answer": "36043000000",
+          "price": 360.43,
+          "updatedAt": 1789432639,
+          "ageSec": 8561,
+          "roundId": "18446744073709552825",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "TSM",
+          "block": 63322272,
+          "answer": "42033000000",
+          "price": 420.33,
+          "updatedAt": 1789430710,
+          "ageSec": 10490,
+          "roundId": "18446744073709552989",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "USAR",
+          "block": 63322272,
+          "answer": "1569500000",
+          "price": 15.695,
+          "updatedAt": 1789415842,
+          "ageSec": 25358,
+          "roundId": "18446744073709554497",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        },
+        {
+          "feed": "USO",
+          "block": 63322272,
+          "answer": "15796000000",
+          "price": 157.96,
+          "updatedAt": 1789436474,
+          "ageSec": 4726,
+          "roundId": "18446744073709553048",
+          "paused": "n/a",
+          "uiMultiplier": "n/a"
+        }
+      ]
+    }
+  ],
+  "cadence": {
+    "TSLA": [
+      {
+        "updatedAt": 1789126539,
+        "iso": "2026-09-11T11:35:39.000Z",
+        "roundId": "18446744073709552793",
+        "price": 361.8019,
+        "firstSeenAt": "2026-09-11T12:00:00.000Z"
+      },
+      {
+        "updatedAt": 1789131191,
+        "iso": "2026-09-11T12:53:11.000Z",
+        "roundId": "18446744073709552796",
+        "price": 363.80215,
+        "firstSeenAt": "2026-09-11T13:00:00.000Z"
+      },
+      {
+        "updatedAt": 1789135182,
+        "iso": "2026-09-11T13:59:42.000Z",
+        "roundId": "18446744073709552800",
+        "price": 367.75,
+        "firstSeenAt": "2026-09-11T14:00:00.000Z"
+      },
+      {
+        "updatedAt": 1789136982,
+        "iso": "2026-09-11T14:29:42.000Z",
+        "roundId": "18446744073709552803",
+        "price": 365.8846,
+        "firstSeenAt": "2026-09-11T14:30:00.000Z"
+      },
+      {
+        "updatedAt": 1789138212,
+        "iso": "2026-09-11T14:50:12.000Z",
+        "roundId": "18446744073709552805",
+        "price": 365.91499999,
+        "firstSeenAt": "2026-09-11T15:00:00.000Z"
+      },
+      {
+        "updatedAt": 1789344039,
+        "iso": "2026-09-14T00:00:39.000Z",
+        "roundId": "18446744073709552806",
+        "price": 361.935,
+        "firstSeenAt": "2026-09-14T00:00:00.000Z"
+      },
+      {
+        "updatedAt": 1789345600,
+        "iso": "2026-09-14T00:26:40.000Z",
+        "roundId": "18446744073709552807",
+        "price": 360.03999999,
+        "firstSeenAt": "2026-09-14T00:30:00.000Z"
+      },
+      {
+        "updatedAt": 1789374018,
+        "iso": "2026-09-14T08:20:18.000Z",
+        "roundId": "18446744073709552808",
+        "price": 358.21775,
+        "firstSeenAt": "2026-09-14T08:30:00.000Z"
+      },
+      {
+        "updatedAt": 1789383921,
+        "iso": "2026-09-14T11:05:21.000Z",
+        "roundId": "18446744073709552809",
+        "price": 360.1387,
+        "firstSeenAt": "2026-09-14T11:30:00.000Z"
+      },
+      {
+        "updatedAt": 1789391213,
+        "iso": "2026-09-14T13:06:53.000Z",
+        "roundId": "18446744073709552810",
+        "price": 358.2113,
+        "firstSeenAt": "2026-09-14T13:30:00.000Z"
+      },
+      {
+        "updatedAt": 1789393764,
+        "iso": "2026-09-14T13:49:24.000Z",
+        "roundId": "18446744073709552817",
+        "price": 360.165,
+        "firstSeenAt": "2026-09-14T14:00:00.000Z"
+      },
+      {
+        "updatedAt": 1789395745,
+        "iso": "2026-09-14T14:22:25.000Z",
+        "roundId": "18446744073709552818",
+        "price": 358.32715,
+        "firstSeenAt": "2026-09-14T14:30:00.000Z"
+      },
+      {
+        "updatedAt": 1789399466,
+        "iso": "2026-09-14T15:24:26.000Z",
+        "roundId": "18446744073709552819",
+        "price": 360.305,
+        "firstSeenAt": "2026-09-14T15:30:00.000Z"
+      },
+      {
+        "updatedAt": 1789400143,
+        "iso": "2026-09-14T15:35:43.000Z",
+        "roundId": "18446744073709552820",
+        "price": 362.2697,
+        "firstSeenAt": "2026-09-14T16:00:00.000Z"
+      },
+      {
+        "updatedAt": 1789401824,
+        "iso": "2026-09-14T16:03:44.000Z",
+        "roundId": "18446744073709552821",
+        "price": 364.17655,
+        "firstSeenAt": "2026-09-14T16:30:00.000Z"
+      },
+      {
+        "updatedAt": 1789404181,
+        "iso": "2026-09-14T16:43:01.000Z",
+        "roundId": "18446744073709552822",
+        "price": 362.30005,
+        "firstSeenAt": "2026-09-14T17:00:00.000Z"
+      },
+      {
+        "updatedAt": 1789412944,
+        "iso": "2026-09-14T19:09:04.000Z",
+        "roundId": "18446744073709552823",
+        "price": 360.4168,
+        "firstSeenAt": "2026-09-14T19:30:00.000Z"
+      },
+      {
+        "updatedAt": 1789416155,
+        "iso": "2026-09-14T20:02:35.000Z",
+        "roundId": "18446744073709552824",
+        "price": 358.6137,
+        "firstSeenAt": "2026-09-14T20:30:00.000Z"
+      },
+      {
+        "updatedAt": 1789432639,
+        "iso": "2026-09-15T00:37:19.000Z",
+        "roundId": "18446744073709552825",
+        "price": 360.43,
+        "firstSeenAt": "2026-09-15T01:00:00.000Z"
+      },
+      {
+        "updatedAt": 1789449174,
+        "iso": "2026-09-15T05:12:54.000Z",
+        "roundId": "18446744073709552826",
+        "price": 358.58,
+        "firstSeenAt": "2026-09-15T05:30:00.000Z"
+      },
+      {
+        "updatedAt": 1789459905,
+        "iso": "2026-09-15T08:11:45.000Z",
+        "roundId": "18446744073709552827",
+        "price": 356.7803,
+        "firstSeenAt": "2026-09-15T08:30:00.000Z"
+      },
+      {
+        "updatedAt": 1789469591,
+        "iso": "2026-09-15T10:53:11.000Z",
+        "roundId": "18446744073709552828",
+        "price": 358.5731,
+        "firstSeenAt": "2026-09-15T11:00:00.000Z"
+      }
+    ],
+    "NVDA": [
+      {
+        "updatedAt": 1789107293,
+        "iso": "2026-09-11T06:14:53.000Z",
+        "roundId": "18446744073709552632",
+        "price": 219.71518231,
+        "firstSeenAt": "2026-09-11T12:00:00.000Z"
+      },
+      {
+        "updatedAt": 1789131155,
+        "iso": "2026-09-11T12:52:35.000Z",
+        "roundId": "18446744073709552633",
+        "price": 220.97190572,
+        "firstSeenAt": "2026-09-11T13:00:00.000Z"
+      },
+      {
+        "updatedAt": 1789134846,
+        "iso": "2026-09-11T13:54:06.000Z",
+        "roundId": "18446744073709552635",
+        "price": 220.90110088,
+        "firstSeenAt": "2026-09-11T14:00:00.000Z"
+      },
+      {
+        "updatedAt": 1789136887,
+        "iso": "2026-09-11T14:28:07.000Z",
+        "roundId": "18446744073709552636",
+        "price": 222.03928247,
+        "firstSeenAt": "2026-09-11T14:30:00.000Z"
+      },
+      {
+        "updatedAt": 1789138537,
+        "iso": "2026-09-11T14:55:37.000Z",
+        "roundId": "18446744073709552638",
+        "price": 219.50036593,
+        "firstSeenAt": "2026-09-11T15:00:00.000Z"
+      },
+      {
+        "updatedAt": 1789139888,
+        "iso": "2026-09-11T15:18:08.000Z",
+        "roundId": "18446744073709552639",
+        "price": 220.63089157,
+        "firstSeenAt": "2026-09-11T15:30:00.000Z"
+      },
+      {
+        "updatedAt": 1789143549,
+        "iso": "2026-09-11T16:19:09.000Z",
+        "roundId": "18446744073709552640",
+        "price": 219.48000015,
+        "firstSeenAt": "2026-09-11T16:30:00.000Z"
+      },
+      {
+        "updatedAt": 1789157023,
+        "iso": "2026-09-11T20:03:43.000Z",
+        "roundId": "18446744073709552641",
+        "price": 218.29793457,
+        "firstSeenAt": "2026-09-11T20:30:00.000Z"
+      },
+      {
+        "updatedAt": 1789344029,
+        "iso": "2026-09-14T00:00:29.000Z",
+        "roundId": "18446744073709552642",
+        "price": 215.86219795,
+        "firstSeenAt": "2026-09-14T00:00:00.000Z"
+      },
+      {
+        "updatedAt": 1789345379,
+        "iso": "2026-09-14T00:22:59.000Z",
+        "roundId": "18446744073709552643",
+        "price": 214.72631815,
+        "firstSeenAt": "2026-09-14T00:30:00.000Z"
+      },
+      {
+        "updatedAt": 1789369836,
+        "iso": "2026-09-14T07:10:36.000Z",
+        "roundId": "18446744073709552644",
+        "price": 213.63547322,
+        "firstSeenAt": "2026-09-14T07:30:00.000Z"
+      },
+      {
+        "updatedAt": 1789375748,
+        "iso": "2026-09-14T08:49:08.000Z",
+        "roundId": "18446744073709552645",
+        "price": 212.53542117,
+        "firstSeenAt": "2026-09-14T09:00:00.000Z"
+      },
+      {
+        "updatedAt": 1789377788,
+        "iso": "2026-09-14T09:23:08.000Z",
+        "roundId": "18446744073709552646",
+        "price": 211.39914105,
+        "firstSeenAt": "2026-09-14T09:30:00.000Z"
+      },
+      {
+        "updatedAt": 1789383567,
+        "iso": "2026-09-14T10:59:27.000Z",
+        "roundId": "18446744073709552647",
+        "price": 212.46326528,
+        "firstSeenAt": "2026-09-14T11:00:00.000Z"
+      },
+      {
+        "updatedAt": 1789393672,
+        "iso": "2026-09-14T13:47:52.000Z",
+        "roundId": "18446744073709552650",
+        "price": 210.86893037,
+        "firstSeenAt": "2026-09-14T14:00:00.000Z"
+      },
+      {
+        "updatedAt": 1789399974,
+        "iso": "2026-09-14T15:32:54.000Z",
+        "roundId": "18446744073709552651",
+        "price": 211.93915933,
+        "firstSeenAt": "2026-09-14T16:00:00.000Z"
+      },
+      {
+        "updatedAt": 1789416154,
+        "iso": "2026-09-14T20:02:34.000Z",
+        "roundId": "18446744073709552652",
+        "price": 210.86557778,
+        "firstSeenAt": "2026-09-14T20:30:00.000Z"
+      },
+      {
+        "updatedAt": 1789418195,
+        "iso": "2026-09-14T20:36:35.000Z",
+        "roundId": "18446744073709552653",
+        "price": 211.92775049,
+        "firstSeenAt": "2026-09-14T21:00:00.000Z"
+      }
+    ],
+    "INTC": [
+      {
+        "updatedAt": 1789124445,
+        "iso": "2026-09-11T11:00:45.000Z",
+        "roundId": "18446744073709555377",
+        "price": 101.2408,
+        "firstSeenAt": "2026-09-11T12:00:00.000Z"
+      },
+      {
+        "updatedAt": 1789131365,
+        "iso": "2026-09-11T12:56:05.000Z",
+        "roundId": "18446744073709555384",
+        "price": 103.0156,
+        "firstSeenAt": "2026-09-11T13:00:00.000Z"
+      },
+      {
+        "updatedAt": 1789133285,
+        "iso": "2026-09-11T13:28:05.000Z",
+        "roundId": "18446744073709555385",
+        "price": 102.48275,
+        "firstSeenAt": "2026-09-11T13:30:00.000Z"
+      },
+      {
+        "updatedAt": 1789134396,
+        "iso": "2026-09-11T13:46:36.000Z",
+        "roundId": "18446744073709555396",
+        "price": 104.32,
+        "firstSeenAt": "2026-09-11T14:00:00.000Z"
+      },
+      {
+        "updatedAt": 1789136376,
+        "iso": "2026-09-11T14:19:36.000Z",
+        "roundId": "18446744073709555399",
+        "price": 103.635,
+        "firstSeenAt": "2026-09-11T14:30:00.000Z"
+      },
+      {
+        "updatedAt": 1789138867,
+        "iso": "2026-09-11T15:01:07.000Z",
+        "roundId": "18446744073709555402",
+        "price": 103.15,
+        "firstSeenAt": "2026-09-11T15:00:00.000Z"
+      },
+      {
+        "updatedAt": 1789140337,
+        "iso": "2026-09-11T15:25:37.000Z",
+        "roundId": "18446744073709555403",
+        "price": 103.68,
+        "firstSeenAt": "2026-09-11T15:30:00.000Z"
+      },
+      {
+        "updatedAt": 1789144209,
+        "iso": "2026-09-11T16:30:09.000Z",
+        "roundId": "18446744073709555406",
+        "price": 102.47,
+        "firstSeenAt": "2026-09-11T16:30:00.000Z"
+      },
+      {
+        "updatedAt": 1789145559,
+        "iso": "2026-09-11T16:52:39.000Z",
+        "roundId": "18446744073709555412",
+        "price": 102.487,
+        "firstSeenAt": "2026-09-11T17:00:00.000Z"
+      },
+      {
+        "updatedAt": 1789147089,
+        "iso": "2026-09-11T17:18:09.000Z",
+        "roundId": "18446744073709555413",
+        "price": 103.0125,
+        "firstSeenAt": "2026-09-11T17:30:00.000Z"
+      },
+      {
+        "updatedAt": 1789149010,
+        "iso": "2026-09-11T17:50:10.000Z",
+        "roundId": "18446744073709555414",
+        "price": 103.552,
+        "firstSeenAt": "2026-09-11T18:00:00.000Z"
+      },
+      {
+        "updatedAt": 1789153361,
+        "iso": "2026-09-11T19:02:41.000Z",
+        "roundId": "18446744073709555415",
+        "price": 103.03,
+        "firstSeenAt": "2026-09-11T19:30:00.000Z"
+      },
+      {
+        "updatedAt": 1789344028,
+        "iso": "2026-09-14T00:00:28.000Z",
+        "roundId": "18446744073709555416",
+        "price": 98.96,
+        "firstSeenAt": "2026-09-14T00:00:00.000Z"
+      },
+      {
+        "updatedAt": 1789345799,
+        "iso": "2026-09-14T00:29:59.000Z",
+        "roundId": "18446744073709555418",
+        "price": 98.96,
+        "firstSeenAt": "2026-09-14T00:30:00.000Z"
+      },
+      {
+        "updatedAt": 1789348350,
+        "iso": "2026-09-14T01:12:30.000Z",
+        "roundId": "18446744073709555419",
+        "price": 98.465,
+        "firstSeenAt": "2026-09-14T01:30:00.000Z"
+      },
+      {
+        "updatedAt": 1789351020,
+        "iso": "2026-09-14T01:57:00.000Z",
+        "roundId": "18446744073709555420",
+        "price": 98.96,
+        "firstSeenAt": "2026-09-14T02:00:00.000Z"
+      },
+      {
+        "updatedAt": 1789363024,
+        "iso": "2026-09-14T05:17:04.000Z",
+        "roundId": "18446744073709555421",
+        "price": 98.44999999,
+        "firstSeenAt": "2026-09-14T05:30:00.000Z"
+      },
+      {
+        "updatedAt": 1789371186,
+        "iso": "2026-09-14T07:33:06.000Z",
+        "roundId": "18446744073709555422",
+        "price": 97.925,
+        "firstSeenAt": "2026-09-14T08:00:00.000Z"
+      },
+      {
+        "updatedAt": 1789372987,
+        "iso": "2026-09-14T08:03:07.000Z",
+        "roundId": "18446744073709555423",
+        "price": 97.215,
+        "firstSeenAt": "2026-09-14T08:30:00.000Z"
+      },
+      {
+        "updatedAt": 1789375718,
+        "iso": "2026-09-14T08:48:38.000Z",
+        "roundId": "18446744073709555424",
+        "price": 96.68125,
+        "firstSeenAt": "2026-09-14T09:00:00.000Z"
+      },
+      {
+        "updatedAt": 1789377969,
+        "iso": "2026-09-14T09:26:09.000Z",
+        "roundId": "18446744073709555425",
+        "price": 96.18215,
+        "firstSeenAt": "2026-09-14T09:30:00.000Z"
+      },
+      {
+        "updatedAt": 1789378959,
+        "iso": "2026-09-14T09:42:39.000Z",
+        "roundId": "18446744073709555426",
+        "price": 96.74055,
+        "firstSeenAt": "2026-09-14T10:00:00.000Z"
+      },
+      {
+        "updatedAt": 1789382560,
+        "iso": "2026-09-14T10:42:40.000Z",
+        "roundId": "18446744073709555427",
+        "price": 97.29345,
+        "firstSeenAt": "2026-09-14T11:00:00.000Z"
+      },
+      {
+        "updatedAt": 1789385321,
+        "iso": "2026-09-14T11:28:41.000Z",
+        "roundId": "18446744073709555429",
+        "price": 97.2721,
+        "firstSeenAt": "2026-09-14T11:30:00.000Z"
+      },
+      {
+        "updatedAt": 1789386011,
+        "iso": "2026-09-14T11:40:11.000Z",
+        "roundId": "18446744073709555430",
+        "price": 96.7808,
+        "firstSeenAt": "2026-09-14T12:00:00.000Z"
+      },
+      {
+        "updatedAt": 1789387301,
+        "iso": "2026-09-14T12:01:41.000Z",
+        "roundId": "18446744073709555431",
+        "price": 96.2438,
+        "firstSeenAt": "2026-09-14T12:30:00.000Z"
+      },
+      {
+        "updatedAt": 1789389462,
+        "iso": "2026-09-14T12:37:42.000Z",
+        "roundId": "18446744073709555432",
+        "price": 95.7584,
+        "firstSeenAt": "2026-09-14T13:00:00.000Z"
+      },
+      {
+        "updatedAt": 1789393951,
+        "iso": "2026-09-14T13:52:31.000Z",
+        "roundId": "18446744073709555437",
+        "price": 96.505,
+        "firstSeenAt": "2026-09-14T14:00:00.000Z"
+      },
+      {
+        "updatedAt": 1789395811,
+        "iso": "2026-09-14T14:23:31.000Z",
+        "roundId": "18446744073709555440",
+        "price": 97.116,
+        "firstSeenAt": "2026-09-14T14:30:00.000Z"
+      },
+      {
+        "updatedAt": 1789397102,
+        "iso": "2026-09-14T14:45:02.000Z",
+        "roundId": "18446744073709555443",
+        "price": 96.44999999,
+        "firstSeenAt": "2026-09-14T15:00:00.000Z"
+      },
+      {
+        "updatedAt": 1789399760,
+        "iso": "2026-09-14T15:29:20.000Z",
+        "roundId": "18446744073709555445",
+        "price": 97.47999999,
+        "firstSeenAt": "2026-09-14T15:30:00.000Z"
+      },
+      {
+        "updatedAt": 1789400000,
+        "iso": "2026-09-14T15:33:20.000Z",
+        "roundId": "18446744073709555446",
+        "price": 97.985,
+        "firstSeenAt": "2026-09-14T16:00:00.000Z"
+      },
+      {
+        "updatedAt": 1789402581,
+        "iso": "2026-09-14T16:16:21.000Z",
+        "roundId": "18446744073709555448",
+        "price": 98.0102,
+        "firstSeenAt": "2026-09-14T16:30:00.000Z"
+      },
+      {
+        "updatedAt": 1789408792,
+        "iso": "2026-09-14T17:59:52.000Z",
+        "roundId": "18446744073709555449",
+        "price": 98.535,
+        "firstSeenAt": "2026-09-14T18:00:00.000Z"
+      },
+      {
+        "updatedAt": 1789413264,
+        "iso": "2026-09-14T19:14:24.000Z",
+        "roundId": "18446744073709555450",
+        "price": 97.97999999,
+        "firstSeenAt": "2026-09-14T19:30:00.000Z"
+      },
+      {
+        "updatedAt": 1789414795,
+        "iso": "2026-09-14T19:39:55.000Z",
+        "roundId": "18446744073709555451",
+        "price": 97.485,
+        "firstSeenAt": "2026-09-14T20:00:00.000Z"
+      },
+      {
+        "updatedAt": 1789432530,
+        "iso": "2026-09-15T00:35:30.000Z",
+        "roundId": "18446744073709555452",
+        "price": 97.985,
+        "firstSeenAt": "2026-09-15T01:00:00.000Z"
+      },
+      {
+        "updatedAt": 1789446244,
+        "iso": "2026-09-15T04:24:04.000Z",
+        "roundId": "18446744073709555453",
+        "price": 97.445,
+        "firstSeenAt": "2026-09-15T04:30:00.000Z"
+      },
+      {
+        "updatedAt": 1789449155,
+        "iso": "2026-09-15T05:12:35.000Z",
+        "roundId": "18446744073709555454",
+        "price": 96.94,
+        "firstSeenAt": "2026-09-15T05:30:00.000Z"
+      },
+      {
+        "updatedAt": 1789450912,
+        "iso": "2026-09-15T05:41:52.000Z",
+        "roundId": "18446744073709555455",
+        "price": 97.47,
+        "firstSeenAt": "2026-09-15T06:00:00.000Z"
+      },
+      {
+        "updatedAt": 1789459722,
+        "iso": "2026-09-15T08:08:42.000Z",
+        "roundId": "18446744073709555456",
+        "price": 96.9577,
+        "firstSeenAt": "2026-09-15T08:30:00.000Z"
+      },
+      {
+        "updatedAt": 1789465681,
+        "iso": "2026-09-15T09:48:01.000Z",
+        "roundId": "18446744073709555458",
+        "price": 98.2438,
+        "firstSeenAt": "2026-09-15T10:00:00.000Z"
+      },
+      {
+        "updatedAt": 1789467601,
+        "iso": "2026-09-15T10:20:01.000Z",
+        "roundId": "18446744073709555459",
+        "price": 98.8975,
+        "firstSeenAt": "2026-09-15T10:30:00.000Z"
+      },
+      {
+        "updatedAt": 1789470602,
+        "iso": "2026-09-15T11:10:02.000Z",
+        "roundId": "18446744073709555460",
+        "price": 99.4063,
+        "firstSeenAt": "2026-09-15T11:30:00.000Z"
+      },
+      {
+        "updatedAt": 1789472073,
+        "iso": "2026-09-15T11:34:33.000Z",
+        "roundId": "18446744073709555461",
+        "price": 98.86755,
+        "firstSeenAt": "2026-09-15T12:00:00.000Z"
+      }
+    ],
+    "SPY": [
+      {
+        "updatedAt": 1789109305,
+        "iso": "2026-09-11T06:48:25.000Z",
+        "roundId": "18446744073709551741",
+        "price": 761.44499999,
+        "firstSeenAt": "2026-09-11T12:00:00.000Z"
+      },
+      {
+        "updatedAt": 1789131362,
+        "iso": "2026-09-11T12:56:02.000Z",
+        "roundId": "18446744073709551742",
+        "price": 765.26375,
+        "firstSeenAt": "2026-09-11T13:00:00.000Z"
+      },
+      {
+        "updatedAt": 1789344026,
+        "iso": "2026-09-14T00:00:26.000Z",
+        "roundId": "18446744073709551743",
+        "price": 760.04,
+        "firstSeenAt": "2026-09-14T00:00:00.000Z"
+      },
+      {
+        "updatedAt": 1789430449,
+        "iso": "2026-09-15T00:00:49.000Z",
+        "roundId": "18446744073709551744",
+        "price": 761.36550517,
+        "firstSeenAt": "2026-09-15T00:00:00.000Z"
+      },
+      {
+        "updatedAt": 1789458121,
+        "iso": "2026-09-15T07:42:01.000Z",
+        "roundId": "18446744073709551745",
+        "price": 757.51,
+        "firstSeenAt": "2026-09-15T08:00:00.000Z"
+      }
+    ],
+    "GME": [
+      {
+        "updatedAt": 1789113722,
+        "iso": "2026-09-11T08:02:02.000Z",
+        "roundId": "18446744073709552379",
+        "price": 21.1414,
+        "firstSeenAt": "2026-09-11T12:00:00.000Z"
+      },
+      {
+        "updatedAt": 1789128546,
+        "iso": "2026-09-11T12:09:06.000Z",
+        "roundId": "18446744073709552380",
+        "price": 21.2544,
+        "firstSeenAt": "2026-09-11T12:30:00.000Z"
+      },
+      {
+        "updatedAt": 1789130016,
+        "iso": "2026-09-11T12:33:36.000Z",
+        "roundId": "18446744073709552382",
+        "price": 21.2145,
+        "firstSeenAt": "2026-09-11T13:00:00.000Z"
+      },
+      {
+        "updatedAt": 1789133047,
+        "iso": "2026-09-11T13:24:07.000Z",
+        "roundId": "18446744073709552384",
+        "price": 20.9822,
+        "firstSeenAt": "2026-09-11T13:30:00.000Z"
+      },
+      {
+        "updatedAt": 1789133768,
+        "iso": "2026-09-11T13:36:08.000Z",
+        "roundId": "18446744073709552387",
+        "price": 21.16,
+        "firstSeenAt": "2026-09-11T14:00:00.000Z"
+      },
+      {
+        "updatedAt": 1789138239,
+        "iso": "2026-09-11T14:50:39.000Z",
+        "roundId": "18446744073709552389",
+        "price": 20.906,
+        "firstSeenAt": "2026-09-11T15:00:00.000Z"
+      },
+      {
+        "updatedAt": 1789141210,
+        "iso": "2026-09-11T15:40:10.000Z",
+        "roundId": "18446744073709552390",
+        "price": 21.025,
+        "firstSeenAt": "2026-09-11T16:00:00.000Z"
+      },
+      {
+        "updatedAt": 1789142650,
+        "iso": "2026-09-11T16:04:10.000Z",
+        "roundId": "18446744073709552391",
+        "price": 20.9151,
+        "firstSeenAt": "2026-09-11T16:30:00.000Z"
+      },
+      {
+        "updatedAt": 1789150663,
+        "iso": "2026-09-11T18:17:43.000Z",
+        "roundId": "18446744073709552392",
+        "price": 21.025,
+        "firstSeenAt": "2026-09-11T18:30:00.000Z"
+      },
+      {
+        "updatedAt": 1789152794,
+        "iso": "2026-09-11T18:53:14.000Z",
+        "roundId": "18446744073709552394",
+        "price": 21.265,
+        "firstSeenAt": "2026-09-11T19:00:00.000Z"
+      },
+      {
+        "updatedAt": 1789153604,
+        "iso": "2026-09-11T19:06:44.000Z",
+        "roundId": "18446744073709552395",
+        "price": 21.145,
+        "firstSeenAt": "2026-09-11T19:30:00.000Z"
+      },
+      {
+        "updatedAt": 1789156245,
+        "iso": "2026-09-11T19:50:45.000Z",
+        "roundId": "18446744073709552397",
+        "price": 21.115,
+        "firstSeenAt": "2026-09-11T20:00:00.000Z"
+      },
+      {
+        "updatedAt": 1789344036,
+        "iso": "2026-09-14T00:00:36.000Z",
+        "roundId": "18446744073709552398",
+        "price": 21.155,
+        "firstSeenAt": "2026-09-14T00:00:00.000Z"
+      },
+      {
+        "updatedAt": 1789345296,
+        "iso": "2026-09-14T00:21:36.000Z",
+        "roundId": "18446744073709552399",
+        "price": 21.045,
+        "firstSeenAt": "2026-09-14T00:30:00.000Z"
+      },
+      {
+        "updatedAt": 1789377885,
+        "iso": "2026-09-14T09:24:45.000Z",
+        "roundId": "18446744073709552400",
+        "price": 20.93265,
+        "firstSeenAt": "2026-09-14T09:30:00.000Z"
+      },
+      {
+        "updatedAt": 1789394300,
+        "iso": "2026-09-14T13:58:20.000Z",
+        "roundId": "18446744073709552404",
+        "price": 21.10405,
+        "firstSeenAt": "2026-09-14T14:00:00.000Z"
+      },
+      {
+        "updatedAt": 1789397451,
+        "iso": "2026-09-14T14:50:51.000Z",
+        "roundId": "18446744073709552405",
+        "price": 21.222,
+        "firstSeenAt": "2026-09-14T15:00:00.000Z"
+      },
+      {
+        "updatedAt": 1789398861,
+        "iso": "2026-09-14T15:14:21.000Z",
+        "roundId": "18446744073709552407",
+        "price": 21.475,
+        "firstSeenAt": "2026-09-14T15:30:00.000Z"
+      },
+      {
+        "updatedAt": 1789401202,
+        "iso": "2026-09-14T15:53:22.000Z",
+        "roundId": "18446744073709552409",
+        "price": 21.715,
+        "firstSeenAt": "2026-09-14T16:00:00.000Z"
+      },
+      {
+        "updatedAt": 1789407449,
+        "iso": "2026-09-14T17:37:29.000Z",
+        "roundId": "18446744073709552410",
+        "price": 21.6063,
+        "firstSeenAt": "2026-09-14T18:00:00.000Z"
+      },
+      {
+        "updatedAt": 1789410450,
+        "iso": "2026-09-14T18:27:30.000Z",
+        "roundId": "18446744073709552411",
+        "price": 21.715,
+        "firstSeenAt": "2026-09-14T18:30:00.000Z"
+      },
+      {
+        "updatedAt": 1789412161,
+        "iso": "2026-09-14T18:56:01.000Z",
+        "roundId": "18446744073709552413",
+        "price": 21.935,
+        "firstSeenAt": "2026-09-14T19:00:00.000Z"
+      },
+      {
+        "updatedAt": 1789413271,
+        "iso": "2026-09-14T19:14:31.000Z",
+        "roundId": "18446744073709552414",
+        "price": 21.81499999,
+        "firstSeenAt": "2026-09-14T19:30:00.000Z"
+      },
+      {
+        "updatedAt": 1789415342,
+        "iso": "2026-09-14T19:49:02.000Z",
+        "roundId": "18446744073709552415",
+        "price": 21.705,
+        "firstSeenAt": "2026-09-14T20:00:00.000Z"
+      },
+      {
+        "updatedAt": 1789420503,
+        "iso": "2026-09-14T21:15:03.000Z",
+        "roundId": "18446744073709552416",
+        "price": 21.5808,
+        "firstSeenAt": "2026-09-14T21:30:00.000Z"
+      }
+    ]
+  }
+}
