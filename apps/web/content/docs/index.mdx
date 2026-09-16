@@ -1,0 +1,46 @@
+---
+title: How Subway works
+description: Two vaults per pair, a share token you can hold, and a price that never comes from the pool.
+---
+
+Tokenized stocks are the first on-chain asset with a real reference price, yet they trade in
+pools designed for assets that have none. Every price move on Nasdaq is discovered on-chain by an
+arbitrageur trading against a stale quote, and the liquidity provider pays for it.
+
+Subway pools a pair into a vault, quotes a concentrated range around the external fair price, and
+mints a fungible share against it.
+
+## Two vaults per pair
+
+The base vault LPs a Robinhood Stock Token against USDG on Uniswap and is **unhedged**. Deposits
+and withdrawals are immediate — no epoch, no queue, and no keeper anywhere in the path. This is
+the vault that ships.
+
+A pooled vault is what makes the share a product. It mints a token you can post as collateral or
+wrap; per-user vaults cannot produce that.
+
+## The wrapper holds shares
+
+The hedged share wraps the base vault, shorts the delta on Lighter, and mints at a conservative
+floor NAV with a redemption queue. Wrapping closes no LP position — the hedged vault holds your
+base-vault shares and shorts against them, so moving between the two is a wrap or an unwrap, never
+an exit and re-entry.
+
+See [the two share tokens](/docs/shares) for what each one pays you, and
+[what is built](/docs/status) for why the hedged side is not reachable on chain.
+
+## Priced at the feed
+
+A pool tick is something an attacker can move with capital. A share price built on one is a share
+price they can print. Every price this system quotes comes from the feed, never from the pool
+tick, and range is always shown against the feed marker.
+
+Redemption from the base vault is the one place that reads no price at all: you are paid a
+pro-rata slice of the tokens the vault holds, so a stale feed cannot trap you.
+
+## No operator custody
+
+The hedge is held in a Lighter account the vault contract itself owns. Secure withdrawals land
+only at the L1 owner, which is the contract, and the keeper's key is trade-only by construction.
+The keeper changes the shape of the position — range, hedge size, margin within a cap — and can
+never change its destination.

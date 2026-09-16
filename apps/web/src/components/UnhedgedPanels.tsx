@@ -3,7 +3,7 @@
 import { useState } from "react";
 import type { Pair } from "@/lib/mock";
 import { previewRedeemAmounts } from "@/lib/mock";
-import { Field, Row } from "@/components/Field";
+import { AmountInput, Button, Callout, Card, KeyValue } from "@/ds";
 import { num, usd } from "@/lib/format";
 
 /**
@@ -23,38 +23,51 @@ export function UnhedgedDeposit({ pair }: { pair: Pair }) {
   const valid = valueUsd > 0;
 
   return (
-    <div className="rounded-xl border border-line bg-panel p-5">
-      <h3 className="text-sm font-semibold text-ink">Deposit</h3>
-      <p className="mt-1 text-xs text-ink-3">
-        Either token, or both. Immediate — there is no queue on {pair.base}x.
-      </p>
+    <Card
+      pad="lg"
+      title="Deposit"
+      subtitle={`Either token, or both. Immediate — there is no queue on x${pair.base}.`}
+    >
+      <AmountInput
+        label="Stock"
+        asset={pair.base}
+        value={stock}
+        onChange={setStock}
+        usdValue={sv > 0 ? `≈ ${usd(sv * pair.x.spot)} at feed` : undefined}
+      />
 
-      <div className="mt-4 space-y-3">
-        <Field label="Stock" value={stock} onChange={setStock} suffix={pair.base} />
-        <Field label="Quote" value={usdg} onChange={setUsdg} suffix={pair.quote} />
-      </div>
+      <div className="h-3" />
 
-      <dl className="mt-4 space-y-2 text-sm">
-        <Row label="Deposit value" value={valid ? usd(valueUsd) : "—"} />
-        <Row label="Shares out" value={valid ? num(shares, 4) : "—"} />
-        <Row label="NAV / share" value={usd(pair.x.navPerShare, 5)} muted />
-      </dl>
+      <AmountInput label="Quote" asset={pair.quote} value={usdg} onChange={setUsdg} />
 
-      <button
-        disabled
-        className="mt-4 w-full cursor-not-allowed rounded-lg bg-disabled px-4 py-2.5 text-sm font-semibold text-ink-3"
-      >
+      <div className="h-4" />
+
+      <KeyValue
+        dense
+        items={[
+          { label: "Deposit value", value: valid ? usd(valueUsd) : "—" },
+          { label: "Shares out", value: valid ? num(shares, 4) : "—" },
+          { label: "NAV / share", value: usd(pair.x.navPerShare, 5), tone: "muted" },
+        ]}
+      />
+
+      <div className="h-4" />
+
+      <Callout tone="warning" title="Deposit pricing is not settled">
+        First-deposit donation, no <code>minShares</code>, and a value-space mint against a
+        quantity-space redeem are all open in <code>docs/decisions.md</code>. Treat the share count
+        above as indicative.
+      </Callout>
+
+      <div className="h-4" />
+
+      <Button fullWidth size="lg" disabled title="No contract is deployed">
         {pair.x.paused ? "Deposits paused" : "Connect wallet to deposit"}
-      </button>
-      <p className="mt-2 text-center text-[11px] text-ink-4">
-        Disabled: no contract deployed. Real flow is one Permit2 signature + one tx.
+      </Button>
+      <p className="type-body-sm m-0 mt-3 text-center text-muted">
+        Disabled: no contract deployed. The real flow is one Permit2 signature and one transaction.
       </p>
-      <p className="mt-2 rounded-lg border border-warn-line bg-warn-soft p-2.5 text-[11px] leading-relaxed text-warn">
-        Deposit pricing is not settled. First-deposit donation, no <code>minShares</code>, and a
-        value-space mint against a quantity-space redeem are all open in{" "}
-        <code>docs/decisions.md</code>. Treat the share count above as indicative.
-      </p>
-    </div>
+    </Card>
   );
 }
 
@@ -67,50 +80,51 @@ export function UnhedgedWithdraw({ pair, shares }: { pair: Pair; shares: number 
   const [amount, setAmount] = useState("");
   const parsed = Number.parseFloat(amount);
   const valid = Number.isFinite(parsed) && parsed > 0 && parsed <= shares;
+  const over = Number.isFinite(parsed) && parsed > shares;
   const out = previewRedeemAmounts(pair.x, valid ? parsed : 0);
 
   return (
-    <div className="rounded-xl border border-line bg-panel p-5">
-      <div className="flex items-baseline justify-between">
-        <h3 className="text-sm font-semibold text-ink">Withdraw</h3>
-        <span className="tnum text-xs text-ink-3">{num(shares)} held</span>
-      </div>
+    <Card pad="lg" title="Withdraw" subtitle="Immediate: one transaction, no epoch, no keeper.">
+      <AmountInput
+        label="Shares"
+        asset={`x${pair.base}`}
+        value={amount}
+        onChange={setAmount}
+        balance={num(shares)}
+        onMax={() => setAmount(String(shares))}
+        invalid={over}
+        hint={over ? "More than you hold." : undefined}
+      />
 
-      <div className="mt-4">
-        <Field label="Shares" value={amount} onChange={setAmount} suffix={`${pair.base}x`} />
-      </div>
+      <div className="h-4" />
 
-      <dl className="mt-4 space-y-2 text-sm">
-        <Row label={`You receive (${pair.base})`} value={valid ? num(out.stockOut, 6) : "—"} />
-        <Row label={`You receive (${pair.quote})`} value={valid ? num(out.usdgOut, 2) : "—"} />
-        <Row
-          label="Approx. value"
-          value={valid ? usd(out.stockOut * pair.x.spot + out.usdgOut) : "—"}
-          muted
-        />
-      </dl>
+      <KeyValue
+        dense
+        items={[
+          { label: `You receive · ${pair.base}`, value: valid ? num(out.stockOut, 6) : "—" },
+          { label: `You receive · ${pair.quote}`, value: valid ? num(out.usdgOut, 2) : "—" },
+          {
+            label: "Approximate value",
+            value: valid ? usd(out.stockOut * pair.x.spot + out.usdgOut) : "—",
+            tone: "muted",
+          },
+        ]}
+      />
 
-      <p className="mt-4 rounded-lg border border-line bg-inset p-3 text-xs leading-relaxed text-ink-2">
-        You are paid in <strong className="font-semibold text-ink">both</strong> tokens, as a
-        pro-rata slice of what the vault holds — idle balances, the range&rsquo;s pending fees, and
-        your share of the LP principal. That split moves with the pool. Redemption reads no price at
-        all, so a stale feed cannot trap you.
-      </p>
-      <p className="mt-2 text-[11px] leading-relaxed text-ink-3">
-        Fees earned by the range are swept into the vault before your slice is measured, so you are
-        paid your share of them and no more. Redeeming early does not hand you the range&rsquo;s
-        whole fee balance.
-      </p>
+      <div className="h-4" />
 
-      <button
-        disabled
-        className="mt-4 w-full cursor-not-allowed rounded-lg bg-disabled px-4 py-2.5 text-sm font-semibold text-ink-3"
-      >
+      <Callout tone="positive" title="You are paid in both tokens">
+        A pro-rata slice of what the vault holds — idle balances, the range&rsquo;s pending fees,
+        and your share of the LP principal. That split moves with the pool. Redemption reads no
+        price at all, so a stale feed cannot trap you. Fees are swept into the vault before your
+        slice is measured, so you are paid your share of them and no more.
+      </Callout>
+
+      <div className="h-4" />
+
+      <Button fullWidth size="lg" disabled title="No contract is deployed">
         Connect wallet to withdraw
-      </button>
-      <p className="mt-2 text-center text-[11px] text-ink-4">
-        Immediate: one transaction, no epoch, no keeper.
-      </p>
-    </div>
+      </Button>
+    </Card>
   );
 }

@@ -1,5 +1,6 @@
 import path from "node:path";
 import type { NextConfig } from "next";
+import { createMDX } from "fumadocs-mdx/next";
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
@@ -8,4 +9,7 @@ const nextConfig: NextConfig = {
   outputFileTracingRoot: path.join(import.meta.dirname, "..", ".."),
 };
 
-export default nextConfig;
+// Compiles content/docs/**.mdx and regenerates `.source` on change.
+const withMDX = createMDX();
+
+export default withMDX(nextConfig);

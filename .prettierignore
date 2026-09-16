@@ -9,3 +9,7 @@ pnpm-lock.yaml
 # regenerated wholesale, so reformatting it would churn against the source
 # bundle on every re-export. Same reasoning as contracts/lib/ above.
 .claude/skills/subway-design/
+
+# The app's copy of the same tokens, taken verbatim from the export above and
+# re-copied on every sync, so it must not diverge from it by formatting either.
+apps/web/src/ds/tokens/

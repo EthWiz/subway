@@ -1,148 +1,259 @@
 @import "tailwindcss";
 
 /*
- * Semantic colour tokens. Components never name a raw colour — they say what a
- * thing IS (panel, line, ink-3, positive) and the theme decides how it looks.
+ * The Subway design system, vendored from `.claude/skills/subway-design`.
  *
- * Light is the default and is what every visitor gets. The dark values are
- * kept behind an explicit `data-theme="dark"` on <html> so the palette stays
- * complete and a toggle is a one-line change; nothing switches on the
- * operating system's preference.
+ * `src/ds/tokens/*.css` are copied VERBATIM from the skill's `tokens/` — do not
+ * hand-edit them. Re-copy on upstream sync; everything Subway-specific that is
+ * not upstream lives below this import block.
+ *
+ * The one token file not copied is `tokens/fonts.css`: it pulls the three
+ * families from the Google Fonts CDN with an `@import`, which blocks render and
+ * gives Next no control over preloading. `next/font/google` in `layout.tsx`
+ * loads the same three families and exposes them as `--ff-*`, which the @theme
+ * block below re-publishes under the names the token files expect.
  */
+@import "../ds/tokens/colors.css";
+@import "../ds/tokens/typography.css";
+@import "../ds/tokens/spacing.css";
+@import "../ds/tokens/radii.css";
+@import "../ds/tokens/elevation.css";
+@import "../ds/tokens/motion.css";
+@import "../ds/tokens/base.css";
 
+/*
+ * Tailwind is kept for page layout only — grid, flex, gap, spacing. Every colour,
+ * radius and typeface a utility can reach is a design-system token, so a utility
+ * and a component can never disagree about what "surface" means.
+ *
+ * Tailwind's default spacing scale already lands on the system's 4px steps
+ * (2, 4, 8, 12, 16, 20, 24, 32, 40, 56, 80 → 0.5, 1, 2, 3, 4, 5, 6, 8, 10, 14, 20),
+ * so it is left alone rather than restated.
+ */
 @theme {
-  --font-mono:
-    ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+  /* Families. `--ff-*` come from next/font; the token files read `--font-*`. */
+  --font-serif: var(--ff-serif), Georgia, "Times New Roman", serif;
+  --font-display: var(--ff-serif), Georgia, "Times New Roman", serif;
+  --font-ui: var(--ff-ui), "Helvetica Neue", Helvetica, sans-serif;
+  --font-num: var(--ff-ui), "Helvetica Neue", Helvetica, sans-serif;
+  --font-mono: var(--ff-mono), ui-monospace, SFMono-Regular, Menlo, monospace;
 
-  --color-bg: var(--bg);
-  --color-panel: var(--panel);
-  --color-panel-2: var(--panel-2);
-  --color-inset: var(--inset);
-  --color-hover: var(--hover);
-  --color-overlay: var(--overlay);
-  --color-disabled: var(--disabled-bg);
+  /* Surfaces. Indirection through the semantic aliases is deliberate: it is what
+     lets `.theme-dark` re-point a whole page without touching a utility. */
+  --color-page: var(--bg-page);
+  --color-surface: var(--bg-surface);
+  --color-sunken: var(--bg-sunken);
+  --color-inverse: var(--bg-inverse);
+  --color-hover-fill: var(--bg-hover);
 
-  --color-line: var(--line);
-  --color-line-soft: var(--line-soft);
-  --color-line-strong: var(--line-strong);
+  /* Ink */
+  --color-body: var(--text-body);
+  --color-strong: var(--text-strong);
+  --color-muted: var(--text-muted);
+  --color-faint: var(--text-faint);
+  --color-on-accent: var(--text-on-accent);
+  --color-on-inverse: var(--text-on-inverse);
+  --color-link: var(--text-link);
 
-  --color-ink: var(--ink);
-  --color-ink-2: var(--ink-2);
-  --color-ink-3: var(--ink-3);
-  --color-ink-4: var(--ink-4);
+  /* Lines */
+  --color-subtle: var(--border-subtle);
+  --color-hairline: var(--border-default);
+  --color-loud: var(--border-loud);
 
-  --color-inverse: var(--inverse);
-  --color-on-inverse: var(--on-inverse);
-
+  /* Brand + semantics */
+  --color-accent: var(--accent);
+  --color-accent-ink: var(--accent-ink);
+  --color-accent-tint: var(--accent-tint);
   --color-pos: var(--pos);
-  --color-pos-solid: var(--pos-solid);
-  --color-pos-soft: var(--pos-soft);
+  --color-pos-tint: var(--pos-tint);
   --color-neg: var(--neg);
-  --color-neg-soft: var(--neg-soft);
-
-  --color-info: var(--info);
-  --color-info-line: var(--info-line);
-  --color-info-soft: var(--info-soft);
-  --color-info-solid: var(--info-solid);
-
+  --color-neg-tint: var(--neg-tint);
   --color-warn: var(--warn);
-  --color-warn-strong: var(--warn-strong);
-  --color-warn-line: var(--warn-line);
-  --color-warn-soft: var(--warn-soft);
+  --color-warn-tint: var(--warn-tint);
+  --color-info: var(--info);
+  --color-info-tint: var(--info-tint);
 
-  --color-neutral-soft: var(--neutral-soft);
+  /* Radii — same names the system uses, resolved from the same raw steps. */
+  --radius-badge: var(--r-1);
+  --radius-control: var(--r-2);
+  --radius-callout: var(--r-3);
+  --radius-card: var(--r-4);
+  --radius-panel: var(--r-5);
 }
 
-:root {
-  color-scheme: light;
-
-  --bg: #f6f7f9;
-  --panel: #ffffff;
-  --panel-2: #f0f2f5;
-  --inset: #f4f6f8;
-  --hover: rgb(15 20 25 / 0.03);
-  --overlay: rgb(15 20 25 / 0.45);
-  --disabled-bg: #e8ebef;
-
-  --line: #e3e6eb;
-  --line-soft: #edeff3;
-  --line-strong: #c3c9d3;
-
-  --ink: #0f1419;
-  --ink-2: #454e5c;
-  --ink-3: #6b7484;
-  --ink-4: #98a1b0;
-
-  --inverse: #0f1419;
-  --on-inverse: #ffffff;
-
-  --pos: #0a7048;
-  --pos-solid: #10a065;
-  --pos-soft: #e1f4ea;
-  --neg: #b3261e;
-  --neg-soft: #fdeceb;
-
-  --info: #0b5b87;
-  --info-line: #bfdcee;
-  --info-soft: #eaf4fa;
-  --info-solid: #3b95c9;
-
-  --warn: #8a5a00;
-  --warn-strong: #6b4400;
-  --warn-line: #e8d3a0;
-  --warn-soft: #fbf3e0;
-
-  --neutral-soft: #e6e9ee;
+/*
+ * Type composites as classes. The system expresses type through the `font`
+ * shorthand (`--type-h2`, `--type-num-md`, …) rather than through size/weight
+ * pairs, which does not decompose into Tailwind utilities — so the composites
+ * are exposed as-is instead of being approximated.
+ */
+.type-display {
+  font: var(--type-display);
+  letter-spacing: var(--ls-display);
+}
+.type-h1 {
+  font: var(--type-h1);
+  letter-spacing: var(--ls-heading);
+}
+.type-h2 {
+  font: var(--type-h2);
+  letter-spacing: var(--ls-heading);
+}
+.type-h3 {
+  font: var(--type-h3);
+}
+.type-body {
+  font: var(--type-body);
+}
+.type-body-sm {
+  font: var(--type-body-sm);
+}
+.type-label {
+  font: var(--type-label);
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+}
+.type-num-lg {
+  font: var(--type-num-lg);
+  letter-spacing: var(--ls-num);
+  font-variant-numeric: lining-nums;
+}
+.type-num-md {
+  font: var(--type-num-md);
+  letter-spacing: var(--ls-num);
+  font-variant-numeric: lining-nums;
+}
+.type-num-sm {
+  font: var(--type-num-sm);
+  letter-spacing: var(--ls-num);
+  font-variant-numeric: lining-nums;
+}
+.type-code {
+  font: var(--type-code);
 }
 
-:root[data-theme="dark"] {
-  color-scheme: dark;
-
-  --bg: #0a0c10;
-  --panel: #0e1117;
-  --panel-2: #141821;
-  --inset: #06080b;
-  --hover: rgb(255 255 255 / 0.04);
-  --overlay: rgb(0 0 0 / 0.8);
-  --disabled-bg: #1a1f27;
-
-  --line: #1d222b;
-  --line-soft: #14181f;
-  --line-strong: #2c3340;
-
-  --ink: #ffffff;
-  --ink-2: #94a3b8;
-  --ink-3: #64748b;
-  --ink-4: #4b5563;
-
-  --inverse: #ffffff;
-  --on-inverse: #000000;
-
-  --pos: #6ee7b7;
-  --pos-solid: #34d399;
-  --pos-soft: rgb(52 211 153 / 0.15);
-  --neg: #fda4af;
-  --neg-soft: rgb(244 63 94 / 0.15);
-
-  --info: #bae6fd;
-  --info-line: rgb(56 189 248 / 0.25);
-  --info-soft: rgb(56 189 248 / 0.06);
-  --info-solid: rgb(56 189 248 / 0.6);
-
-  --warn: #fcd34d;
-  --warn-strong: #fde68a;
-  --warn-line: rgb(245 158 11 / 0.3);
-  --warn-soft: rgb(245 158 11 / 0.1);
-
-  --neutral-soft: rgb(148 163 184 / 0.15);
+/*
+ * `tokens/base.css` gives every <a> a border-bottom rule, which is right for
+ * prose and wrong for a nav item or a table row that happens to be a link.
+ * `.plain-link` opts out; it does not restyle the anchor otherwise.
+ */
+.plain-link,
+.plain-link:hover {
+  border-bottom: none;
+  color: inherit;
 }
 
-body {
-  background-color: var(--bg);
-  color: var(--ink);
+/* Inline code inside prose. The system reserves mono for exactly this. */
+code {
+  font: var(--type-code);
+  color: var(--text-strong);
 }
 
-/* Tabular figures everywhere a number can change width. */
-.tnum {
-  font-variant-numeric: tabular-nums;
+/*
+ * The system specifies the top nav only at desktop width: one 64px row holding
+ * the wordmark, the routes, the chain chip and the address. That row is wider
+ * than a phone, so the two chips are shed at the widths where they stop
+ * fitting — the chain is already named in the jurisdiction gate, and the
+ * address is a fixture here rather than a live connection.
+ *
+ * `!important` because the system authors its components with inline styles,
+ * which a class cannot otherwise outrank. It is confined to these three rules.
+ */
+@media (max-width: 900px) {
+  .ds-topnav {
+    gap: var(--sp-6) !important;
+    padding: 0 var(--sp-6) !important;
+  }
+  .ds-topnav-chain {
+    display: none !important;
+  }
+}
+
+@media (max-width: 560px) {
+  .ds-topnav-address {
+    display: none !important;
+  }
+}
+
+/*
+ * Native <details> disclosure.
+ *
+ * The system has no accordion or disclosure primitive — its answer to a long
+ * explanation is a Tooltip plus a link to docs, and there are no docs. A
+ * <details> needs no JavaScript, no hydration and no new component, and is
+ * keyboard-accessible for free; only the default marker and the chevron's
+ * motion need styling. Durations come from the motion tokens, so
+ * prefers-reduced-motion already zeroes them.
+ */
+.ds-disclosure > summary {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  list-style: none;
+  font: var(--fw-semibold) var(--fs-body) / 1.35 var(--font-ui);
+}
+
+.ds-disclosure > summary::-webkit-details-marker {
+  display: none;
+}
+
+.ds-disclosure > summary:focus-visible {
+  outline: none;
+  border-radius: var(--r-1);
+  box-shadow: var(--ring-focus);
+}
+
+.ds-disclosure-chevron {
+  transition: transform var(--dur-2) var(--ease-out);
+}
+
+.ds-disclosure[open] .ds-disclosure-chevron {
+  transform: rotate(180deg);
+}
+
+.ds-disclosure > :not(summary) {
+  margin-top: var(--sp-3);
+}
+
+/*
+ * A band of figures: one headline number, then the figures that decompose it.
+ *
+ * The system shows a page's numbers in the header aside — `PageHead`'s `aside`
+ * in the UI kit, a flex row that holds two Stats and no more. The portfolio has
+ * five, so they move into a band of their own. The Stat primitive, the label,
+ * the figure and the hint are unchanged; only the container is new, and the
+ * rules between columns are `--border-subtle`, the same hairline DataTable and
+ * KeyValue already use to separate one figure from the next.
+ *
+ * The first child is the headline and gets an `auto` track, so a long value
+ * sets its own width rather than being clipped by a fractional one. Everything
+ * after it flows into implicit 1fr columns, so the band does not care how many
+ * figures follow.
+ */
+.ds-stat-band {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--sp-6) var(--sp-7);
+}
+
+/* Stacked, the headline spans the row its own parts are broken out on. */
+.ds-stat-band > :first-child {
+  grid-column: 1 / -1;
+}
+
+@media (min-width: 900px) {
+  .ds-stat-band {
+    grid-template-columns: auto;
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(0, 1fr);
+    gap: 0;
+  }
+  .ds-stat-band > :first-child {
+    grid-column: auto;
+  }
+  .ds-stat-band > * + * {
+    padding-left: var(--sp-7);
+    border-left: var(--bw-1) solid var(--border-subtle);
+  }
 }

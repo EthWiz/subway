@@ -1,0 +1,40 @@
+---
+title: How the fee APR is computed
+description: Extrapolated from one 15-minute pre-open window, annualised, and never netted against adverse selection.
+---
+
+import { PHASE0_MODEL } from "@/lib/mock";
+import { compactUsd, pct } from "@/lib/format";
+
+Every fee APR this app shows is a **screen, not a forecast**. It comes from
+`research/scan.ts`, measured over one {PHASE0_MODEL.windowMinutes.toFixed(0)}-minute pre-open
+window on 2026-09-16.
+
+## The four steps
+
+1. Sum the quote-side notional of every swap in the window, times the fee tier.
+2. Scale that to a day (×{(1440 / PHASE0_MODEL.windowMinutes).toFixed(0)}), then to a year (×365).
+3. Take the vault's cut, `e / (active + e)`, where `e` is
+   {compactUsd(PHASE0_MODEL.vaultTvlUsd)} × {PHASE0_MODEL.concentrationMultiplier}.
+4. Divide by the {compactUsd(PHASE0_MODEL.vaultTvlUsd)} vault size.
+
+## Why step 3 multiplies
+
+A vault concentrated over ±{pct(PHASE0_MODEL.rangeHalfWidth, 0)} is worth
+{PHASE0_MODEL.concentrationMultiplier}× its face value against a pool's full-range-equivalent
+active liquidity. Its dollars count that many times over while price sits inside the range.
+
+Getting this wrong moves a pool's APR by more than an order of magnitude. The first Phase 0 report
+modelled the vault as full-range and understated fees by roughly 34×.
+
+## What the number is not
+
+<Callout tone="warning" title="Annualising fifteen minutes is why these are enormous">
+  A pre-open window is not a representative session, and the figure decays. No markout was ever
+  run, for any pair, so none of it is net of adverse selection — the cost that motivates this
+  entire product is absent from the number used to screen it.
+</Callout>
+
+The gate was {pct(PHASE0_MODEL.minVaultFeeApr)}, set at twice the
+{pct(PHASE0_MODEL.hedgeCarryApr)} hedge carry. See [what is built](/docs/status) for how the named
+pairs scored against it.

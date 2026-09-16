@@ -32,3 +32,6 @@ research/scratch/
 # Source archive for the vendored design-system export; the extracted bundle
 # under .claude/skills/subway-design/ is what the repo tracks.
 subway-design.zip
+
+# fumadocs-mdx generates this from content/docs/ at build time.
+.source/

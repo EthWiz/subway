@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import type { Pair, HedgedVaultState } from "@/lib/mock";
-import { Field, Row } from "@/components/Field";
+import { AmountInput, Button, Callout, Card, KeyValue } from "@/ds";
 import { num, usd, utc } from "@/lib/format";
 
 export function HedgedDeposit({ pair, h }: { pair: Pair; h: HedgedVaultState }) {
@@ -14,38 +14,48 @@ export function HedgedDeposit({ pair, h }: { pair: Pair; h: HedgedVaultState }) 
   const giveUp = shares - atAttested;
 
   return (
-    <div className="rounded-xl border border-line bg-panel p-5">
-      <h3 className="text-sm font-semibold text-ink">Deposit</h3>
-      <p className="mt-1 text-xs text-ink-3">
-        Routes {pair.quote} → {pair.base}x → {pair.base}h in one transaction.
-      </p>
+    <Card
+      pad="lg"
+      title="Deposit"
+      subtitle={`Routes ${pair.quote} → x${pair.base} → h${pair.base} in one transaction.`}
+    >
+      <AmountInput
+        label="Amount"
+        asset={pair.quote}
+        value={amount}
+        onChange={setAmount}
+        usdValue={valid ? `≈ ${usd(parsed)} at feed` : undefined}
+      />
 
-      <div className="mt-4">
-        <Field label="Amount" value={amount} onChange={setAmount} suffix={pair.quote} />
-      </div>
+      <div className="h-4" />
 
-      <dl className="mt-4 space-y-2 text-sm">
-        <Row label="Shares at floor NAV" value={valid ? num(shares, 4) : "—"} />
-        <Row label="Floor NAV / share" value={usd(h.floorNavPerShare, 4)} />
-        <Row label="Attested NAV / share" value={usd(h.attestedNavPerShare, 4)} muted />
-      </dl>
+      <KeyValue
+        dense
+        items={[
+          { label: "Shares at floor NAV", value: valid ? num(shares, 4) : "—" },
+          { label: "Floor NAV / share", value: usd(h.floorNavPerShare, 4) },
+          { label: "Attested NAV / share", value: usd(h.attestedNavPerShare, 4), tone: "muted" },
+        ]}
+      />
 
       {valid ? (
-        <p className="mt-4 rounded-lg border border-info-line bg-info-soft p-3 text-xs leading-relaxed text-info">
-          You mint at the <strong className="font-semibold">floor</strong>, which deliberately
-          undervalues the vault by excluding hedge equity it cannot price on-chain. You give up
-          about {num(giveUp, 4)} shares ({usd(giveUp * h.floorNavPerShare)}) versus the attested
-          NAV. That gap protects existing holders from a mint against an unverifiable number.
-        </p>
+        <>
+          <div className="h-4" />
+          <Callout tone="info" title="You mint at the floor">
+            The floor deliberately undervalues the vault by excluding hedge equity it cannot price
+            on-chain. You give up about {num(giveUp, 4)} shares ({usd(giveUp * h.floorNavPerShare)})
+            versus the attested NAV. That gap protects existing holders from a mint against an
+            unverifiable number.
+          </Callout>
+        </>
       ) : null}
 
-      <button
-        disabled
-        className="mt-4 w-full cursor-not-allowed rounded-lg bg-disabled px-4 py-2.5 text-sm font-semibold text-ink-3"
-      >
+      <div className="h-4" />
+
+      <Button fullWidth size="lg" disabled title="No contract is deployed">
         Connect wallet to deposit
-      </button>
-    </div>
+      </Button>
+    </Card>
   );
 }
 
@@ -64,84 +74,119 @@ export function HedgedRedeem({
   const [amount, setAmount] = useState("");
   const parsed = Number.parseFloat(amount);
   const valid = Number.isFinite(parsed) && parsed > 0 && parsed <= shares;
+  const over = Number.isFinite(parsed) && parsed > shares;
 
   return (
-    <div className="rounded-xl border border-line bg-panel p-5">
-      <div className="flex items-baseline justify-between">
-        <h3 className="text-sm font-semibold text-ink">Redeem</h3>
-        <span className="tnum text-xs text-ink-3">
-          {num(shares)} {pair.base}h held
-        </span>
-      </div>
-
+    <Card pad="lg" title="Redeem" subtitle="Request, settle at the epoch, then claim.">
       {stage === "idle" ? (
         <>
-          <div className="mt-4">
-            <Field label="Shares" value={amount} onChange={setAmount} suffix={`${pair.base}h`} />
-          </div>
-          <dl className="mt-4 space-y-2 text-sm">
-            <Row
-              label="Estimated at floor NAV"
-              value={valid ? usd(parsed * h.floorNavPerShare) : "—"}
-            />
-            <Row label="Settles at epoch" value={utc(h.nextEpochIso)} />
-          </dl>
-          <button
-            onClick={() => setStage("requested")}
+          <AmountInput
+            label="Shares"
+            asset={`h${pair.base}`}
+            value={amount}
+            onChange={setAmount}
+            balance={num(shares)}
+            onMax={() => setAmount(String(shares))}
+            invalid={over}
+            hint={over ? "More than you hold." : undefined}
+          />
+
+          <div className="h-4" />
+
+          <KeyValue
+            dense
+            items={[
+              {
+                label: "Estimated at floor NAV",
+                value: valid ? usd(parsed * h.floorNavPerShare) : "—",
+              },
+              { label: "Settles at epoch", value: utc(h.nextEpochIso) },
+            ]}
+          />
+
+          <div className="h-4" />
+
+          <Callout tone="warning" title="This queues">
+            Your slot settles at the epoch NAV, after the keeper reduces the hedge pro rata and the
+            Lighter withdrawal matures. A Lighter secure withdrawal is not instant, so the queue is
+            real waiting, not a UI delay.
+          </Callout>
+
+          <div className="h-4" />
+
+          <Button
+            fullWidth
+            size="lg"
+            variant="secondary"
             disabled={!valid}
-            className="mt-4 w-full rounded-lg bg-inverse px-4 py-2.5 text-sm font-semibold text-on-inverse transition-opacity disabled:cursor-not-allowed disabled:opacity-30"
+            onClick={() => setStage("requested")}
           >
             Request redemption (mock)
-          </button>
+          </Button>
         </>
       ) : null}
 
       {stage === "requested" ? (
-        <div className="mt-4">
+        <>
           <Steps active={1} />
-          <p className="mt-4 text-xs leading-relaxed text-ink-2">
-            Queued for epoch {utc(h.nextEpochIso)}. The keeper unwinds the hedge and withdraws from
-            Lighter before it can pay you. A Lighter secure withdrawal is not instant, so the queue
-            is real waiting, not a UI delay.
-          </p>
-          <button
-            onClick={() => setStage("claimable")}
-            className="mt-4 w-full rounded-lg border border-line-strong px-4 py-2.5 text-sm font-semibold text-ink"
-          >
+          <div className="h-4" />
+          <KeyValue
+            dense
+            items={[
+              { label: "Requested", value: valid ? `${num(parsed)} h${pair.base}` : "—" },
+              { label: "Epoch", value: utc(h.nextEpochIso) },
+              { label: "Priced at", value: "Floor NAV at settlement", tone: "muted" },
+            ]}
+          />
+          <div className="h-4" />
+          <Button fullWidth size="lg" variant="secondary" onClick={() => setStage("claimable")}>
             Simulate epoch settlement
-          </button>
-        </div>
+          </Button>
+        </>
       ) : null}
 
       {stage === "claimable" ? (
-        <div className="mt-4">
+        <>
           <Steps active={2} />
-          <p className="mt-4 text-xs leading-relaxed text-ink-2">
-            Settled at floor NAV. Claim is a single transaction and needs no keeper.
-          </p>
-          <button
+          <div className="h-4" />
+          <Callout tone="positive" title="Settled at floor NAV">
+            Claim is a single transaction and needs no keeper. Claimable slots stay claimable —
+            there is no expiry.
+          </Callout>
+          <div className="h-4" />
+          <Button
+            fullWidth
+            size="lg"
             onClick={() => {
               setStage("idle");
               setAmount("");
             }}
-            className="mt-4 w-full rounded-lg bg-pos-solid px-4 py-2.5 text-sm font-semibold text-on-inverse"
           >
             Claim {valid ? usd(parsed * h.floorNavPerShare) : ""} (mock)
-          </button>
-        </div>
+          </Button>
+        </>
       ) : null}
-    </div>
+    </Card>
   );
 }
 
+/** Request → settle → claim, the vocabulary the protocol uses for this path. */
 function Steps({ active }: { active: number }) {
   const labels = ["Requested", "Queued", "Claimable"];
   return (
-    <ol className="flex items-center gap-2">
+    <ol className="m-0 flex list-none items-center gap-2 p-0">
       {labels.map((l, i) => (
         <li key={l} className="flex flex-1 flex-col gap-1.5">
-          <div className={`h-0.5 rounded ${i <= active ? "bg-pos-solid" : "bg-disabled"}`} />
-          <span className={`text-[11px] ${i <= active ? "text-pos" : "text-ink-4"}`}>{l}</span>
+          <div
+            className="h-0.5 rounded-full"
+            style={{ background: i <= active ? "var(--accent)" : "var(--bg-sunken)" }}
+          />
+          <span
+            className="type-label"
+            style={{ color: i <= active ? "var(--accent-ink)" : "var(--text-faint)" }}
+          >
+            {l}
+          </span>
         </li>
       ))}
     </ol>
