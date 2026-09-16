@@ -206,11 +206,25 @@ retrying a failed scan.
 
 Honest list, so nobody mistakes the scaffold for a product:
 
-The Phase 0 report's fee numbers came from a **v3-only** scan; the pair
-question was then re-asked of v4, where the adapter lives, over five days and
-938k swaps (`research/scan-v4.ts`). The result is in `docs/plan.md` A5: v4 is
-the venue, MSTR/USDG 0.25% is the first pair, and AMC and HOOD — the pairs the
-project began with — are out because Chainlink lists no feed for either.
+- **`HedgedVault` (`hAMC`)** — Track B, gated on the unhedged vault producing
+  a real fee-vs-loss number. `SubwayVault.sol` in the tree is the _pre-stack_
+  hedged vault: it owns the Uniswap position directly rather than holding
+  `xAMC`, and it is neither deployed by the factory nor reachable through the
+  Router. It is kept as the starting point for that work — the queue, epoch
+  settlement, margin ledger and panic path all carry over — and should not be
+  read as the current design.
+- **The keeper** (feeds, range management, hedging, epoch settlement) — the
+  contracts expose the surface it needs; the process does not exist.
+- **The web app.**
+- **A Uniswap v3 path — and it is not coming.** `UniV4Adapter` is built and
+  tested against Uniswap's real `PoolManager`. The Phase 0 report's fee numbers
+  came from a v3-only scan; the pair question was re-asked of v4 over five days
+  and 938k swaps (`research/scan-v4.ts`), and the answer is in `docs/plan.md`
+  A5: v4 is the venue, MSTR/USDG 0.25% is the first pair, and AMC and HOOD —
+  the pairs the project began with — are out because Chainlink lists no feed
+  for either.
+- **Deployment.** No addresses are pinned and no contract is deployed.
+- **An audit.** None of this has been reviewed by anyone but its authors.
 
 ## Security
 
