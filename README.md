@@ -215,7 +215,12 @@ Honest list, so nobody mistakes the scaffold for a product:
   read as the current design.
 - **The keeper** (feeds, range management, hedging, epoch settlement) — the
   contracts expose the surface it needs; the process does not exist.
-- **The web app.**
+- **The web app, as a product.** `apps/web` exists and runs, but it is a
+  scaffold against **mock data only** — no wagmi, no viem, no chain definition
+  for 4663, no ABI codegen. Every button that would send a transaction is
+  disabled and says why. Pool addresses and fee APRs in it are real, from the
+  Phase 0 evidence; every balance, NAV, queue and PnL figure is invented. See
+  `apps/web/README.md`.
 - **The Uniswap v3 path.** `UniV4Adapter` is built and tested against Uniswap's
   real `PoolManager`; the v3 adapter is not, and the v3 periphery addresses on
   chain 4663 were never resolved. Note the mismatch: the **research scan is

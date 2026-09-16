@@ -20,3 +20,11 @@ cache/
 research/scratch/
 
 .DS_Store
+
+# Agent tooling. The skills under .claude/skills/ are shared and tracked, and
+# .agents|.codex|.grok/skills are symlinks to them. Everything below is local
+# per-machine state and must never be committed — a worktree in particular.
+.claude/worktrees/
+.claude/settings.local.json
+.codex/worktrees/
+.cursor/worktrees/
