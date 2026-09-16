@@ -166,4 +166,22 @@ contract MockPool is IPoolAdapter {
     function collectFees() external pure returns (uint256, uint256) {
         return (0, 0);
     }
+
+    /// @dev The mock measures "liquidity" as the USDG leg, which is enough for
+    /// the vault's pro-rata arithmetic and says nothing about real AMM units.
+    function positionLiquidity() external view returns (uint128) {
+        return open ? uint128(usdgHeld) : 0;
+    }
+
+    function decreaseLiquidity(uint128 liquidity) external returns (uint256 stockOut, uint256 usdgOut) {
+        uint256 total = usdgHeld;
+        require(total > 0 && liquidity <= total, "MockPool: bad liquidity");
+        stockOut = stockHeld * liquidity / total;
+        usdgOut = liquidity;
+        stockHeld -= stockOut;
+        usdgHeld -= usdgOut;
+        if (usdgHeld == 0) open = false;
+        if (stockOut > 0) stock.transfer(vault, stockOut);
+        if (usdgOut > 0) usdg.transfer(vault, usdgOut);
+    }
 }

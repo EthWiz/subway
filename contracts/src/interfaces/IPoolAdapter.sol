@@ -28,6 +28,19 @@ interface IPoolAdapter {
     /// @notice Withdraw the whole position back to the vault, fees included.
     function closeRange() external returns (uint256 stockOut, uint256 usdgOut);
 
+    /// @notice Liquidity currently placed, in the AMM's own units.
+    /// @dev Exposed so a vault can take a PRO-RATA slice of the position
+    /// without knowing how the AMM measures it.
+    function positionLiquidity() external view returns (uint128);
+
+    /// @notice Withdraw part of the position back to the vault.
+    /// @dev The unhedged base vault settles withdrawals directly out of the
+    /// range rather than from a cash buffer, so it needs to take a redeemer's
+    /// share of the liquidity without disturbing the rest of it. Accrued fees
+    /// come out in the same proportion, which is what makes the remaining
+    /// holders' claim unchanged by someone else leaving.
+    function decreaseLiquidity(uint128 liquidity) external returns (uint256 stockOut, uint256 usdgOut);
+
     /// @notice Sweep accrued fees to the vault without touching the position.
     function collectFees() external returns (uint256 stockFees, uint256 usdgFees);
 

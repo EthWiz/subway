@@ -3,9 +3,11 @@ src = "src"
 test = "test"
 out = "out"
 libs = ["lib"]
-solc = "0.8.28"
 optimizer = true
 optimizer_runs = 200
+# v4-core pins pragma 0.8.26 and needs transient storage; our own sources pin
+# 0.8.28. No global solc pin, so forge compiles each unit with what it asks for.
+evm_version = "cancun"
 gas_reports = ["SubwayVault"]
 
 [fmt]
