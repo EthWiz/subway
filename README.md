@@ -178,11 +178,13 @@ retrying a failed scan.
 
 Honest list, so nobody mistakes the scaffold for a product:
 
-- **`BaseVault` (`xAMC`) and the `Router`** — Phase 1, in progress. The
-  contract in the tree today is the older single hedged vault; splitting it is
-  the current work.
 - **`HedgedVault` (`hAMC`)** — Phase 3, gated on the unhedged vault producing
-  a real fee-vs-loss number.
+  a real fee-vs-loss number. `SubwayVault.sol` in the tree is the _pre-stack_
+  hedged vault: it owns the Uniswap position directly rather than holding
+  `xAMC`, and it is neither deployed by the factory nor reachable through the
+  Router. It is kept as the starting point for that work — the queue, epoch
+  settlement, margin ledger and panic path all carry over — and should not be
+  read as the current design.
 - **The keeper** (feeds, range management, hedging, epoch settlement) — the
   contracts expose the surface it needs; the process does not exist.
 - **The web app.**
