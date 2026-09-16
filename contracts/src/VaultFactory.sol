@@ -1,13 +1,17 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.28;
 
-import {SubwayVault} from "./SubwayVault.sol";
+import {BaseVault} from "./BaseVault.sol";
 import {RangePolicy} from "./policy/RangePolicy.sol";
 
 /// @title VaultFactory
-/// @notice Pair registry and deployer. One vault per pair.
+/// @notice Pair registry and deployer.
 ///
-/// The owner can add pairs, rotate keepers and pause new deposits. It
+/// A pair has one `BaseVault` (`xAMC`) and, from Phase 3, one `HedgedVault`
+/// (`hAMC`) that holds it. A pair with only a base vault is the normal Phase 1
+/// state, not an incomplete one.
+///
+/// The owner can add pairs, rotate keepers and register the hedged vault. It
 /// deliberately CANNOT move funds out of any vault it deployed: a factory that
 /// could would make every vault's safety argument depend on the factory's
 /// multisig rather than on the vault's own code, which is the opposite of the
@@ -17,16 +21,30 @@ contract VaultFactory {
     address public immutable usdg;
     address public immutable lighter;
 
-    /// @notice stock token => vault. One per pair, so a second registration is
-    /// a mistake rather than a second opinion.
-    mapping(address => address) public vaultFor;
+    /// @notice stock token => unhedged base vault. One per pair, so a second
+    /// registration is a mistake rather than a second opinion.
+    mapping(address => address) public baseVaultFor;
+
+    /// @notice stock token => hedged wrapper vault, zero until Phase 3.
+    ///
+    /// Set rather than deployed here: `HedgedVault` owns a Lighter account and
+    /// its wiring (market id, asset index, margin caps, guardian) is decided
+    /// per pair at the time it is stood up. The Router reads this pointer, so
+    /// the owner can misdirect hedged deposits by setting it wrongly — the
+    /// same trust the owner already has by choosing keepers. It cannot reach
+    /// funds in a vault that is already deployed.
+    mapping(address => address) public hedgedVaultFor;
+
     address[] public vaults;
 
-    event PairAdded(address indexed stock, address indexed vault, uint256 lighterMarketId);
+    event PairAdded(address indexed stock, address indexed baseVault, uint256 lighterMarketId);
+    event HedgedVaultRegistered(address indexed stock, address indexed hedgedVault);
     event OwnerChanged(address indexed from, address indexed to);
 
     error NotOwner();
     error PairExists(address stock, address vault);
+    error UnknownPair(address stock);
+    error HedgedVaultExists(address stock, address vault);
     error ZeroAddress();
 
     modifier onlyOwner() {
@@ -35,7 +53,9 @@ contract VaultFactory {
     }
 
     constructor(address owner_, address usdg_, address lighter_) {
-        if (owner_ == address(0) || usdg_ == address(0) || lighter_ == address(0)) revert ZeroAddress();
+        if (owner_ == address(0) || usdg_ == address(0) || lighter_ == address(0)) {
+            revert ZeroAddress();
+        }
         owner = owner_;
         usdg = usdg_;
         lighter = lighter_;
@@ -48,46 +68,55 @@ contract VaultFactory {
         address feed;
         address pool;
         address keeper;
-        address guardian;
-        uint256 haircut;
-        uint256 maxMargin;
         /// @notice Recorded for operators and indexers; the chain cannot read
-        /// rollup state, so nothing on-chain can verify it.
+        /// rollup state, so nothing on-chain can verify it. Carried here from
+        /// Phase 1 so the pair's hedge market is decided with the pair.
         uint256 lighterMarketId;
         RangePolicy.Bounds bounds;
     }
 
     function addPair(PairParams calldata p) external onlyOwner returns (address vault) {
-        address existing = vaultFor[p.stock];
+        address existing = baseVaultFor[p.stock];
         if (existing != address(0)) revert PairExists(p.stock, existing);
-        if (p.stock == address(0) || p.feed == address(0) || p.pool == address(0)) revert ZeroAddress();
+        if (p.stock == address(0) || p.feed == address(0) || p.pool == address(0)) {
+            revert ZeroAddress();
+        }
 
         vault = address(
-            new SubwayVault(
-                SubwayVault.Config({
+            new BaseVault(
+                BaseVault.Config({
                     name: p.name,
                     symbol: p.symbol,
                     stock: p.stock,
                     usdg: usdg,
                     feed: p.feed,
-                    lighter: lighter,
                     pool: p.pool,
                     keeper: p.keeper,
-                    guardian: p.guardian,
                     // The factory OWNER administers the vault, not the factory
                     // itself: an admin that is a contract with no admin
                     // function is an admin nobody can use.
                     admin: owner,
-                    haircut: p.haircut,
-                    maxMargin: p.maxMargin,
                     bounds: p.bounds
                 })
             )
         );
 
-        vaultFor[p.stock] = vault;
+        baseVaultFor[p.stock] = vault;
         vaults.push(vault);
         emit PairAdded(p.stock, vault, p.lighterMarketId);
+    }
+
+    /// @notice Point a pair at its hedged wrapper. Phase 3.
+    /// @dev Write-once per pair: re-pointing a live `hAMC` would strand every
+    /// holder of the old one behind a Router that no longer knows about it.
+    function registerHedgedVault(address stock, address hedgedVault) external onlyOwner {
+        if (baseVaultFor[stock] == address(0)) revert UnknownPair(stock);
+        if (hedgedVault == address(0)) revert ZeroAddress();
+        address existing = hedgedVaultFor[stock];
+        if (existing != address(0)) revert HedgedVaultExists(stock, existing);
+
+        hedgedVaultFor[stock] = hedgedVault;
+        emit HedgedVaultRegistered(stock, hedgedVault);
     }
 
     function vaultCount() external view returns (uint256) {

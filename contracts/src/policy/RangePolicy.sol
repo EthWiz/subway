@@ -48,7 +48,11 @@ library RangePolicy {
     /// @notice Read the feed and return a usable price, or revert saying why
     /// it is not usable.
     /// @return price USDG per whole stock token, scaled to 1e18.
-    function requireFreshPrice(IPriceFeed feed, Bounds memory bounds) internal view returns (uint256 price) {
+    function requireFreshPrice(IPriceFeed feed, Bounds memory bounds)
+        internal
+        view
+        returns (uint256 price)
+    {
         // Checked before the price is read at all: during a corporate action
         // the last answer is not merely old, it refers to a different thing.
         if (feed.oraclePaused()) revert FeedPaused();
@@ -70,7 +74,10 @@ library RangePolicy {
     }
 
     /// @notice Revert unless [lower, upper] is a range this vault may hold.
-    function requireValidRange(uint256 lower, uint256 upper, uint256 price, Bounds memory bounds) internal pure {
+    function requireValidRange(uint256 lower, uint256 upper, uint256 price, Bounds memory bounds)
+        internal
+        pure
+    {
         if (bounds.minHalfWidth == 0 || bounds.minHalfWidth > bounds.maxHalfWidth) {
             revert BoundsInvalid();
         }

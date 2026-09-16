@@ -173,7 +173,10 @@ contract MockPool is IPoolAdapter {
         return open ? uint128(usdgHeld) : 0;
     }
 
-    function decreaseLiquidity(uint128 liquidity) external returns (uint256 stockOut, uint256 usdgOut) {
+    function decreaseLiquidity(uint128 liquidity)
+        external
+        returns (uint256 stockOut, uint256 usdgOut)
+    {
         uint256 total = usdgHeld;
         require(total > 0 && liquidity <= total, "MockPool: bad liquidity");
         stockOut = stockHeld * liquidity / total;

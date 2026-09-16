@@ -38,7 +38,7 @@ contract SubwayVaultTest is Test {
 
     function setUp() public {
         stock = new MockERC20("Stock", "STK", 18);
-        usdg = new MockERC20("USDG", "USDG", 18);
+        usdg = new MockERC20("USDG", "USDG", 6);
         feed = new MockFeed(PRICE_8DP);
         lighter = new MockLighter(address(usdg));
 
@@ -60,8 +60,10 @@ contract SubwayVaultTest is Test {
                 guardian: guardian,
                 admin: admin,
                 haircut: 0.35e18,
-                maxMargin: 100_000e18,
-                bounds: RangePolicy.Bounds({maxFeedAge: 2 hours, minHalfWidth: 0.01e18, maxHalfWidth: 0.25e18})
+                maxMargin: 100_000e6,
+                bounds: RangePolicy.Bounds({
+                    maxFeedAge: 2 hours, minHalfWidth: 0.01e18, maxHalfWidth: 0.25e18
+                })
             })
         );
         assertEq(address(vault), vaultAddr, "vault address prediction");
@@ -72,7 +74,7 @@ contract SubwayVaultTest is Test {
         for (uint256 i = 0; i < 2; ++i) {
             address who = i == 0 ? alice : bob;
             stock.mint(who, 1_000e18);
-            usdg.mint(who, 1_000_000e18);
+            usdg.mint(who, 1_000_000e6);
             vm.startPrank(who);
             stock.approve(address(vault), type(uint256).max);
             usdg.approve(address(vault), type(uint256).max);
@@ -89,34 +91,34 @@ contract SubwayVaultTest is Test {
 
     function test_firstDepositMintsValueAtFeedPrice() public {
         // 10 stock at 100 + 1,000 USDG = 2,000 of value.
-        uint256 shares = _deposit(alice, 10e18, 1_000e18);
-        assertEq(shares, 2_000e18, "shares == value on an empty vault");
-        assertEq(vault.navFloor(), 2_000e18, "floor == deposited value");
-        assertEq(vault.convertToAssets(shares), 2_000e18, "round trip");
+        uint256 shares = _deposit(alice, 10e18, 1_000e6);
+        assertEq(shares, 2_000e6, "shares == value on an empty vault");
+        assertEq(vault.navFloor(), 2_000e6, "floor == deposited value");
+        assertEq(vault.convertToAssets(shares), 2_000e6, "round trip");
     }
 
     function test_navFloorIgnoresUnsettledHedgePnlAndHaircutsMargin() public {
-        _deposit(alice, 0, 10_000e18);
-        assertEq(vault.navFloor(), 10_000e18);
+        _deposit(alice, 0, 10_000e6);
+        assertEq(vault.navFloor(), 10_000e6);
 
         vm.prank(keeper);
-        vault.fundHedge(4_000e18);
+        vault.fundHedge(4_000e6);
 
         // 6,000 idle + 4,000 x (1 - 0.35) = 8,600. The vault is not poorer; the
         // floor simply refuses to count margin it cannot verify is recoverable.
-        assertEq(vault.navFloor(), 8_600e18, "margin enters the floor haircut");
-        assertEq(vault.marginLedger(), 4_000e18);
+        assertEq(vault.navFloor(), 8_600e6, "margin enters the floor haircut");
+        assertEq(vault.marginLedger(), 4_000e6);
 
         // Hedge profit arriving in the rollup is invisible until it is
         // withdrawn — that is the whole point of the floor.
-        usdg.mint(address(lighter), 5_000e18);
-        assertEq(vault.navFloor(), 8_600e18, "unsettled hedge PnL counts as zero");
+        usdg.mint(address(lighter), 5_000e6);
+        assertEq(vault.navFloor(), 8_600e6, "unsettled hedge PnL counts as zero");
     }
 
     function test_navFloorUsesTheFeedNotThePoolTick() public {
-        _deposit(alice, 10e18, 1_000e18);
+        _deposit(alice, 10e18, 1_000e6);
         vm.prank(keeper);
-        vault.openRange(90e18, 110e18, 10e18, 1_000e18);
+        vault.openRange(90e18, 110e18, 10e18, 1_000e6);
 
         uint256 before = vault.navFloor();
 
@@ -124,99 +126,109 @@ contract SubwayVaultTest is Test {
         // by itself — the stock is still priced at the feed. This is the
         // manipulation the floor is built to ignore.
         pool.accrue(1e18, 0);
-        assertEq(vault.navFloor(), before + 100e18, "extra stock valued AT THE FEED");
+        assertEq(vault.navFloor(), before + 100e6, "extra stock valued AT THE FEED");
 
         // And moving the feed is what moves the floor.
         feed.set(200e8, block.timestamp);
-        assertGt(vault.navFloor(), before + 100e18, "feed drives the price");
+        assertGt(vault.navFloor(), before + 100e6, "feed drives the price");
     }
 
     function test_navFloorDegradesRatherThanRevertingOnAStaleFeed() public {
-        _deposit(alice, 10e18, 1_000e18);
+        _deposit(alice, 10e18, 1_000e6);
         skip(3 hours); // beyond maxFeedAge
 
         // A lender calling this view must not be bricked by a stale feed, but
         // it also must not be told the stock is worth its last known price.
-        assertEq(vault.navFloor(), 1_000e18, "only the USDG leg survives a stale feed");
+        assertEq(vault.navFloor(), 1_000e6, "only the USDG leg survives a stale feed");
 
         // Acting on it, however, is refused outright.
         vm.prank(keeper);
         vm.expectRevert();
-        vault.openRange(90e18, 110e18, 1e18, 100e18);
+        vault.openRange(90e18, 110e18, 1e18, 100e6);
     }
 
     function test_depositCannotDiluteExistingHolders() public {
-        uint256 aliceShares = _deposit(alice, 0, 1_000e18);
+        uint256 aliceShares = _deposit(alice, 0, 1_000e6);
         uint256 aliceValueBefore = vault.convertToAssets(aliceShares);
 
         // A large second deposit at the same price must leave Alice's claim
         // intact. Minting at the floor is what guarantees this.
-        _deposit(bob, 0, 500_000e18);
+        _deposit(bob, 0, 500_000e6);
         assertApproxEqAbs(vault.convertToAssets(aliceShares), aliceValueBefore, 1, "no dilution");
     }
 
     // -------------------------------------------------------- keeper bounds
 
     function test_keeperCannotExceedMarginCap() public {
-        _deposit(alice, 0, 200_000e18);
+        _deposit(alice, 0, 200_000e6);
         vm.prank(keeper);
-        vault.fundHedge(100_000e18);
+        vault.fundHedge(100_000e6);
 
         vm.prank(keeper);
-        vm.expectRevert(abi.encodeWithSelector(SubwayVault.MarginCapExceeded.selector, 100_001e18, 100_000e18));
-        vault.fundHedge(1e18);
+        vm.expectRevert(
+            abi.encodeWithSelector(SubwayVault.MarginCapExceeded.selector, 100_001e6, 100_000e6)
+        );
+        vault.fundHedge(1e6);
     }
 
     function test_keeperCannotWithdrawMoreMarginThanItPosted() public {
-        _deposit(alice, 0, 10_000e18);
+        _deposit(alice, 0, 10_000e6);
         vm.prank(keeper);
-        vault.fundHedge(1_000e18);
+        vault.fundHedge(1_000e6);
 
         vm.prank(keeper);
-        vm.expectRevert(abi.encodeWithSelector(SubwayVault.InsufficientMargin.selector, 2_000e18, 1_000e18));
-        vault.withdrawHedge(2_000e18);
+        vm.expectRevert(
+            abi.encodeWithSelector(SubwayVault.InsufficientMargin.selector, 2_000e6, 1_000e6)
+        );
+        vault.withdrawHedge(2_000e6);
     }
 
     function test_rangePolicyRejectsBadRanges() public {
-        _deposit(alice, 10e18, 10_000e18);
+        _deposit(alice, 10e18, 10_000e6);
 
         // Does not straddle the feed price.
         vm.prank(keeper);
-        vm.expectRevert(abi.encodeWithSelector(RangePolicy.RangeNotStraddling.selector, 101e18, PRICE, 120e18));
-        vault.openRange(101e18, 120e18, 1e18, 100e18);
+        vm.expectRevert(
+            abi.encodeWithSelector(RangePolicy.RangeNotStraddling.selector, 101e18, PRICE, 120e18)
+        );
+        vault.openRange(101e18, 120e18, 1e18, 100e6);
 
         // Too narrow: 0.5% against a 1% floor.
         vm.prank(keeper);
-        vm.expectRevert(abi.encodeWithSelector(RangePolicy.RangeTooNarrow.selector, 0.005e18, 0.01e18));
-        vault.openRange(99.5e18, 100.5e18, 1e18, 100e18);
+        vm.expectRevert(
+            abi.encodeWithSelector(RangePolicy.RangeTooNarrow.selector, 0.005e18, 0.01e18)
+        );
+        vault.openRange(99.5e18, 100.5e18, 1e18, 100e6);
 
         // Too wide: 50% against a 25% cap.
         vm.prank(keeper);
         vm.expectRevert(abi.encodeWithSelector(RangePolicy.RangeTooWide.selector, 0.5e18, 0.25e18));
-        vault.openRange(50e18, 150e18, 1e18, 100e18);
+        vault.openRange(50e18, 150e18, 1e18, 100e6);
 
         // A paused feed blocks the action entirely.
         feed.setPaused(true);
         vm.prank(keeper);
         vm.expectRevert(RangePolicy.FeedPaused.selector);
-        vault.openRange(94e18, 106e18, 1e18, 100e18);
+        vault.openRange(94e18, 106e18, 1e18, 100e6);
     }
 
     function test_lopsidedRangeIsJudgedOnItsNarrowSide() public {
-        _deposit(alice, 10e18, 10_000e18);
+        _deposit(alice, 10e18, 10_000e6);
         // 0.5% below, 40% above: straddles, but converts to one token almost
         // immediately on a small move down.
         vm.prank(keeper);
-        vm.expectRevert(abi.encodeWithSelector(RangePolicy.RangeTooNarrow.selector, 0.005e18, 0.01e18));
-        vault.openRange(99.5e18, 140e18, 1e18, 100e18);
+        vm.expectRevert(
+            abi.encodeWithSelector(RangePolicy.RangeTooNarrow.selector, 0.005e18, 0.01e18)
+        );
+        vault.openRange(99.5e18, 140e18, 1e18, 100e6);
     }
 
     function test_onlyKeeperMayActAndOnlyAdminMayRotate() public {
-        _deposit(alice, 0, 10_000e18);
+        _deposit(alice, 0, 10_000e6);
 
         vm.prank(alice);
         vm.expectRevert(SubwayVault.NotKeeper.selector);
-        vault.fundHedge(1e18);
+        vault.fundHedge(1e6);
 
         vm.prank(keeper);
         vm.expectRevert(SubwayVault.NotAdmin.selector);
@@ -228,9 +240,9 @@ contract SubwayVaultTest is Test {
     }
 
     function test_openRangeLeavesNoStandingAllowance() public {
-        _deposit(alice, 10e18, 1_000e18);
+        _deposit(alice, 10e18, 1_000e6);
         vm.prank(keeper);
-        vault.openRange(94e18, 106e18, 10e18, 1_000e18);
+        vault.openRange(94e18, 106e18, 10e18, 1_000e6);
 
         // A live allowance is a standing claim on vault funds by the adapter.
         assertEq(stock.allowance(address(vault), address(pool)), 0);
@@ -240,15 +252,15 @@ contract SubwayVaultTest is Test {
     // ------------------------------------------------------ redemption queue
 
     function test_queueSettlesAtTheNextEpochFloorAndPaysExactly() public {
-        uint256 aliceShares = _deposit(alice, 0, 10_000e18);
-        _deposit(bob, 0, 10_000e18);
+        uint256 aliceShares = _deposit(alice, 0, 10_000e6);
+        _deposit(bob, 0, 10_000e6);
 
         vm.prank(alice);
         uint256 id = vault.requestRedeem(aliceShares);
 
         // Shares burn on request: a queued holder stops taking the risk.
         assertEq(vault.balanceOf(alice), 0);
-        assertEq(vault.totalSupply(), 10_000e18);
+        assertEq(vault.totalSupply(), 10_000e6);
         assertEq(vault.pendingShares(), aliceShares);
 
         vm.prank(keeper);
@@ -256,16 +268,16 @@ contract SubwayVaultTest is Test {
 
         vm.prank(alice);
         uint256 got = vault.claim(id);
-        assertEq(got, 10_000e18, "half the 20,000 floor");
-        assertEq(usdg.balanceOf(alice), 1_000_000e18, "whole position returned");
+        assertEq(got, 10_000e6, "half the 20,000 floor");
+        assertEq(usdg.balanceOf(alice), 1_000_000e6, "whole position returned");
         assertEq(vault.reservedAssets(), 0);
     }
 
     function test_settleEpochRevertsWhenTheQueueIsNotCovered() public {
-        uint256 shares = _deposit(alice, 0, 10_000e18);
+        uint256 shares = _deposit(alice, 0, 10_000e6);
         // Keeper posts most of the vault as margin, so idle USDG cannot pay.
         vm.prank(keeper);
-        vault.fundHedge(9_000e18);
+        vault.fundHedge(9_000e6);
 
         vm.prank(alice);
         vault.requestRedeem(shares);
@@ -277,15 +289,15 @@ contract SubwayVaultTest is Test {
 
         // Once the keeper has pulled margin back, it settles.
         vm.prank(keeper);
-        vault.withdrawHedge(9_000e18);
+        vault.withdrawHedge(9_000e6);
         vm.prank(keeper);
         vault.settleEpoch();
         assertEq(vault.epoch(), 1);
     }
 
     function test_reservedAssetsAreNotCountedForRemainingHolders() public {
-        uint256 aliceShares = _deposit(alice, 0, 10_000e18);
-        uint256 bobShares = _deposit(bob, 0, 10_000e18);
+        uint256 aliceShares = _deposit(alice, 0, 10_000e6);
+        uint256 bobShares = _deposit(bob, 0, 10_000e6);
 
         vm.prank(alice);
         vault.requestRedeem(aliceShares);
@@ -294,12 +306,12 @@ contract SubwayVaultTest is Test {
 
         // Alice's 10,000 is settled but unclaimed and sits in the vault. It
         // must not inflate Bob's share price.
-        assertEq(vault.reservedAssets(), 10_000e18);
-        assertEq(vault.convertToAssets(bobShares), 10_000e18, "Bob still owns exactly his half");
+        assertEq(vault.reservedAssets(), 10_000e6);
+        assertEq(vault.convertToAssets(bobShares), 10_000e6, "Bob still owns exactly his half");
     }
 
     function test_claimIsOwnerOnlyAndOnce() public {
-        uint256 shares = _deposit(alice, 0, 10_000e18);
+        uint256 shares = _deposit(alice, 0, 10_000e6);
         vm.prank(alice);
         uint256 id = vault.requestRedeem(shares);
 
@@ -324,8 +336,8 @@ contract SubwayVaultTest is Test {
 
     function test_queuedPayoutsSumExactlyToTheAmountReserved() public {
         // Three odd-sized requests in one epoch: the dust must not strand.
-        uint256 a = _deposit(alice, 0, 3_333e18);
-        uint256 b = _deposit(bob, 0, 6_667e18);
+        uint256 a = _deposit(alice, 0, 3_333e6);
+        uint256 b = _deposit(bob, 0, 6_667e6);
 
         vm.prank(alice);
         uint256 idA = vault.requestRedeem(a);
@@ -346,7 +358,7 @@ contract SubwayVaultTest is Test {
     }
 
     function test_synchronousExitsRevertPointingAtTheQueue() public {
-        _deposit(alice, 0, 1_000e18);
+        _deposit(alice, 0, 1_000e6);
         vm.expectRevert(SubwayVault.UseRedemptionQueue.selector);
         vault.redeem(1, alice, alice);
         vm.expectRevert(SubwayVault.UseRedemptionQueue.selector);
@@ -357,13 +369,13 @@ contract SubwayVaultTest is Test {
     // ------------------------------------------------------------- the panic
 
     function test_panicFreezesTheKeeperAndLetsEveryHolderLeave() public {
-        _deposit(alice, 10e18, 5_000e18);
-        _deposit(bob, 10e18, 5_000e18);
+        _deposit(alice, 10e18, 5_000e6);
+        _deposit(bob, 10e18, 5_000e6);
 
         vm.prank(keeper);
-        vault.openRange(94e18, 106e18, 20e18, 8_000e18);
+        vault.openRange(94e18, 106e18, 20e18, 8_000e6);
         vm.prank(keeper);
-        vault.fundHedge(2_000e18);
+        vault.fundHedge(2_000e6);
 
         vm.prank(guardian);
         vault.panic();
@@ -376,7 +388,7 @@ contract SubwayVaultTest is Test {
         // The keeper is now inert.
         vm.prank(keeper);
         vm.expectRevert(SubwayVault.Frozen.selector);
-        vault.fundHedge(1e18);
+        vault.fundHedge(1e6);
 
         // And both holders exit pro-rata without anyone's help.
         uint256 aliceShares = vault.balanceOf(alice);
@@ -396,7 +408,7 @@ contract SubwayVaultTest is Test {
     }
 
     function test_panicIsCallableByTheKeeperItselfAndIsNotBlockedByFreeze() public {
-        _deposit(alice, 0, 1_000e18);
+        _deposit(alice, 0, 1_000e6);
         vm.prank(keeper);
         vault.panic();
         assertTrue(vault.frozen());
@@ -408,15 +420,15 @@ contract SubwayVaultTest is Test {
     }
 
     function test_emergencyRedeemRequiresAPanic() public {
-        uint256 shares = _deposit(alice, 0, 1_000e18);
+        uint256 shares = _deposit(alice, 0, 1_000e6);
         vm.prank(alice);
         vm.expectRevert(SubwayVault.NotFrozen.selector);
         vault.emergencyRedeem(shares);
     }
 
     function test_emergencyRedeemCannotTakeAnotherHoldersSettledClaim() public {
-        uint256 aliceShares = _deposit(alice, 0, 10_000e18);
-        uint256 bobShares = _deposit(bob, 0, 10_000e18);
+        uint256 aliceShares = _deposit(alice, 0, 10_000e6);
+        uint256 bobShares = _deposit(bob, 0, 10_000e6);
 
         vm.prank(alice);
         uint256 id = vault.requestRedeem(aliceShares);
@@ -430,10 +442,10 @@ contract SubwayVaultTest is Test {
         // reserved and must not be drained by his exit.
         vm.prank(bob);
         (, uint256 u) = vault.emergencyRedeem(bobShares);
-        assertEq(u, 10_000e18, "Bob gets his half, not the whole balance");
+        assertEq(u, 10_000e6, "Bob gets his half, not the whole balance");
 
         vm.prank(alice);
-        assertEq(vault.claim(id), 10_000e18, "Alice's claim survives the panic");
+        assertEq(vault.claim(id), 10_000e6, "Alice's claim survives the panic");
     }
 
     // --------------------------------------------------- money-movement rule
@@ -444,16 +456,16 @@ contract SubwayVaultTest is Test {
         // claim, the L1 owner for a Lighter withdrawal, the adapter for a
         // range. A keeper with a compromised key can lose money by trading
         // badly; it has no call that names a destination.
-        _deposit(alice, 10e18, 1_000e18);
+        _deposit(alice, 10e18, 1_000e6);
 
         uint256 vaultStock = stock.balanceOf(address(vault));
         uint256 vaultUsdg = usdg.balanceOf(address(vault));
 
         vm.startPrank(keeper);
-        vault.openRange(94e18, 106e18, 5e18, 500e18);
-        vault.fundHedge(200e18);
+        vault.openRange(94e18, 106e18, 5e18, 500e6);
+        vault.fundHedge(200e6);
         vault.registerHedgeKey(hex"dead");
-        vault.withdrawHedge(200e18);
+        vault.withdrawHedge(200e6);
         vault.closeRange();
         vm.stopPrank();
 
@@ -466,7 +478,7 @@ contract SubwayVaultTest is Test {
 
     function testFuzz_floorNeverExceedsWhatTheVaultCanVerify(uint96 usdgIn, uint96 margin) public {
         uint256 u = uint256(usdgIn);
-        vm.assume(u > 1e18 && u < 500_000e18);
+        vm.assume(u > 1e6 && u < 500_000e6);
         // The keeper can never post more than the cap, so neither may the
         // fuzzer — exceeding it reverts by design and is covered elsewhere.
         uint256 cap = u < vault.maxMargin() ? u : vault.maxMargin();

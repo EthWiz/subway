@@ -32,11 +32,12 @@ library PriceTick {
     /// @param stockIsCurrency0 True when the stock token sorts below USDG.
     /// @param stockDecimals Decimals of the stock token.
     /// @param usdgDecimals Decimals of USDG (6 on Robinhood Chain).
-    function toSqrtPriceX96(uint256 wadPrice, bool stockIsCurrency0, uint8 stockDecimals, uint8 usdgDecimals)
-        internal
-        pure
-        returns (uint160 sqrtPriceX96)
-    {
+    function toSqrtPriceX96(
+        uint256 wadPrice,
+        bool stockIsCurrency0,
+        uint8 stockDecimals,
+        uint8 usdgDecimals
+    ) internal pure returns (uint160 sqrtPriceX96) {
         if (wadPrice == 0) revert PriceOutOfRange(wadPrice);
 
         // One whole stock = 10^stockDecimals raw units and is worth
@@ -45,7 +46,8 @@ library PriceTick {
         // inverted when USDG is the lower-sorting currency.
         uint256 stockSide = WAD * (10 ** stockDecimals);
         uint256 usdgSide = wadPrice * (10 ** usdgDecimals);
-        (uint256 num, uint256 den) = stockIsCurrency0 ? (usdgSide, stockSide) : (stockSide, usdgSide);
+        (uint256 num, uint256 den) =
+            stockIsCurrency0 ? (usdgSide, stockSide) : (stockSide, usdgSide);
 
         // √(num/den) · 2^96 computed as √(num/den · 2^128) · 2^32. Splitting the
         // scaling this way keeps ~14 significant digits even for the ~1e-10
@@ -63,11 +65,12 @@ library PriceTick {
     }
 
     /// @notice The inverse of `toSqrtPriceX96`, for events, views and tests.
-    function toWadPrice(uint160 sqrtPriceX96, bool stockIsCurrency0, uint8 stockDecimals, uint8 usdgDecimals)
-        internal
-        pure
-        returns (uint256 wadPrice)
-    {
+    function toWadPrice(
+        uint160 sqrtPriceX96,
+        bool stockIsCurrency0,
+        uint8 stockDecimals,
+        uint8 usdgDecimals
+    ) internal pure returns (uint256 wadPrice) {
         // ratio(token1/token0) at Q128, then undo the decimal scaling in the
         // direction the pool is actually ordered.
         // ratio · 2^128 = sqrtPriceX96^2 / 2^64, via mulDiv so the square is
@@ -100,7 +103,11 @@ library PriceTick {
     /// the returned tick's own price can sit strictly below the request even
     /// when that tick is already on the grid; rounding only to the grid would
     /// then shave the upper edge inside the requested range.
-    function toAlignedTick(uint160 sqrtPriceX96, int24 tickSpacing, bool roundDown) internal pure returns (int24) {
+    function toAlignedTick(uint160 sqrtPriceX96, int24 tickSpacing, bool roundDown)
+        internal
+        pure
+        returns (int24)
+    {
         if (tickSpacing <= 0) revert TickSpacingInvalid(tickSpacing);
         int24 tick = TickMath.getTickAtSqrtPrice(sqrtPriceX96);
 

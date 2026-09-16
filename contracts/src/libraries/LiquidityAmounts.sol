@@ -29,10 +29,13 @@ library LiquidityAmounts {
         pure
         returns (uint128 liquidity)
     {
-        if (sqrtPriceAX96 > sqrtPriceBX96) (sqrtPriceAX96, sqrtPriceBX96) = (sqrtPriceBX96, sqrtPriceAX96);
+        if (sqrtPriceAX96 > sqrtPriceBX96) {
+            (sqrtPriceAX96, sqrtPriceBX96) = (sqrtPriceBX96, sqrtPriceAX96);
+        }
         // √a·√b is up to 320 bits, so it is descaled by Q96 before the divide.
         uint256 intermediate = FullMath.mulDiv(sqrtPriceAX96, sqrtPriceBX96, FixedPoint96.Q96);
-        liquidity = _toUint128(FullMath.mulDiv(amount0, intermediate, sqrtPriceBX96 - sqrtPriceAX96));
+        liquidity =
+            _toUint128(FullMath.mulDiv(amount0, intermediate, sqrtPriceBX96 - sqrtPriceAX96));
     }
 
     /// @notice Liquidity affordable with `amount1` alone across [√a, √b].
@@ -41,8 +44,11 @@ library LiquidityAmounts {
         pure
         returns (uint128 liquidity)
     {
-        if (sqrtPriceAX96 > sqrtPriceBX96) (sqrtPriceAX96, sqrtPriceBX96) = (sqrtPriceBX96, sqrtPriceAX96);
-        liquidity = _toUint128(FullMath.mulDiv(amount1, FixedPoint96.Q96, sqrtPriceBX96 - sqrtPriceAX96));
+        if (sqrtPriceAX96 > sqrtPriceBX96) {
+            (sqrtPriceAX96, sqrtPriceBX96) = (sqrtPriceBX96, sqrtPriceAX96);
+        }
+        liquidity =
+            _toUint128(FullMath.mulDiv(amount1, FixedPoint96.Q96, sqrtPriceBX96 - sqrtPriceAX96));
     }
 
     /// @notice Liquidity both amounts can support at once — the binding side.
@@ -56,7 +62,9 @@ library LiquidityAmounts {
         uint256 amount0,
         uint256 amount1
     ) internal pure returns (uint128 liquidity) {
-        if (sqrtPriceAX96 > sqrtPriceBX96) (sqrtPriceAX96, sqrtPriceBX96) = (sqrtPriceBX96, sqrtPriceAX96);
+        if (sqrtPriceAX96 > sqrtPriceBX96) {
+            (sqrtPriceAX96, sqrtPriceBX96) = (sqrtPriceBX96, sqrtPriceAX96);
+        }
 
         if (sqrtPriceX96 <= sqrtPriceAX96) {
             liquidity = getLiquidityForAmount0(sqrtPriceAX96, sqrtPriceBX96, amount0);

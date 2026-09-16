@@ -34,7 +34,9 @@ contract Swapper is IUnlockCallback {
             SwapParams({
                 zeroForOne: zeroForOne,
                 amountSpecified: amountSpecified,
-                sqrtPriceLimitX96: zeroForOne ? TickMath.MIN_SQRT_PRICE + 1 : TickMath.MAX_SQRT_PRICE - 1
+                sqrtPriceLimitX96: zeroForOne
+                    ? TickMath.MIN_SQRT_PRICE + 1
+                    : TickMath.MAX_SQRT_PRICE - 1
             }),
             ""
         );
@@ -47,7 +49,8 @@ contract Swapper is IUnlockCallback {
     function _resolve(Currency currency, int128 delta) private {
         if (delta < 0) {
             poolManager.sync(currency);
-            IERC20(Currency.unwrap(currency)).transfer(address(poolManager), uint256(uint128(-delta)));
+            IERC20(Currency.unwrap(currency))
+                .transfer(address(poolManager), uint256(uint128(-delta)));
             poolManager.settle();
         } else if (delta > 0) {
             poolManager.take(currency, address(this), uint256(uint128(delta)));

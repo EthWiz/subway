@@ -82,7 +82,9 @@ contract UniV4Adapter is IPoolAdapter, IUnlockCallback {
     int24 public tickUpper;
     uint128 public positionLiquidity;
 
-    event RangeOpened(int24 tickLower, int24 tickUpper, uint128 liquidity, uint256 stockUsed, uint256 usdgUsed);
+    event RangeOpened(
+        int24 tickLower, int24 tickUpper, uint128 liquidity, uint256 stockUsed, uint256 usdgUsed
+    );
     event LiquidityDecreased(uint128 liquidity, uint256 stockOut, uint256 usdgOut);
     event FeesCollected(uint256 stockFees, uint256 usdgFees);
 
@@ -132,7 +134,13 @@ contract UniV4Adapter is IPoolAdapter, IUnlockCallback {
         // operations, and nothing in this design needs one. The plan's
         // oracle-anchored hook pool would be a DIFFERENT adapter, not a flag
         // here.
-        return PoolKey({currency0: c0, currency1: c1, fee: fee, tickSpacing: tickSpacing, hooks: IHooks(address(0))});
+        return PoolKey({
+            currency0: c0,
+            currency1: c1,
+            fee: fee,
+            tickSpacing: tickSpacing,
+            hooks: IHooks(address(0))
+        });
     }
 
     function poolId() public view returns (PoolId) {
@@ -194,11 +202,12 @@ contract UniV4Adapter is IPoolAdapter, IUnlockCallback {
 
     // --------------------------------------------------------- vault surface
 
-    function openRange(uint256 lowerPrice, uint256 upperPrice, uint256 stockAmount, uint256 usdgAmount)
-        external
-        onlyVault
-        returns (uint256 stockUsed, uint256 usdgUsed)
-    {
+    function openRange(
+        uint256 lowerPrice,
+        uint256 upperPrice,
+        uint256 stockAmount,
+        uint256 usdgAmount
+    ) external onlyVault returns (uint256 stockUsed, uint256 usdgUsed) {
         if (positionLiquidity != 0) revert PositionAlreadyOpen();
 
         (int24 lower, int24 upper) = _ticksFor(lowerPrice, upperPrice);
@@ -207,7 +216,11 @@ contract UniV4Adapter is IPoolAdapter, IUnlockCallback {
 
         (uint160 sqrtPriceX96,,,) = poolManager.getSlot0(poolId());
         uint128 liq = LiquidityAmounts.getLiquidityForAmounts(
-            sqrtPriceX96, TickMath.getSqrtPriceAtTick(lower), TickMath.getSqrtPriceAtTick(upper), amount0, amount1
+            sqrtPriceX96,
+            TickMath.getSqrtPriceAtTick(lower),
+            TickMath.getSqrtPriceAtTick(upper),
+            amount0,
+            amount1
         );
         if (liq == 0) revert ZeroLiquidity();
 
@@ -215,8 +228,9 @@ contract UniV4Adapter is IPoolAdapter, IUnlockCallback {
         tickUpper = upper;
         positionLiquidity = liq;
 
-        (uint256 stockDelta, uint256 usdgDelta) =
-            _unlock(CallbackData({action: Action.Add, tickLower: lower, tickUpper: upper, liquidity: liq}));
+        (uint256 stockDelta, uint256 usdgDelta) = _unlock(
+            CallbackData({action: Action.Add, tickLower: lower, tickUpper: upper, liquidity: liq})
+        );
 
         // `LiquidityAmounts` rounds down precisely so this holds; asserting it
         // anyway means a future change to that library cannot quietly spend
@@ -241,7 +255,12 @@ contract UniV4Adapter is IPoolAdapter, IUnlockCallback {
         positionLiquidity = live - liquidity;
 
         (stockOut, usdgOut) = _unlock(
-            CallbackData({action: Action.Remove, tickLower: tickLower, tickUpper: tickUpper, liquidity: liquidity})
+            CallbackData({
+                action: Action.Remove,
+                tickLower: tickLower,
+                tickUpper: tickUpper,
+                liquidity: liquidity
+            })
         );
         emit LiquidityDecreased(liquidity, stockOut, usdgOut);
     }
@@ -254,7 +273,9 @@ contract UniV4Adapter is IPoolAdapter, IUnlockCallback {
     function collectFees() external onlyVault returns (uint256 stockFees, uint256 usdgFees) {
         if (positionLiquidity == 0) revert NoPosition();
         (stockFees, usdgFees) = _unlock(
-            CallbackData({action: Action.Collect, tickLower: tickLower, tickUpper: tickUpper, liquidity: 0})
+            CallbackData({
+                action: Action.Collect, tickLower: tickLower, tickUpper: tickUpper, liquidity: 0
+            })
         );
         emit FeesCollected(stockFees, usdgFees);
     }
@@ -265,9 +286,15 @@ contract UniV4Adapter is IPoolAdapter, IUnlockCallback {
     /// range. The two prices are sorted AFTER conversion, not before: when USDG
     /// is currency0 a higher stock price is a lower pool price, so which input
     /// becomes the lower tick depends on the pool's ordering.
-    function _ticksFor(uint256 lowerPrice, uint256 upperPrice) private view returns (int24 lower, int24 upper) {
-        uint160 sqrtA = PriceTick.toSqrtPriceX96(lowerPrice, stockIsCurrency0, stockDecimals, usdgDecimals);
-        uint160 sqrtB = PriceTick.toSqrtPriceX96(upperPrice, stockIsCurrency0, stockDecimals, usdgDecimals);
+    function _ticksFor(uint256 lowerPrice, uint256 upperPrice)
+        private
+        view
+        returns (int24 lower, int24 upper)
+    {
+        uint160 sqrtA =
+            PriceTick.toSqrtPriceX96(lowerPrice, stockIsCurrency0, stockDecimals, usdgDecimals);
+        uint160 sqrtB =
+            PriceTick.toSqrtPriceX96(upperPrice, stockIsCurrency0, stockDecimals, usdgDecimals);
         (uint160 sqrtLo, uint160 sqrtHi) = sqrtA < sqrtB ? (sqrtA, sqrtB) : (sqrtB, sqrtA);
 
         lower = PriceTick.toAlignedTick(sqrtLo, tickSpacing, true);
@@ -280,7 +307,10 @@ contract UniV4Adapter is IPoolAdapter, IUnlockCallback {
         if (lower >= upper) revert RangeEmpty(lower, upper);
     }
 
-    function _unlock(CallbackData memory data) private returns (uint256 stockMoved, uint256 usdgMoved) {
+    function _unlock(CallbackData memory data)
+        private
+        returns (uint256 stockMoved, uint256 usdgMoved)
+    {
         bytes memory result = poolManager.unlock(abi.encode(data));
         (uint256 amount0, uint256 amount1) = abi.decode(result, (uint256, uint256));
         return stockIsCurrency0 ? (amount0, amount1) : (amount1, amount0);

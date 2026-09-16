@@ -3,3 +3,4 @@ contracts/cache/
 contracts/lib/
 research/generated/
 pnpm-lock.yaml
+.claude/worktrees/

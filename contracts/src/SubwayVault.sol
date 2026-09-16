@@ -4,6 +4,8 @@ pragma solidity 0.8.28;
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import {IERC20Metadata} from "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
+import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
 import {IPoolAdapter} from "./interfaces/IPoolAdapter.sol";
@@ -86,6 +88,23 @@ contract SubwayVault is ERC20, ReentrancyGuard {
     uint256 public maxMargin;
     RangePolicy.Bounds public bounds;
 
+    /// @dev `WAD * 10^stockDecimals / 10^usdgDecimals`, the single divisor that
+    /// turns a raw stock amount times a WAD price into a RAW USDG amount.
+    ///
+    /// This exists because the obvious `amount * price / WAD` is wrong whenever
+    /// the two tokens differ in decimals, and it is wrong silently: with an
+    /// 18-decimal stock token against 6-decimal USDG it overstates the stock
+    /// leg by 10^12, which prices a share at a trillion times its worth. The
+    /// first version of this code had exactly that bug and its tests did not
+    /// catch it, because they gave both mock tokens 18 decimals. USDG on
+    /// Robinhood Chain has 6.
+    uint256 private immutable stockValueDivisor;
+
+    /// @notice Raw USDG value of a raw stock amount at a WAD price.
+    function _stockValue(uint256 stockAmount, uint256 price) internal view returns (uint256) {
+        return Math.mulDiv(stockAmount, price, stockValueDivisor);
+    }
+
     // ----------------------------------------------------------------- state
 
     /// @notice USDG sent to this vault's Lighter account minus USDG withdrawn
@@ -114,10 +133,20 @@ contract SubwayVault is ERC20, ReentrancyGuard {
 
     // ---------------------------------------------------------------- events
 
-    event Deposit(address indexed caller, address indexed receiver, uint256 stockIn, uint256 usdgIn, uint256 shares);
-    event RedeemRequested(uint256 indexed id, address indexed owner, uint256 shares, uint256 epochId);
+    event Deposit(
+        address indexed caller,
+        address indexed receiver,
+        uint256 stockIn,
+        uint256 usdgIn,
+        uint256 shares
+    );
+    event RedeemRequested(
+        uint256 indexed id, address indexed owner, uint256 shares, uint256 epochId
+    );
     event RedeemClaimed(uint256 indexed id, address indexed owner, uint256 assets);
-    event EpochSettled(uint256 indexed epochId, uint256 navFloor, uint256 totalShares, uint256 paidOut);
+    event EpochSettled(
+        uint256 indexed epochId, uint256 navFloor, uint256 totalShares, uint256 paidOut
+    );
     event HedgeFunded(uint256 amount, uint256 ledger);
     event HedgeWithdrawn(uint256 amount, uint256 ledger);
     event HedgeKeyRegistered(bytes pubKey);
@@ -191,6 +220,9 @@ contract SubwayVault is ERC20, ReentrancyGuard {
         haircut = c.haircut;
         maxMargin = c.maxMargin;
         bounds = c.bounds;
+
+        stockValueDivisor = WAD * (10 ** IERC20Metadata(c.stock).decimals())
+            / (10 ** IERC20Metadata(c.usdg).decimals());
     }
 
     // ------------------------------------------------------------ accounting
@@ -216,12 +248,12 @@ contract SubwayVault is ERC20, ReentrancyGuard {
         }
 
         uint256 total = usdg.balanceOf(address(this));
-        total += stock.balanceOf(address(this)) * price / WAD;
+        total += _stockValue(stock.balanceOf(address(this)), price);
 
         if (pool.hasPosition()) {
             (uint256 poolStock, uint256 poolUsdg) = pool.positionAmounts();
             total += poolUsdg;
-            total += poolStock * price / WAD;
+            total += _stockValue(poolStock, price);
         }
 
         total += marginLedger * (WAD - haircut) / WAD;
@@ -299,7 +331,7 @@ contract SubwayVault is ERC20, ReentrancyGuard {
         uint256 navBefore = navFloor();
         uint256 supply = totalSupply();
 
-        uint256 value = usdgAmount + (stockAmount * price / WAD);
+        uint256 value = usdgAmount + _stockValue(stockAmount, price);
         shares = (supply == 0 || navBefore == 0) ? value : value * supply / navBefore;
         if (shares == 0) revert NothingToMint();
 
@@ -321,7 +353,9 @@ contract SubwayVault is ERC20, ReentrancyGuard {
 
         id = requests.length;
         requests.push(
-            RedeemRequest({owner: msg.sender, shares: shares, epochId: epoch, assetsOwed: 0, claimed: false})
+            RedeemRequest({
+                owner: msg.sender, shares: shares, epochId: epoch, assetsOwed: 0, claimed: false
+            })
         );
         emit RedeemRequested(id, msg.sender, shares, epoch);
     }
@@ -346,13 +380,17 @@ contract SubwayVault is ERC20, ReentrancyGuard {
 
     // ---------------------------------------------------------------- keeper
 
-    function openRange(uint256 lower, uint256 upper, uint256 stockAmount, uint256 usdgAmount) external onlyKeeper {
+    function openRange(uint256 lower, uint256 upper, uint256 stockAmount, uint256 usdgAmount)
+        external
+        onlyKeeper
+    {
         uint256 price = feed.requireFreshPrice(bounds);
         RangePolicy.requireValidRange(lower, upper, price, bounds);
 
         if (stockAmount > 0) stock.forceApprove(address(pool), stockAmount);
         if (usdgAmount > 0) usdg.forceApprove(address(pool), usdgAmount);
-        (uint256 stockUsed, uint256 usdgUsed) = pool.openRange(lower, upper, stockAmount, usdgAmount);
+        (uint256 stockUsed, uint256 usdgUsed) =
+            pool.openRange(lower, upper, stockAmount, usdgAmount);
 
         // Leaving an allowance alive is a standing claim on vault funds.
         stock.forceApprove(address(pool), 0);
@@ -475,7 +513,11 @@ contract SubwayVault is ERC20, ReentrancyGuard {
     /// Pays out both tokens as they sit rather than selling the stock leg:
     /// selling would need a price, a route and a counterparty, which is
     /// exactly what a vault in panic cannot be assumed to have.
-    function emergencyRedeem(uint256 shares) external nonReentrant returns (uint256 stockOut, uint256 usdgOut) {
+    function emergencyRedeem(uint256 shares)
+        external
+        nonReentrant
+        returns (uint256 stockOut, uint256 usdgOut)
+    {
         if (!frozen) revert NotFrozen();
         uint256 supply = totalSupply();
 
@@ -495,7 +537,10 @@ contract SubwayVault is ERC20, ReentrancyGuard {
         keeper = next;
     }
 
-    function setCaps(uint256 haircut_, uint256 maxMargin_, RangePolicy.Bounds calldata bounds_) external onlyAdmin {
+    function setCaps(uint256 haircut_, uint256 maxMargin_, RangePolicy.Bounds calldata bounds_)
+        external
+        onlyAdmin
+    {
         if (haircut_ > MAX_HAIRCUT) revert HaircutTooHigh(haircut_);
         haircut = haircut_;
         maxMargin = maxMargin_;

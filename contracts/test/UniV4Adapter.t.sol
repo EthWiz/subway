@@ -44,14 +44,18 @@ contract UniV4AdapterTest is Test {
 
     function setUp() public {
         vault = address(this);
-        poolManager = IPoolManager(deployCode("out/PoolManager.sol/PoolManager.json", abi.encode(address(this))));
+        poolManager = IPoolManager(
+            deployCode("out/PoolManager.sol/PoolManager.json", abi.encode(address(this)))
+        );
 
         // 18/6 decimals, deliberately: the decimal asymmetry between a stock
         // token and USDG is where the Phase 0 screen's orientation bug lived.
         stock = new MockERC20("Stock", "xSTK", 18);
         usdg = new MockERC20("USD Global", "USDG", 6);
 
-        adapter = new UniV4Adapter(poolManager, vault, IERC20(address(stock)), IERC20(address(usdg)), FEE, TICK_SPACING);
+        adapter = new UniV4Adapter(
+            poolManager, vault, IERC20(address(stock)), IERC20(address(usdg)), FEE, TICK_SPACING
+        );
         swapper = new Swapper(poolManager);
 
         stock.mint(vault, 1_000_000e18);
@@ -121,7 +125,9 @@ contract UniV4AdapterTest is Test {
         (uint256 stockFees, uint256 usdgFees) = adapter.collectFees();
 
         assertTrue(stockFees > 0 || usdgFees > 0, "a 0.3% pool with two swaps earned nothing");
-        assertEq(stock.balanceOf(vault) - stockBefore, stockFees, "stock fees did not reach the vault");
+        assertEq(
+            stock.balanceOf(vault) - stockBefore, stockFees, "stock fees did not reach the vault"
+        );
         assertEq(usdg.balanceOf(vault) - usdgBefore, usdgFees, "usdg fees did not reach the vault");
         assertTrue(adapter.hasPosition(), "collecting must not disturb the position");
         _assertAdapterHoldsNothing();
@@ -150,8 +156,9 @@ contract UniV4AdapterTest is Test {
             highStock = new MockERC20("Stock", "xSTK", 18);
         }
 
-        UniV4Adapter alt =
-            new UniV4Adapter(poolManager, vault, IERC20(address(highStock)), IERC20(address(usdg)), FEE, TICK_SPACING);
+        UniV4Adapter alt = new UniV4Adapter(
+            poolManager, vault, IERC20(address(highStock)), IERC20(address(usdg)), FEE, TICK_SPACING
+        );
         assertFalse(alt.stockIsCurrency0(), "test setup failed to flip the ordering");
 
         highStock.mint(vault, 1_000e18);
@@ -223,9 +230,7 @@ contract UniV4AdapterTest is Test {
         // 60-tick spacing is ~0.6% wide; a range this thin cannot survive
         // alignment, and collapsing to an empty range must revert rather than
         // silently place nothing.
-        vm.expectRevert(
-            abi.encodeWithSelector(PriceTick.PriceOutOfRange.selector, uint256(0))
-        );
+        vm.expectRevert(abi.encodeWithSelector(PriceTick.PriceOutOfRange.selector, uint256(0)));
         adapter.openRange(0, 212e18, 100e18, 20_000e6);
     }
 
@@ -235,7 +240,11 @@ contract UniV4AdapterTest is Test {
     /// liquidity, ask v4-core's own `SqrtPriceMath` what that liquidity costs,
     /// and require it never exceeds what was offered. An over-estimate here is
     /// what would make a keeper's call revert or overspend.
-    function testFuzz_liquidityForAmountsNeverOverspends(uint128 amount0, uint128 amount1, int24 lowerSeed) public pure {
+    function testFuzz_liquidityForAmountsNeverOverspends(
+        uint128 amount0,
+        uint128 amount1,
+        int24 lowerSeed
+    ) public pure {
         // Bounded to the band a real stock/USDG pool occupies. An 18-decimal
         // token against 6-decimal USDG puts the raw ratio near 1e-10 or 1e10
         // depending on ordering, i.e. ticks around +/-223,000; +/-250,000
@@ -251,7 +260,9 @@ contract UniV4AdapterTest is Test {
         uint160 sqrtUpper = TickMath.getSqrtPriceAtTick(upper);
         uint160 sqrtCurrent = TickMath.getSqrtPriceAtTick(lower + 600);
 
-        uint128 liq = LiquidityAmounts.getLiquidityForAmounts(sqrtCurrent, sqrtLower, sqrtUpper, amount0, amount1);
+        uint128 liq = LiquidityAmounts.getLiquidityForAmounts(
+            sqrtCurrent, sqrtLower, sqrtUpper, amount0, amount1
+        );
         if (liq == 0) return;
 
         uint256 need0 = SqrtPriceMath.getAmount0Delta(sqrtCurrent, sqrtUpper, liq, true);
@@ -263,7 +274,10 @@ contract UniV4AdapterTest is Test {
         assertLe(need1, uint256(amount1) + 1, "amount1 over-spent");
     }
 
-    function testFuzz_priceRoundTripsThroughSqrtPrice(uint256 wadPrice, bool stockFirst) public pure {
+    function testFuzz_priceRoundTripsThroughSqrtPrice(uint256 wadPrice, bool stockFirst)
+        public
+        pure
+    {
         wadPrice = bound(wadPrice, 1e15, 1e24); // $0.001 .. $1,000,000
         uint160 sqrtPriceX96 = PriceTick.toSqrtPriceX96(wadPrice, stockFirst, 18, 6);
         uint256 back = PriceTick.toWadPrice(sqrtPriceX96, stockFirst, 18, 6);
@@ -274,13 +288,18 @@ contract UniV4AdapterTest is Test {
     /// price must map to the same dollars in both pool orderings. Folding
     /// decimals in before inverting would put these out by 10^(2·(d0-d1)).
     function test_bothOrderingsAgreeOnTheSameDollarPrice() public pure {
-        uint256 asToken0 = PriceTick.toWadPrice(PriceTick.toSqrtPriceX96(PRICE, true, 18, 6), true, 18, 6);
-        uint256 asToken1 = PriceTick.toWadPrice(PriceTick.toSqrtPriceX96(PRICE, false, 18, 6), false, 18, 6);
+        uint256 asToken0 =
+            PriceTick.toWadPrice(PriceTick.toSqrtPriceX96(PRICE, true, 18, 6), true, 18, 6);
+        uint256 asToken1 =
+            PriceTick.toWadPrice(PriceTick.toSqrtPriceX96(PRICE, false, 18, 6), false, 18, 6);
         assertApproxEqRel(asToken0, PRICE, 1e10, "token0 ordering mispriced");
         assertApproxEqRel(asToken1, PRICE, 1e10, "token1 ordering mispriced");
     }
 
-    function testFuzz_alignedTicksAlwaysContainTheRequestedRange(uint256 lowerPrice, uint256 upperPrice) public pure {
+    function testFuzz_alignedTicksAlwaysContainTheRequestedRange(
+        uint256 lowerPrice,
+        uint256 upperPrice
+    ) public pure {
         lowerPrice = bound(lowerPrice, 1e17, 1e21);
         upperPrice = bound(upperPrice, lowerPrice * 2, 1e23);
         // Containment is the claim `toAlignedTick` makes; this is the test that

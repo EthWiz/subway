@@ -21,9 +21,12 @@ interface IPoolAdapter {
 
     /// @notice Open a position over [lowerPrice, upperPrice], both expressed as
     /// USDG per whole stock token scaled by 1e18.
-    function openRange(uint256 lowerPrice, uint256 upperPrice, uint256 stockAmount, uint256 usdgAmount)
-        external
-        returns (uint256 stockUsed, uint256 usdgUsed);
+    function openRange(
+        uint256 lowerPrice,
+        uint256 upperPrice,
+        uint256 stockAmount,
+        uint256 usdgAmount
+    ) external returns (uint256 stockUsed, uint256 usdgUsed);
 
     /// @notice Withdraw the whole position back to the vault, fees included.
     function closeRange() external returns (uint256 stockOut, uint256 usdgOut);
@@ -39,7 +42,9 @@ interface IPoolAdapter {
     /// share of the liquidity without disturbing the rest of it. Accrued fees
     /// come out in the same proportion, which is what makes the remaining
     /// holders' claim unchanged by someone else leaving.
-    function decreaseLiquidity(uint128 liquidity) external returns (uint256 stockOut, uint256 usdgOut);
+    function decreaseLiquidity(uint128 liquidity)
+        external
+        returns (uint256 stockOut, uint256 usdgOut);
 
     /// @notice Sweep accrued fees to the vault without touching the position.
     function collectFees() external returns (uint256 stockFees, uint256 usdgFees);
