@@ -46,7 +46,6 @@ import {
   UNIV4_INITIALIZE_TOPIC,
   UNIV4_DYNAMIC_FEE_FLAG,
   type RpcTransport,
-  type RpcLog,
   type DecodedV4Initialize,
   type SessionBucket,
 } from "./lib/poolscan.ts";
@@ -233,6 +232,12 @@ async function main(): Promise<void> {
   const clock = await makeClock(stateT, fromBlock, toBlock);
 
   // ---- pass one: discover candidate pools from sampled windows ----
+  //
+  // Discovery is ~1M sampled logs and ten minutes of the public endpoint's
+  // patience, and it does not change between reruns of the same window, so
+  // it is cached per window and `--reuse-candidates` skips it.
+  const candidatesPath = resolve(HERE, "generated", `v4-candidates-${fromBlock}-${toBlock}.json`);
+  const reuse = process.argv.includes("--reuse-candidates") && existsSync(candidatesPath);
   const sampleCount = arg("from") ? Number(arg("samples") ?? 8) : 1;
   const sampleBlocks = arg("from")
     ? Math.round(Number(arg("sample-minutes") ?? 45) * BLOCKS_PER_MINUTE)
@@ -249,6 +254,7 @@ async function main(): Promise<void> {
   const seenIds = new Set<string>();
   let sampledSwaps = 0;
   for (const [i, w] of samples.entries()) {
+    if (reuse) break;
     const logs = await fetchLogs(
       logsT,
       { ...w, address: POOL_MANAGER, topics: [UNIV4_SWAP_TOPIC] },
@@ -269,10 +275,20 @@ async function main(): Promise<void> {
     `discovery: ${sampledSwaps} swaps in ${samples.length} sample(s); ${seenIds.size} distinct pools`,
   );
 
-  const pools = await resolvePools(logsT, [...seenIds], tip, gapMs);
+  const pools = await resolvePools(
+    logsT,
+    reuse
+      ? (JSON.parse(readFileSync(candidatesPath, "utf8")) as { candidates: string[] }).candidates
+      : [...seenIds],
+    tip,
+    gapMs,
+  );
 
   const candidates: string[] = [];
-  for (const id of seenIds) {
+  const toClassify = reuse
+    ? (JSON.parse(readFileSync(candidatesPath, "utf8")) as { candidates: string[] }).candidates
+    : [...seenIds];
+  for (const id of toClassify) {
     const init = pools.get(id);
     if (!init) continue;
     const c0 = classifyPoolToken(init.currency0, assets);
@@ -284,10 +300,24 @@ async function main(): Promise<void> {
       candidates.push(id);
     }
   }
-  console.log(`candidates (registered stock/USDG): ${candidates.length}`);
+  console.log(
+    `candidates (registered stock/USDG): ${candidates.length}${reuse ? " (reused)" : ""}`,
+  );
+  if (!reuse) {
+    mkdirSync(dirname(candidatesPath), { recursive: true });
+    writeFileSync(
+      candidatesPath,
+      `${JSON.stringify({ samples, sampledSwaps, discoveredPools: seenIds.size, candidates })}\n`,
+    );
+  }
 
   // ---- pass two: every swap in the window for the candidate pools only ----
-  const swapLogs: RpcLog[] = [];
+  //
+  // Decoded and grouped per batch as it lands. Holding raw logs for the whole
+  // window is not an option — one batch of fifty pools returned enough logs
+  // to overflow a spread `push`, never mind five days of them.
+  const byId = new Map<string, ReturnType<typeof decodeV4Swap>[]>();
+  let swapCount = 0;
   // Shape chosen against the public node's server-side query timeout: a
   // 200k-block range OR-ing 150 ids timed out outright. `fetchLogs` now
   // splits on that too, but starting small avoids paying for the discovery.
@@ -309,18 +339,16 @@ async function main(): Promise<void> {
           ),
       },
     );
-    swapLogs.push(...logs);
+    for (const l of logs) {
+      const d = decodeV4Swap(l);
+      const arr = byId.get(d.id);
+      if (arr) arr.push(d);
+      else byId.set(d.id, [d]);
+    }
+    swapCount += logs.length;
   }
   process.stdout.write("\n");
-  console.log(`v4 swaps in window (candidate pools): ${swapLogs.length}`);
-
-  const byId = new Map<string, ReturnType<typeof decodeV4Swap>[]>();
-  for (const l of swapLogs) {
-    const d = decodeV4Swap(l);
-    const arr = byId.get(d.id);
-    if (arr) arr.push(d);
-    else byId.set(d.id, [d]);
-  }
+  console.log(`v4 swaps in window (candidate pools): ${swapCount}`);
 
   const results: Record<string, unknown>[] = [];
   const decimalsCache = new Map<string, Promise<bigint>>();
@@ -459,7 +487,7 @@ async function main(): Promise<void> {
           discoverySamples: samples,
           discoveredPools: seenIds.size,
           candidates: candidates.length,
-          swaps: swapLogs.length,
+          swaps: swapCount,
           pools: byId.size,
           admissible: admissible.length,
         },
