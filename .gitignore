@@ -20,3 +20,6 @@ cache/
 research/scratch/
 
 .DS_Store
+
+# Per-id Initialize cache for research/scan-v4.ts; rebuilt on demand.
+research/generated/v4-pools.json

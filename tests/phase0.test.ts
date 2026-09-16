@@ -29,6 +29,10 @@ import {
   activeLiquidityQuoteValue,
   concentratedLiquidityMultiplier,
   decodeSlot0SqrtPrice,
+  decodeV4Swap,
+  decodeV4Initialize,
+  sessionBucket,
+  UNIV4_DYNAMIC_FEE_FLAG,
   RpcError,
   isLimitExceeded,
   isRateLimited,
@@ -853,4 +857,66 @@ test("the screen's carry bar and the gate's funding come from one model", () => 
   // And the screen's published constants are that same function.
   assert.equal(HEDGE_CARRY_APR, hedgeCarryApr(0.0001));
   assert.equal(HEDGE_CARRY_APR_AT_CAP, hedgeCarryApr(0.001));
+});
+
+// ---------------------------------------------------------------- Uniswap v4
+
+const w = (v: bigint) => (v & ((1n << 256n) - 1n)).toString(16).padStart(64, "0");
+const ID = `0x${"ab".repeat(32)}`;
+
+test("decodeV4Swap: swapper-perspective int128 amounts, id from topic, fee from data", () => {
+  const log: RpcLog = {
+    address: "0x8366a39cc670b4001a1121b8f6a443a643e40951",
+    topics: [
+      "0x40e9cecb9f5f1f1c5b9c97dec2917b7ee92e57ba5563708daca94dd84ad7112f",
+      ID,
+      `0x${"00".repeat(12)}${"cd".repeat(20)}`,
+    ],
+    data: `0x${w(-5_000_000n)}${w(25n * 10n ** 18n)}${w(79228162514264337593543950336n)}${w(7n)}${w(-60n)}${w(3000n)}`,
+    blockNumber: "0x10",
+    transactionHash: "0x01",
+    logIndex: "0x2",
+  };
+  const d = decodeV4Swap(log);
+  assert.equal(d.id, ID);
+  assert.equal(d.sender, `0x${"cd".repeat(20)}`);
+  assert.equal(d.amount0, -5_000_000n); // swapper PAID 5 USDG
+  assert.equal(d.amount1, 25n * 10n ** 18n); // and received stock
+  assert.equal(d.tick, -60);
+  assert.equal(d.fee, 3000);
+  assert.equal(d.blockNumber, 16);
+});
+
+test("decodeV4Initialize: currencies from topics, key fields from data, dynamic-fee flag", () => {
+  const log: RpcLog = {
+    address: "0x8366a39cc670b4001a1121b8f6a443a643e40951",
+    topics: [
+      "0xdd466e674ea557f56295e2d0218a125ea4b4f0f6f3307b95f85e6110838d6438",
+      ID,
+      `0x${"00".repeat(12)}${"11".repeat(20)}`,
+      `0x${"00".repeat(12)}${"22".repeat(20)}`,
+    ],
+    data: `0x${w(BigInt(UNIV4_DYNAMIC_FEE_FLAG))}${w(60n)}${w(0x33n)}${w(1n << 96n)}${w(0n)}`,
+    blockNumber: "0x2372",
+    transactionHash: "0x02",
+    logIndex: "0x0",
+  };
+  const d = decodeV4Initialize(log);
+  assert.equal(d.currency0, `0x${"11".repeat(20)}`);
+  assert.equal(d.currency1, `0x${"22".repeat(20)}`);
+  assert.equal(d.tickSpacing, 60);
+  assert.equal(d.hooks, `0x${"00".repeat(19)}33`);
+  assert.equal(d.sqrtPriceX96, 1n << 96n);
+  assert.ok(d.fee & UNIV4_DYNAMIC_FEE_FLAG);
+});
+
+test("sessionBucket: RTH, weekday overnight, and the Friday-close-to-Monday-open weekend", () => {
+  // September 2026, EDT (UTC-4).
+  assert.equal(sessionBucket(Date.parse("2026-09-11T19:30:00Z")), "rth"); // Fri 15:30 ET
+  assert.equal(sessionBucket(Date.parse("2026-09-11T20:00:00Z")), "weekend"); // Fri 16:00 ET: close
+  assert.equal(sessionBucket(Date.parse("2026-09-13T12:00:00Z")), "weekend"); // Sun
+  assert.equal(sessionBucket(Date.parse("2026-09-14T13:00:00Z")), "weekend"); // Mon 09:00 ET
+  assert.equal(sessionBucket(Date.parse("2026-09-14T13:30:00Z")), "rth"); // Mon 09:30 ET
+  assert.equal(sessionBucket(Date.parse("2026-09-15T03:00:00Z")), "weekday_offhours"); // Mon 23:00 ET
+  assert.equal(sessionBucket(Date.parse("2026-09-15T12:00:00Z")), "weekday_offhours"); // Tue 08:00 ET
 });

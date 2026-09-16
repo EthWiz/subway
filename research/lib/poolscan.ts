@@ -340,3 +340,140 @@ export function toGraderSwap(
     feeTier: opts.feeTier,
   };
 }
+
+// ---------------------------------------------------------------- Uniswap v4
+
+/**
+ * Uniswap v4 `Swap(bytes32 indexed id, address indexed sender, int128
+ * amount0, int128 amount1, uint160 sqrtPriceX96, uint128 liquidity, int24
+ * tick, uint24 fee)`, emitted by the PoolManager singleton.
+ *
+ * Two things differ from v3 and both matter to a scan. The pool is a `bytes32`
+ * id rather than an address, and the id cannot be turned back into its two
+ * currencies by calling anything — only the pool's own `Initialize` event
+ * knows, so discovery is a second log scan (`decodeV4Initialize`). And
+ * `amount0`/`amount1` are from the SWAPPER's perspective, the opposite sign
+ * of v3's pool perspective: negative means the swapper paid that token.
+ * Notional is `|quote amount|` either way, which is all the scan needs.
+ *
+ * `fee` is the fee actually charged on this swap, which for a dynamic-fee
+ * pool is not the tier in its key. Fee income should be summed from here.
+ */
+export interface DecodedV4Swap {
+  id: string;
+  sender: string;
+  blockNumber: number;
+  amount0: bigint;
+  amount1: bigint;
+  sqrtPriceX96: bigint;
+  liquidity: bigint;
+  tick: number;
+  /** Hundredths of a bip, as in the pool key: 3000 is 0.30%. */
+  fee: number;
+  transactionHash: string;
+  logIndex: number;
+}
+
+export const UNIV4_SWAP_TOPIC =
+  "0x40e9cecb9f5f1f1c5b9c97dec2917b7ee92e57ba5563708daca94dd84ad7112f";
+
+export const UNIV4_INITIALIZE_TOPIC =
+  "0xdd466e674ea557f56295e2d0218a125ea4b4f0f6f3307b95f85e6110838d6438";
+
+function topicAddress(topic: string): string {
+  return `0x${topic.slice(-40)}`.toLowerCase();
+}
+
+export function decodeV4Swap(log: RpcLog): DecodedV4Swap {
+  const body = log.data.startsWith("0x") ? log.data.slice(2) : log.data;
+  const [, idTopic, senderTopic] = log.topics;
+  if (!idTopic || !senderTopic || body.length < 64 * 6) {
+    throw new Error(`v4 Swap malformed in ${log.transactionHash}`);
+  }
+  const word = (i: number) => body.slice(i * 64, (i + 1) * 64);
+  return {
+    id: idTopic.toLowerCase(),
+    sender: topicAddress(senderTopic),
+    blockNumber: Number(BigInt(log.blockNumber)),
+    // int128 is sign-extended to the full word, so int256 decoding is exact.
+    amount0: int256(word(0)),
+    amount1: int256(word(1)),
+    sqrtPriceX96: BigInt(`0x${word(2)}`),
+    liquidity: BigInt(`0x${word(3)}`),
+    tick: int24(word(4)),
+    fee: Number(BigInt(`0x${word(5)}`) & 0xffffffn),
+    transactionHash: log.transactionHash,
+    logIndex: Number(BigInt(log.logIndex)),
+  };
+}
+
+/**
+ * Uniswap v4 `Initialize(bytes32 indexed id, address indexed currency0,
+ * address indexed currency1, uint24 fee, int24 tickSpacing, address hooks,
+ * uint160 sqrtPriceX96, int24 tick)`. The only on-chain record of what a
+ * pool id refers to.
+ */
+export interface DecodedV4Initialize {
+  id: string;
+  currency0: string;
+  currency1: string;
+  fee: number;
+  tickSpacing: number;
+  hooks: string;
+  sqrtPriceX96: bigint;
+  tick: number;
+  blockNumber: number;
+}
+
+/** v4's dynamic-fee flag in the key's `fee` field. */
+export const UNIV4_DYNAMIC_FEE_FLAG = 0x800000;
+
+export function decodeV4Initialize(log: RpcLog): DecodedV4Initialize {
+  const body = log.data.startsWith("0x") ? log.data.slice(2) : log.data;
+  const [, idTopic, c0Topic, c1Topic] = log.topics;
+  if (!idTopic || !c0Topic || !c1Topic || body.length < 64 * 5) {
+    throw new Error(`v4 Initialize malformed in ${log.transactionHash}`);
+  }
+  const word = (i: number) => body.slice(i * 64, (i + 1) * 64);
+  return {
+    id: idTopic.toLowerCase(),
+    currency0: topicAddress(c0Topic),
+    currency1: topicAddress(c1Topic),
+    fee: Number(BigInt(`0x${word(0)}`) & 0xffffffn),
+    tickSpacing: int24(word(1)),
+    hooks: `0x${word(2).slice(24)}`.toLowerCase(),
+    sqrtPriceX96: BigInt(`0x${word(3)}`),
+    tick: int24(word(4)),
+    blockNumber: Number(BigInt(log.blockNumber)),
+  };
+}
+
+// ------------------------------------------------------------ session buckets
+
+export type SessionBucket = "rth" | "weekday_offhours" | "weekend";
+
+/**
+ * Which trading session a wall-clock instant falls in, for splitting volume.
+ *
+ * "Weekend" runs from the Friday close to the Monday open — the whole span in
+ * which there is no primary-market print at all — rather than Saturday and
+ * Sunday by the calendar. Friday evening and Monday pre-market are the same
+ * regime as Sunday for a vault that prices off an equity feed.
+ *
+ * `utcOffsetHours` is the ET offset for the window: −4 in September (EDT),
+ * −5 in winter. Passed in rather than computed so a scan cannot silently
+ * straddle a DST change with the wrong session boundaries.
+ */
+export function sessionBucket(tsMs: number, utcOffsetHours = -4): SessionBucket {
+  const local = new Date(tsMs + utcOffsetHours * 3_600_000);
+  const day = local.getUTCDay(); // 0 Sun … 6 Sat, in ET
+  const mins = local.getUTCHours() * 60 + local.getUTCMinutes();
+  const open = 9 * 60 + 30;
+  const close = 16 * 60;
+
+  if (day === 6 || day === 0) return "weekend";
+  if (day === 5 && mins >= close) return "weekend";
+  if (day === 1 && mins < open) return "weekend";
+  if (mins >= open && mins < close) return "rth";
+  return "weekday_offhours";
+}
