@@ -68,9 +68,26 @@ contract BaseVault is ERC20, ReentrancyGuard {
     /// destination, and cannot stop anyone withdrawing.
     address public keeper;
     /// @notice Sets the keeper and the policy bounds. Cannot move funds.
-    address public immutable admin;
+    ///
+    /// Mutable, and only by itself. An immutable admin cannot be reassigned by
+    /// an attacker — but it also cannot be reassigned after one, and rotating
+    /// the factory's owner used to leave `setKeeper` and `setBounds` on every
+    /// live vault with the compromised key. Rotation is the more useful
+    /// property: an admin that cannot move funds is worth less to an attacker
+    /// than a stuck admin is worth to a defender.
+    address public admin;
 
     RangePolicy.Bounds public bounds;
+
+    /// @notice How long a policy change waits between proposal and effect.
+    /// @dev Immutable on purpose. A timelock the admin can shorten is a
+    /// timelock the admin can shorten to zero in the same transaction as the
+    /// change it was meant to delay.
+    uint256 public immutable boundsDelay;
+
+    /// @notice The pending policy change, if any, and when it may be applied.
+    RangePolicy.Bounds public pendingBounds;
+    uint256 public pendingBoundsAt;
 
     /// @dev `WAD * 10^stockDecimals / 10^usdgDecimals`, the single divisor that
     /// turns a raw stock amount times a WAD price into a RAW USDG amount.
@@ -144,7 +161,10 @@ contract BaseVault is ERC20, ReentrancyGuard {
     event RangeClosed(uint256 stockOut, uint256 usdgOut);
     event FeesCollected(uint256 stockFees, uint256 usdgFees);
     event KeeperChanged(address indexed from, address indexed to);
-    event BoundsChanged(uint256 maxFeedAge, uint256 minHalfWidth, uint256 maxHalfWidth);
+    event AdminChanged(address indexed from, address indexed to);
+    event BoundsProposed(RangePolicy.Bounds bounds, uint256 effectiveAt);
+    event BoundsChanged(RangePolicy.Bounds bounds);
+    event BoundsProposalCancelled();
 
     // ---------------------------------------------------------------- errors
 
@@ -158,6 +178,8 @@ contract BaseVault is ERC20, ReentrancyGuard {
     error ZeroAddress();
     error MinSharesNotMet(uint256 shares, uint256 minShares);
     error UnsupportedDecimals(uint8 usdgDecimals);
+    error NoPendingBounds();
+    error TimelockNotElapsed(uint256 effectiveAt);
 
     modifier onlyKeeper() {
         if (msg.sender != keeper) revert NotKeeper();
@@ -178,6 +200,7 @@ contract BaseVault is ERC20, ReentrancyGuard {
         address pool;
         address keeper;
         address admin;
+        uint256 boundsDelay;
         RangePolicy.Bounds bounds;
     }
 
@@ -194,6 +217,9 @@ contract BaseVault is ERC20, ReentrancyGuard {
         pool = IPoolAdapter(c.pool);
         keeper = c.keeper;
         admin = c.admin;
+        boundsDelay = c.boundsDelay;
+
+        RangePolicy.requireValidBounds(c.bounds, IPoolAdapter(c.pool).swapFeeWad());
         bounds = c.bounds;
 
         uint8 usdgDecimals = IERC20Metadata(c.usdg).decimals();
@@ -363,6 +389,23 @@ contract BaseVault is ERC20, ReentrancyGuard {
         // not. That asymmetry is deliberate — it is always safe to refuse new
         // money and never safe to trap existing money.
         uint256 price = feed.requireFreshPrice(bounds);
+
+        // ...and, for the same reason, a deposit needs the pool to be somewhere
+        // near that price. `totalAssets()` marks both legs at the feed, but the
+        // QUANTITIES it marks are whatever mix the pool's current price implies
+        // the range is holding, so a pool far from the feed means a mint
+        // denominator that is wrong by an amount an attacker chose. See
+        // `RangePolicy.requireConverged`.
+        //
+        // Skipped when there is no position, and that is not a loophole: with
+        // nothing in the pool, NAV is idle balances priced at the feed and has
+        // no pool dependence at all, so there is nothing for the gate to
+        // protect. Gating anyway would block every deposit before the first
+        // range opens, which is every deposit the vault starts life with.
+        if (pool.hasPosition()) {
+            RangePolicy.requireConverged(pool.poolPriceWad(), price, bounds);
+        }
+
         uint256 navBefore = totalAssets();
         uint256 supply = totalSupply();
 
@@ -501,9 +544,67 @@ contract BaseVault is ERC20, ReentrancyGuard {
         keeper = next;
     }
 
-    function setBounds(RangePolicy.Bounds calldata bounds_) external onlyAdmin {
-        bounds = bounds_;
-        emit BoundsChanged(bounds_.maxFeedAge, bounds_.minHalfWidth, bounds_.maxHalfWidth);
+    /// @notice Hand the admin role to another address.
+    /// @dev Only the current admin, and no two-step handshake: the role cannot
+    /// move funds, so the cost of handing it to a typo is a vault whose keeper
+    /// and policy are frozen at their current values — recoverable by
+    /// redeploying, and never a loss of anyone's money.
+    function setAdmin(address next) external onlyAdmin {
+        if (next == address(0)) revert ZeroAddress();
+        emit AdminChanged(admin, next);
+        admin = next;
+    }
+
+    /// @notice Propose new policy bounds. They take effect after `boundsDelay`.
+    ///
+    /// This document has always said policy changes are timelocked, and for a
+    /// long time `setBounds` changed them in the same block. That is not a
+    /// bound: a keeper limit that can be widened in the block it is exceeded
+    /// constrains nothing, and the whole argument for letting a keeper touch
+    /// the position is that `RangePolicy` fences it in.
+    ///
+    /// The delay buys holders the one thing they actually need, which is time
+    /// to leave — and leaving works without the admin, without the keeper and
+    /// without the feed, so a proposal a holder dislikes is an exit they can
+    /// always take.
+    ///
+    /// Validated at proposal time AND at application time. The pool's fee
+    /// tier cannot change under a v4 pool key, so the second check is about
+    /// the proposal itself rather than about drift, but re-checking costs
+    /// nothing and means no path writes an unvalidated bound.
+    function proposeBounds(RangePolicy.Bounds calldata bounds_) external onlyAdmin {
+        RangePolicy.requireValidBounds(bounds_, pool.swapFeeWad());
+        pendingBounds = bounds_;
+        pendingBoundsAt = block.timestamp + boundsDelay;
+        emit BoundsProposed(bounds_, pendingBoundsAt);
+    }
+
+    /// @notice Apply a proposal whose delay has elapsed.
+    /// @dev Deliberately callable by anyone. The admin already decided; making
+    /// them show up again to finish is a liveness dependency for no gain, and
+    /// there is nothing here a stranger can choose.
+    function applyBounds() external {
+        uint256 at = pendingBoundsAt;
+        if (at == 0) revert NoPendingBounds();
+        if (block.timestamp < at) revert TimelockNotElapsed(at);
+
+        RangePolicy.Bounds memory next = pendingBounds;
+        RangePolicy.requireValidBounds(next, pool.swapFeeWad());
+        bounds = next;
+
+        delete pendingBounds;
+        delete pendingBoundsAt;
+        emit BoundsChanged(next);
+    }
+
+    /// @notice Withdraw a pending proposal.
+    /// @dev The admin's escape hatch from their own mistake, and it needs no
+    /// delay: cancelling can only ever leave the bounds where they already are.
+    function cancelBounds() external onlyAdmin {
+        if (pendingBoundsAt == 0) revert NoPendingBounds();
+        delete pendingBounds;
+        delete pendingBoundsAt;
+        emit BoundsProposalCancelled();
     }
 
     // -------------------------------------------------------------- internal

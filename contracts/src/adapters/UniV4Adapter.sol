@@ -235,7 +235,13 @@ contract UniV4Adapter is IPoolAdapter, IUnlockCallback {
     /// may read this: a pool tick is something an attacker can move with
     /// capital, and `SubwayVault.navFloor` deliberately reads the Chainlink
     /// feed instead.
-    function poolPriceWad() external view returns (uint256) {
+    /// @dev v4 fees are in hundredths of a bip, so 3000 is 0.30% and the
+    /// scaling to WAD is 1e18/1e6.
+    function swapFeeWad() external view returns (uint256) {
+        return uint256(fee) * 1e12;
+    }
+
+    function poolPriceWad() public view returns (uint256) {
         (uint160 sqrtPriceX96,,,) = poolManager.getSlot0(poolId());
         return PriceTick.toWadPrice(sqrtPriceX96, stockIsCurrency0, stockDecimals, usdgDecimals);
     }

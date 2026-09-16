@@ -25,6 +25,10 @@ import {IPriceFeed} from "../interfaces/IPriceFeed.sol";
 ///     spends the difference on gas and adverse selection as the price walks
 ///     out of it. Wider than the bound and the vault is a worse market maker
 ///     than simply holding.
+///   - A pool far from the feed means the vault's own inventory mix is far
+///     from the one the feed implies, and a deposit priced at the feed
+///     against that inventory is mispriced. That is `maxDivergence`, and it
+///     is the only rule here that guards a HOLDER rather than the position.
 library RangePolicy {
     struct Bounds {
         /// @notice Oldest feed update the policy will act on, seconds.
@@ -33,6 +37,9 @@ library RangePolicy {
         uint256 minHalfWidth;
         /// @notice Widest allowed half-width, 1e18 = 100%.
         uint256 maxHalfWidth;
+        /// @notice How far the pool may sit from the feed before deposits
+        /// stop, 1e18 = 100%. See `requireConverged`.
+        uint256 maxDivergence;
     }
 
     uint256 internal constant WAD = 1e18;
@@ -44,6 +51,9 @@ library RangePolicy {
     error RangeTooNarrow(uint256 halfWidth, uint256 min);
     error RangeTooWide(uint256 halfWidth, uint256 max);
     error BoundsInvalid();
+    error FeedPoolDiverged(uint256 poolPrice, uint256 feedPrice, uint256 divergence, uint256 max);
+    error DivergenceTighterThanTheFee(uint256 maxDivergence, uint256 swapFee);
+    error DivergenceWiderThanTheRange(uint256 maxDivergence, uint256 maxHalfWidth);
 
     /// @notice Read the feed and return a usable price, or revert saying why
     /// it is not usable.
@@ -71,6 +81,65 @@ library RangePolicy {
         uint256 scaled = uint256(answer) * WAD / (10 ** feed.decimals());
         price = scaled * feed.uiMultiplier() / WAD;
         if (price == 0) revert FeedInvalid(answer);
+    }
+
+    /// @notice Revert unless the pool is close enough to the feed to price a
+    /// deposit against.
+    ///
+    /// A deposit is valued at the feed and divided by the vault's NAV, whose
+    /// stock and USDG QUANTITIES are whatever mix the pool's current price
+    /// implies the range is holding. Marking a range at a static feed while
+    /// the pool walks away from it OVERSTATES the range — every trade the
+    /// position actually made happened at a price better than the mark — so
+    /// the depositor divides by an inflated denominator and mints too few
+    /// shares. The shortfall stays with the incumbent holders.
+    ///
+    /// Measured against the real `PoolManager`, that distortion is QUADRATIC
+    /// in the divergence and capped by the range width: 1.79% for a ±6% range,
+    /// 8.04% for a ±25% one. Quadratic is what makes a gate worth having —
+    /// halving the bound quarters the residual. At 0.5% divergence the
+    /// residual mispricing is about 2 bps. `docs/a1-deposit-pricing.md` has
+    /// the table.
+    ///
+    /// This bounds the error; it does not remove it. Minting from quantities
+    /// would remove it, and was rejected because it costs single-asset
+    /// deposits. `minShares` remains the depositor's own backstop.
+    function requireConverged(uint256 poolPrice, uint256 feedPrice, Bounds memory bounds)
+        internal
+        pure
+    {
+        uint256 diff = poolPrice > feedPrice ? poolPrice - feedPrice : feedPrice - poolPrice;
+        uint256 divergence = diff * WAD / feedPrice;
+        if (divergence > bounds.maxDivergence) {
+            revert FeedPoolDiverged(poolPrice, feedPrice, divergence, bounds.maxDivergence);
+        }
+    }
+
+    /// @notice Revert unless these bounds are ones a vault can actually run on.
+    ///
+    /// The two divergence rules are the interesting ones, and they fail in
+    /// opposite directions.
+    ///
+    /// **Not tighter than the swap fee.** The fee is the width of the pool's
+    /// no-arbitrage band: nobody closes a gap smaller than the fee they would
+    /// pay to close it, so a 0.3% pool sits anywhere within ±0.3% of fair with
+    /// nobody manipulating anything, and a 1% pool within ±1%. A gate tighter
+    /// than that does not catch attackers, it blocks honest depositors
+    /// whenever the pool is doing what pools normally do.
+    ///
+    /// **Not wider than the range.** The mispricing this gate exists to bound
+    /// is itself capped by the range half-width, so a gate wider than the
+    /// range never binds before the cap does and is not a gate at all.
+    function requireValidBounds(Bounds memory bounds, uint256 swapFeeWad) internal pure {
+        if (bounds.minHalfWidth == 0 || bounds.minHalfWidth > bounds.maxHalfWidth) {
+            revert BoundsInvalid();
+        }
+        if (bounds.maxDivergence < swapFeeWad) {
+            revert DivergenceTighterThanTheFee(bounds.maxDivergence, swapFeeWad);
+        }
+        if (bounds.maxDivergence > bounds.maxHalfWidth) {
+            revert DivergenceWiderThanTheRange(bounds.maxDivergence, bounds.maxHalfWidth);
+        }
     }
 
     /// @notice Revert unless [lower, upper] is a range this vault may hold.

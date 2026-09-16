@@ -237,31 +237,37 @@ manipulate → victim deposits → reverse sequence; donation with nonzero minte
 shares; deposit while fees are pending; both currency orderings through
 `BaseVault` rather than only the adapter.
 
-**Decide — STILL OPEN, and still the blocker.** How to close (1)+(2). The
-two-page write-up A1 asked for is `docs/a1-deposit-pricing.md`, now with
-measurements instead of estimates; **it has not been reviewed, and nothing
-from it should be coded until it is.** Its shape:
+**Decide — DONE.** Reviewed 2026-09-16 and resolved in favour of the
+**divergence gate**: `deposit` reverts while `|poolPriceWad − feed| > ε`. The
+write-up with the measurements is `docs/a1-deposit-pricing.md`.
 
-- Recommended: a **feed-vs-pool divergence gate** — `deposit` reverts while
-  `|poolPriceWad − feed| > ε`. Keeps single-asset deposits, which the product
-  wants. But ε **cannot be tighter than the pool's fee tier**, because that is
-  the no-arbitrage band: a 1% pool (what the scan found for HOOD/USDG) forces
-  ε ≈ 1.2%. Residual mispricing ~2 bps on a 0.3% pool, ~11 bps on a 1% pool —
-  in both cases less than the 30–100 bps a depositor would pay to acquire the
-  other leg themselves, which is the comparison that matters.
-- Alternative: **mint from quantities**, LP-token style. Airtight, reads no
-  price at all, and would take A2's deposit half off the board with it. Loses
-  only because it kills single-asset deposits — so the review's real question
-  is whether that requirement is load-bearing or merely inherited.
+As built:
 
-Two measured facts the decision should be argued against. The distortion is
-quadratic in the divergence and **capped by the range width** (1.79% at ±6%,
-8.04% at ±25%, confirming the paper estimate). And the end-to-end attack
-currently **loses money** — the attacker must move the price through the
-vault's own liquidity, and the fee is first order in the move while the
-distortion is second. That last one is not reassurance: it holds only because
-the vault is the pool's sole LP in the test, and A6's ≤15%-of-pool cap
-guarantees the opposite in production.
+- ε lives in `RangePolicy.Bounds` as `maxDivergence`, and `requireValidBounds`
+  fences it from both sides. It **cannot be tighter than the pool's swap fee**,
+  because the fee is the width of the no-arbitrage band — nobody closes a gap
+  smaller than the fee they would pay to close it, so a 0.3% pool sits within
+  ±0.3% of fair with nobody manipulating anything, and a tighter gate blocks
+  honest depositors rather than attackers. It **cannot be wider than
+  `maxHalfWidth`**, because the distortion it bounds is itself capped by the
+  range width, so a wider gate never binds first.
+- `poolPriceWad()` and `swapFeeWad()` moved onto `IPoolAdapter`.
+- **The gate is skipped when the vault holds no position**, which is not a
+  loophole: with nothing in the pool, NAV is idle balances priced at the feed
+  and has no pool term at all. Gating anyway would block every deposit before
+  the first range opens.
+- `minShares` stays as the depositor's own backstop, because the gate bounds
+  the error rather than removing it.
+
+**Measured, against the real `PoolManager`:** at ε = 0.5% on a 0.3% pool, a
+legal 0.44% divergence costs a $2,000 depositor **1.8 bps**. That is the number
+the choice was made on, and the comparison that matters is not against zero but
+against the 30–100 bps of pool fee a depositor pays to go acquire the other leg
+themselves — which is what minting from quantities would have forced on them.
+
+Outside the gate the deposit reverts and **redemption is untouched**: the same
+asymmetry as the feed check, since it is always safe to refuse new money and
+never safe to trap existing money.
 
 ### A2. Off-hours feed policy
 
@@ -310,19 +316,29 @@ the adapter's own ticks, so an adapter that reported bounds it had not opened
 would still be caught. Removing the guard fails both concrete tests and the
 fuzzer finds a 25.08% realised half-width within 150 runs.
 
-### A4. Keys: admin rotation and a timelock on policy
+### A4. Keys: admin rotation and a timelock on policy — **mostly DONE**
 
-- `BaseVault.admin` is immutable and set to the factory owner at `addPair`.
-  Rotating the factory owner does not rotate it, so a compromised key keeps
-  `setKeeper`/`setBounds` on every live vault. Decide: mutable admin (only by
-  current admin), factory-walks-the-vault-list on rotation, or documented
-  limitation with a single operator wallet. `docs/decisions.md` has the
-  trade-off.
-- This document has always said policy changes are **timelocked**;
-  `setBounds` changes them immediately. Add the timelock before third-party
-  money — a keeper bound that can be widened in the same block it is exceeded
-  is not a bound.
-- Keeper signer in KMS, rotation runbook (keeper `keys` module, A7).
+- **Admin is now mutable**, `setAdmin`, only by the current admin. Decided
+  2026-09-16 against the other two options. `BaseVault.admin` used to be
+  immutable and set to the factory owner at `addPair`, so rotating a
+  compromised factory key left `setKeeper`/`setBounds` on every live vault with
+  the old key. Rotation is the more useful property: an admin that cannot move
+  funds is worth less to an attacker than a stuck admin is worth to a defender.
+  No two-step handshake — the role cannot move funds, so handing it to a typo
+  costs a vault frozen at its current keeper and policy, never anyone's money.
+  `address(0)` is refused.
+- **`setBounds` is now a timelock.** `proposeBounds` → wait `boundsDelay` →
+  `applyBounds`, with `cancelBounds` as the admin's escape hatch. `boundsDelay`
+  is immutable, because a timelock the admin can shorten is one they can
+  shorten to zero in the same transaction as the change it was meant to delay.
+  `applyBounds` is callable by anyone: the admin already decided, and there is
+  nothing left to choose. Tested as the thing it prevents — a keeper range that
+  violates the policy still violates it after the wider bound is proposed, and
+  only opens once the delay has run.
+- **Still to do:** keeper signer in KMS and a rotation runbook (keeper `keys`
+  module, A7). And nothing enforces a nonzero `boundsDelay` — it is a
+  deployment parameter, publicly readable, and must be checked in the deploy
+  path rather than by the contract, which would otherwise block testnet.
 
 ### A5. Pool selection — where the volume actually is
 
@@ -618,11 +634,12 @@ balances per pair and the implied hedge ratio). Deposit = one Permit2 signature
 | -------------- | ---------------------------------------------------------------------------- | ---------------------------------------------- |
 | Range preset   | ±6% around feed, recenter at ±3% drift                                       | survives intraday moves, still earns           |
 | Feed staleness | hold deposits and range moves if `updatedAt` > 2 h in RTH; off-hours: **A2** | Chainlink has no off-hours heartbeat           |
-| Divergence     | refuse deposits while \|pool − feed\| > 0.5% (**A1**, if the gate is chosen) | value-space mint vs quantity-space redeem      |
+| Divergence     | refuse deposits while \|pool − feed\| > ε; ε = fee tier + 20 bps (**A1**)    | value-space mint vs quantity-space redeem      |
 | Open gap       | pull liquidity 15 min before US open, reopen 10 min after                    | jumps through a range are the dominant LP loss |
 | Weekend        | pull liquidity Fri 20:00 ET → Sun 20:00 ET                                   | no reference price                             |
 | Earnings       | pull liquidity from the close before to the open after                       | gap risk                                       |
 | Caps           | vault ≤ 15% of pool TVL; per-pair TVL cap; deposits pausable (**A6**)        | fee dilution and unwind depth                  |
+| Policy delay   | `boundsDelay` 2 days, immutable per vault; **never 0 on mainnet** (A4)       | a bound widened on demand is not a bound       |
 
 **Track B**
 

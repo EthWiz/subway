@@ -129,8 +129,9 @@ fees, or the gas of the poke becomes material next to the redemption itself.
 
 ## 2026-09-16 — OPEN: how a deposit should be priced
 
-> Faces (3) and (4) settled 2026-09-16 by the entry below; (1) and (2) still
-> open, now with measured numbers in `docs/a1-deposit-pricing.md`.
+> All four faces settled 2026-09-16. (3) and (4) by the virtual-shares entry
+> below; (1) and (2) by the divergence gate, reviewed against the measured
+> numbers in `docs/a1-deposit-pricing.md`.
 
 **Not decided.** Recorded so it is not mistaken for settled. Two reviewers
 (codex, grok) independently found the same family of problem in `BaseVault`,
@@ -221,6 +222,8 @@ relied on as a risk limit rather than a sanity check.
 ---
 
 ## 2026-09-16 — OPEN: rotating the factory owner does not rotate vault admin
+
+> Settled 2026-09-16: admin is mutable. See the A4 entry below.
 
 **Not decided.** `VaultFactory.setOwner` moves the factory's owner, but each
 `BaseVault` was constructed with `admin` as an **immutable** set to whoever
@@ -320,3 +323,91 @@ much slack the grid needs.
 **Revisit if:** an adapter is added whose grid rounds inward, which would make
 `RangeTooNarrow` reachable from the second check and invalidate the argument
 that one check is enough.
+
+---
+
+## 2026-09-16 — Deposits are gated on pool-vs-feed divergence
+
+**Decided**, after review of `docs/a1-deposit-pricing.md`. `deposit` reverts
+while `|poolPriceWad − feed| / feed > ε`. This closes faces (1) and (2) of the
+deposit-pricing entry above — value-space mint against quantity-space redeem,
+and a mint denominator the pool can move.
+
+**Why the gate and not minting from quantities.** Minting from quantities is
+strictly safer: it reads no price at all, makes mint the exact inverse of
+redeem, and would have taken A2's deposit half off the board with it. It lost
+on one requirement — single-asset deposits — and the arithmetic that settled it
+is that the gate's residual mispricing is _smaller than the alternative's cost
+to the same depositor_. At ε = 0.5% on a 0.3% pool, a legal 0.44% divergence
+costs a $2,000 depositor 1.8 bps, measured against the real `PoolManager`.
+Minting from quantities would send that depositor to the pool to buy the other
+leg, at 30–100 bps. Being told to pay 30 bps to avoid a 2 bps error is not
+protection.
+
+**ε is fenced from both sides, and the floor is the interesting one.** It
+cannot be tighter than the pool's swap fee, because the fee IS the
+no-arbitrage band: nobody closes a gap smaller than the fee they would pay to
+close it, so a 0.3% pool sits anywhere within ±0.3% of fair with nobody
+manipulating anything, and a 1% pool within ±1%. A gate tighter than that does
+not catch attackers, it blocks depositors during ordinary pool behaviour — so
+ε is per pair, floored at the fee tier, defaulting to fee + 20 bps. The ceiling
+is `maxHalfWidth`: the distortion the gate bounds is itself capped by the range
+width, so a wider gate never binds first and is not a gate.
+
+**The gate is skipped when the vault holds no position.** Not a loophole: with
+nothing in the pool, NAV is idle balances priced at the feed and has no pool
+term in it. Gating anyway would block every deposit taken before the first
+range opens, which is every deposit a vault starts life with.
+
+**What it does not do.** It bounds the error; it does not remove it. Mint is
+still value-space and redeem still quantity-space, and inside ε they still
+disagree slightly — which is why `minShares` stays. It is also a liveness cost
+in exactly the moments a depositor most wants in: deposits stop during genuine
+volatility, when the pool leads the feed. Redemption is untouched throughout.
+
+**Revisit if:** the single-asset-deposit requirement is dropped, which flips
+the answer to minting from quantities; a pair is listed on a fee tier wide
+enough that `fee + 20 bps` admits a residual the label cannot honestly state;
+or A2 decides to accept a frozen off-hours feed, since divergence against a
+stale mark grows with real news and will block most overnight deposits — which
+is arguably correct, and makes A2 option (b) collapse into option (a).
+
+---
+
+## 2026-09-16 — Vault admin is mutable, and policy changes are timelocked
+
+**Decided.** `BaseVault.admin` becomes mutable via `setAdmin`, callable only by
+the current admin; and `setBounds` becomes `proposeBounds` → `boundsDelay` →
+`applyBounds`, with `cancelBounds`.
+
+**On mutability**, against the entry above that left it open. The immutability
+was deliberate — an admin that can be reassigned is one an attacker can
+reassign — but the defending side of that trade is worth more here: the role
+cannot move funds, so what an attacker gains by capturing it is the ability to
+zero the keeper or jam the policy, while what a defender loses by being unable
+to rotate is the same thing permanently. No two-step handshake, for the same
+reason: handing the role to a typo costs a vault frozen at its current keeper
+and policy, which is recoverable by redeploying and is never anyone's money.
+`address(0)` is refused, since that is the one typo that cannot be undone.
+
+**On the timelock.** This document always said policy changes were timelocked
+and the code always changed them in the same block. A keeper bound that can be
+widened in the block it is exceeded constrains nothing, and the entire argument
+for letting a keeper touch the position is that `RangePolicy` fences it in. The
+delay buys holders time to leave — and leaving needs no admin, no keeper and no
+feed, so a proposal a holder dislikes is an exit they can always take.
+
+`boundsDelay` is **immutable**: a timelock the admin can shorten is one they can
+shorten to zero in the same transaction as the change it was meant to delay.
+`applyBounds` is callable by **anyone**, because the admin already decided and
+there is nothing left for a stranger to choose; making the admin show up twice
+is a liveness dependency for no gain.
+
+**Known gap:** nothing enforces a nonzero `boundsDelay`. A contract minimum
+would block testnet, so this is a deploy-path check (A11's CI) rather than a
+constructor revert. It is a public immutable, so it can be read and displayed.
+
+**Revisit if:** the admin key becomes anything other than a single operator
+wallet — a multisig or a governance contract changes both halves of this, since
+a contract admin can hold its own delay and a two-step handshake stops being
+pure cost.

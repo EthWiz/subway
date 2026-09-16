@@ -77,8 +77,12 @@ contract BaseVaultTest is Test {
                 pool: address(adapter),
                 keeper: keeper,
                 admin: admin,
+                boundsDelay: 2 days,
                 bounds: RangePolicy.Bounds({
-                    maxFeedAge: 2 hours, minHalfWidth: 0.01e18, maxHalfWidth: 0.25e18
+                    maxFeedAge: 2 hours,
+                    minHalfWidth: 0.01e18,
+                    maxHalfWidth: 0.25e18,
+                    maxDivergence: 0.005e18
                 })
             })
         );
@@ -389,8 +393,12 @@ contract BaseVaultTest is Test {
                 pool: address(routerAdapter),
                 keeper: keeper,
                 lighterMarketId: 7,
+                boundsDelay: 2 days,
                 bounds: RangePolicy.Bounds({
-                    maxFeedAge: 2 hours, minHalfWidth: 0.01e18, maxHalfWidth: 0.25e18
+                    maxFeedAge: 2 hours,
+                    minHalfWidth: 0.01e18,
+                    maxHalfWidth: 0.25e18,
+                    maxDivergence: 0.005e18
                 })
             })
         );
@@ -438,8 +446,12 @@ contract BaseVaultTest is Test {
                 pool: address(adapter),
                 keeper: keeper,
                 lighterMarketId: 7,
+                boundsDelay: 2 days,
                 bounds: RangePolicy.Bounds({
-                    maxFeedAge: 2 hours, minHalfWidth: 0.01e18, maxHalfWidth: 0.25e18
+                    maxFeedAge: 2 hours,
+                    minHalfWidth: 0.01e18,
+                    maxHalfWidth: 0.25e18,
+                    maxDivergence: 0.005e18
                 })
             })
         );
@@ -462,8 +474,12 @@ contract BaseVaultTest is Test {
             pool: address(adapter),
             keeper: keeper,
             lighterMarketId: 7,
+            boundsDelay: 2 days,
             bounds: RangePolicy.Bounds({
-                maxFeedAge: 2 hours, minHalfWidth: 0.01e18, maxHalfWidth: 0.25e18
+                maxFeedAge: 2 hours,
+                minHalfWidth: 0.01e18,
+                maxHalfWidth: 0.25e18,
+                maxDivergence: 0.005e18
             })
         });
 
@@ -553,141 +569,103 @@ contract BaseVaultTest is Test {
         assertLt(malloryOut, 60e6, "attacker got their donation back");
     }
 
-    /// @dev A1 face (4): a depositor can now put a floor under their own trade.
+    /// @dev A1 face (4): a depositor can put a floor under their own trade.
     ///
-    /// Not a unit test of a comparison — the point is the sequence it defends.
-    /// The victim quotes `previewDeposit`, an attacker moves the pool inside
-    /// the range before the transaction lands, the quote goes stale, and the
-    /// deposit reverts instead of silently minting fewer shares.
-    function test_minSharesRejectsADepositRepricedByThePool() public {
+    /// The divergence gate bounds how far the mint can be repriced; it does
+    /// not pin it. Inside the gate the pool still moves, the quote a depositor
+    /// read still goes stale between quote and execution, and `minShares` is
+    /// what lets them say how much of that they will wear. A depositor who
+    /// demands exactly their quote gets exactly their quote or nothing.
+    ///
+    /// Note the move here is a legal one — 0.44%, inside ε. The version of
+    /// this test that shoved the pool a quarter of the range no longer reaches
+    /// `minShares` at all, because the gate refuses the deposit first.
+    function test_minSharesRejectsADepositRepricedInsideTheGate() public {
         _deposit(alice, 100e18, 20_000e6);
         _openRange();
 
-        // Bob quotes $2,000 of USDG and asks for no worse than 0.5% slippage.
         uint256 quoted = vault.previewDeposit(2_000e6);
-        uint256 floor = quoted * 995 / 1000;
 
-        // The pool moves; the feed does not. `totalAssets` marks both legs at
-        // the feed, but the MIX it marks comes from the pool, so the mint
-        // denominator moves anyway. That is A1 face (2), still open.
-        swapper.swap(adapter.poolKey(), true, -300e18);
-        assertLt(vault.previewDeposit(2_000e6), floor, "pool move did not reprice the mint");
+        swapper.swap(adapter.poolKey(), true, -7e18);
+        assertLt(
+            (PRICE - adapter.poolPriceWad()) * 1e18 / PRICE,
+            0.005e18,
+            "the move under test was not inside the gate"
+        );
+        assertLt(vault.previewDeposit(2_000e6), quoted, "pool move did not reprice the mint");
 
         vm.prank(bob);
         vm.expectPartialRevert(BaseVault.MinSharesNotMet.selector);
-        vault.deposit(0, 2_000e6, floor, bob);
+        vault.deposit(0, 2_000e6, quoted, bob);
 
-        // And the floor is not a blanket veto: at the quote the deposit lands.
-        uint256 shares = _deposit(bob, 0, 2_000e6, vault.previewDeposit(2_000e6));
-        assertGt(shares, 0, "an honest deposit at its own quote was rejected");
+        // And the floor is not a blanket veto: at the current quote it lands.
+        assertGt(
+            _deposit(bob, 0, 2_000e6, vault.previewDeposit(2_000e6)),
+            0,
+            "an honest deposit at its own quote was rejected"
+        );
     }
 
-    /// @dev A1 face (2), measured rather than asserted away.
+    /// @dev A1 face (2), now gated — and the gate's residual, measured.
     ///
-    /// Moving the pool inside the range and back changes `totalAssets` even
-    /// with the feed still, because `positionAmounts` reports the mix the
-    /// POOL's price implies. The full sequence — attacker shoves the pool, a
-    /// victim deposits against the moved NAV, attacker shoves it back and
-    /// exits — is the one that turns that into money, and this test exists to
-    /// produce the number rather than to claim it is zero.
+    /// The sequence this replaces used to run to completion: shove the pool,
+    /// let a victim deposit against the moved NAV, shove it back, exit. It was
+    /// kept as a characterisation test because the exposure needed a number
+    /// before the fix could be chosen. The number said the distortion is
+    /// quadratic in the divergence and capped by the range width, which is
+    /// what made a divergence gate the answer rather than a redesign of the
+    /// mint. `docs/a1-deposit-pricing.md` has the table.
     ///
-    /// Marking a range at a static feed while the pool walks away OVERSTATES
-    /// it (the position's realised trades all happened at prices better than
-    /// the mark), so the victim's deposit is divided by an inflated
-    /// denominator and mints too few shares. The shortfall stays with the
-    /// existing holders, which is what the attacker is.
+    /// Both halves of the bargain are asserted here.
     ///
-    /// What the attacker pays for it, here, is the round trip's swap fees —
-    /// and in this test the vault is the pool's only liquidity, so most of
-    /// that comes straight back to them as a holder. A real pool with other
-    /// LPs leaks more. That is precisely why this is a characterisation test
-    /// with a loose bound and a log line, not a pass/fail on profitability:
-    /// the bound documents today's exposure, and the A1 decision (divergence
-    /// gate, or minting from quantities) is what should drive it to zero. When
-    /// that lands, this test becomes an `expectRevert`.
-    /// @dev A1 face (2), measured end to end rather than asserted away.
+    /// **Outside the gate the deposit does not happen.** The distortion is
+    /// still measured first, because the gate does not make it go away — it
+    /// makes it unreachable from `deposit`, which is the only place it could
+    /// cost anybody anything.
     ///
-    /// Moving the pool inside the range and back changes `totalAssets` with
-    /// the feed still, because `positionAmounts` reports the mix the POOL's
-    /// price implies. The sequence that turns that into money is: shove the
-    /// pool, let a victim deposit against the moved NAV, shove it back, exit.
-    /// This test runs it and reports the number, because A1 is a decision that
-    /// wants an amount rather than an adjective.
-    ///
-    /// Two things come out of it, and they point opposite ways.
-    ///
-    /// **The mispricing is real and material.** Marking a range at a static
-    /// feed while the pool walks away OVERSTATES it — the position's realised
-    /// trades all happened at prices better than the mark — so the victim
-    /// divides by an inflated denominator and mints too few shares. Measured
-    /// here at about 1.75% of the deposit, from a shove of roughly a quarter
-    /// of the range. That is the defect, and nothing in this change fixes it.
-    ///
-    /// **On this pool shape the attack still loses money.** The attacker has
-    /// to push the price through the vault's own liquidity, and pays ~0.3%
-    /// each way on the size it takes to move it. The NAV distortion is second
-    /// order in the price move; the fee is first order. So the victim's share
-    /// of the round trip's fees more than covers what the mispricing took off
-    /// them, and the attacker ends up paying the victim a few dollars.
-    ///
-    /// **That second fact does not generalise, and is the reason A1 still
-    /// blocks.** It holds only because the vault is the pool's ONLY liquidity
-    /// here, so every fee the attacker pays comes back to the vault. A vault
-    /// that is a minority of the pool pays most of those fees to other LPs
-    /// while eating the whole distortion — and A6's vault-≤-15%-of-pool-TVL
-    /// cap guarantees the vault is exactly that. An attacker who can move the
-    /// price on a cheaper venue and let arbitrage carry it here pays nothing
-    /// at all. So this test pins today's exposure; it does not close it.
-    ///
-    /// When A1's decision lands — a divergence gate, or minting from
-    /// quantities — the deposit in step 2 should revert or reprice, and this
-    /// test becomes an `expectRevert` rather than a measurement.
-    function test_A1_poolManipulationAroundAVictimDeposit_isMeasured() public {
-        // The attacker is a large incumbent holder; that is the position the
-        // victim's shortfall accrues to.
-        uint256 attackerShares = _deposit(alice, 100e18, 20_000e6);
+    /// **Inside the gate the residual is tiny.** A pool 0.44% from the feed —
+    /// legal, ε is 0.5% — costs a $2,000 depositor about 1.8 bps. That is the
+    /// number the gate was chosen on, and it is worth comparing against the
+    /// alternative a depositor faces rather than against zero: the 30–100 bps
+    /// of pool fee they would pay to go acquire the other leg themselves.
+    function test_A1_gateBlocksTheManipulationAndCapsTheResidual() public {
+        _deposit(alice, 100e18, 20_000e6);
         _openRange();
 
-        uint256 attackerBefore = _wealth(address(swapper)) + vault.convertToAssets(attackerShares);
-        uint256 victimIn = 2_000e6;
-        uint256 quoteAtRest = vault.previewDeposit(victimIn);
         uint256 navAtRest = vault.totalAssets();
+        uint256 quoteAtRest = vault.previewDeposit(2_000e6);
 
-        // 1. Shove the pool inside the range. The feed does not move.
+        // --- inside the gate: allowed, and cheap ---
+        uint256 snap = vm.snapshotState();
+        swapper.swap(adapter.poolKey(), true, -7e18);
+
+        uint256 divergence = (PRICE - adapter.poolPriceWad()) * 1e18 / PRICE;
+        assertLt(divergence, 0.005e18, "test's small shove was not inside the gate");
+
+        uint256 quoteMoved = vault.previewDeposit(2_000e6);
+        uint256 shortfall = (quoteAtRest - quoteMoved) * 1e18 / quoteAtRest;
+        emit log_named_decimal_uint("divergence allowed", divergence, 18);
+        emit log_named_decimal_uint("residual shortfall", shortfall, 18);
+        assertLt(shortfall, 0.0005e18, "residual inside the gate exceeded 5 bps");
+
+        // And it is a real deposit, not a blocked one.
+        assertGt(_deposit(bob, 0, 2_000e6), 0, "the gate blocked an honest deposit");
+        vm.revertToState(snap);
+
+        // --- outside the gate: refused ---
         swapper.swap(adapter.poolKey(), true, -300e18);
-
-        uint256 navShoved = vault.totalAssets();
-        uint256 quoteShoved = vault.previewDeposit(victimIn);
-        emit log_named_decimal_uint("NAV at rest (USDG)", navAtRest, 6);
-        emit log_named_decimal_uint("NAV shoved (USDG)", navShoved, 6);
-
-        // The denominator moved, and by enough to matter: this is the defect.
-        assertGt(navShoved, navAtRest * 101 / 100, "NAV distortion below the recorded floor");
-        assertLt(navShoved, navAtRest * 110 / 100, "NAV distortion above its recorded bound");
-        assertLt(quoteShoved, quoteAtRest * 99 / 100, "quote did not move with the denominator");
-
-        // 2. The victim deposits against the inflated denominator.
-        uint256 victimShares = _deposit(bob, 0, victimIn);
-
-        // 3. Shove it back, and both sides leave.
-        swapper.swap(adapter.poolKey(), false, -290e18);
-
-        vm.prank(alice);
-        (uint256 aStock, uint256 aUsdg) = vault.redeem(attackerShares, alice);
-        uint256 attackerAfter = _wealth(address(swapper)) + _value(aStock, aUsdg);
+        assertGt(vault.totalAssets(), navAtRest * 101 / 100, "shove did not distort NAV");
 
         vm.prank(bob);
-        (uint256 vStock, uint256 vUsdg) = vault.redeem(victimShares, bob);
-        uint256 victimOut = _value(vStock, vUsdg);
+        vm.expectPartialRevert(RangePolicy.FeedPoolDiverged.selector);
+        vault.deposit(0, 2_000e6, 0, bob);
 
-        emit log_named_decimal_uint("victim deposited (USDG)", victimIn, 6);
-        emit log_named_decimal_uint("victim recovered (USDG)", victimOut, 6);
-        emit log_named_int("attacker P&L (USDG)", int256(attackerAfter) - int256(attackerBefore));
-
-        // On this shape the round trip is a transfer FROM the attacker TO the
-        // victim, via the fees the shoves paid into the vault's own range.
-        assertLt(attackerAfter, attackerBefore, "manipulation turned a profit; A1 is now urgent");
-        assertGt(victimOut, victimIn, "victim was not made whole by the fee round trip");
+        // Leaving is untouched. The gate refuses new money and never traps
+        // existing money — the same asymmetry as the feed check.
+        uint256 aliceShares = vault.balanceOf(alice);
+        vm.prank(alice);
+        (uint256 stockOut, uint256 usdgOut) = vault.redeem(aliceShares, alice);
+        assertTrue(stockOut > 0 || usdgOut > 0, "the gate trapped a holder");
     }
 
     /// @dev Fees a range has earned but not been paid are assets of the
@@ -801,8 +779,12 @@ contract BaseVaultTest is Test {
                 pool: address(altAdapter),
                 keeper: keeper,
                 admin: admin,
+                boundsDelay: 2 days,
                 bounds: RangePolicy.Bounds({
-                    maxFeedAge: 2 hours, minHalfWidth: 0.01e18, maxHalfWidth: 0.25e18
+                    maxFeedAge: 2 hours,
+                    minHalfWidth: 0.01e18,
+                    maxHalfWidth: 0.25e18,
+                    maxDivergence: 0.005e18
                 })
             })
         );
@@ -912,5 +894,184 @@ contract BaseVaultTest is Test {
         uint256 down = (PRICE - lo) * 1e18 / PRICE;
         uint256 up = (hi - PRICE) * 1e18 / PRICE;
         return down < up ? down : up;
+    }
+
+    /// @dev The gate has nothing to protect when the vault holds no position:
+    /// NAV is then idle balances priced at the feed, with no pool term in it
+    /// at all. Gating anyway would block every deposit a vault takes before
+    /// its first range opens, which is all of the ones it starts life with.
+    function test_theGateIsSkippedWhenThereIsNoPosition() public {
+        _deposit(alice, 100e18, 20_000e6);
+        _openRange();
+
+        // Push the pool far outside the gate, then take the vault out of it.
+        swapper.swap(adapter.poolKey(), true, -300e18);
+        vm.prank(keeper);
+        vault.closeRange();
+        assertFalse(adapter.hasPosition(), "range did not close");
+
+        // The pool is still miles from the feed, and it no longer matters.
+        assertGt(_deposit(bob, 0, 2_000e6), 0, "the gate blocked a pool-independent deposit");
+    }
+
+    /// @dev ε is floored at the pool's swap fee, because the fee is the width
+    /// of the no-arbitrage band: a 0.3% pool sits anywhere within ±0.3% of
+    /// fair with nobody manipulating anything. A gate tighter than that does
+    /// not catch attackers, it blocks depositors. And it is capped at the
+    /// range half-width, because the distortion it exists to bound is itself
+    /// capped there — a gate wider than the range never binds first.
+    function test_divergenceBoundsMustBeLiveable() public {
+        RangePolicy.Bounds memory tooTight = RangePolicy.Bounds({
+            maxFeedAge: 2 hours,
+            minHalfWidth: 0.01e18,
+            maxHalfWidth: 0.25e18,
+            maxDivergence: 0.001e18 // below the pool's 0.3% fee
+        });
+        vm.prank(admin);
+        vm.expectRevert(
+            abi.encodeWithSelector(
+                RangePolicy.DivergenceTighterThanTheFee.selector,
+                uint256(0.001e18),
+                uint256(0.003e18)
+            )
+        );
+        vault.proposeBounds(tooTight);
+
+        RangePolicy.Bounds memory tooWide = RangePolicy.Bounds({
+            maxFeedAge: 2 hours,
+            minHalfWidth: 0.01e18,
+            maxHalfWidth: 0.25e18,
+            maxDivergence: 0.3e18 // wider than the range it guards
+        });
+        vm.prank(admin);
+        vm.expectRevert(
+            abi.encodeWithSelector(
+                RangePolicy.DivergenceWiderThanTheRange.selector, uint256(0.3e18), uint256(0.25e18)
+            )
+        );
+        vault.proposeBounds(tooWide);
+    }
+
+    // ---------------------------------------------- A4: keys and the timelock
+
+    /// @dev The point of the timelock, stated as the thing it prevents.
+    ///
+    /// A keeper bound that can be widened in the same block it is exceeded is
+    /// not a bound — the admin and the keeper together could open any range at
+    /// all and the policy would never have said no. So the widening has to
+    /// wait, and while it waits the old bound still binds.
+    function test_aBoundCannotBeWidenedInTheBlockItIsExceeded() public {
+        _deposit(alice, 100e18, 20_000e6);
+        uint256 sBal = stock.balanceOf(address(vault));
+        uint256 uBal = usdg.balanceOf(address(vault));
+
+        // A range the current policy refuses.
+        vm.prank(keeper);
+        vm.expectPartialRevert(RangePolicy.RangeTooWide.selector);
+        vault.openRange(140e18, 260e18, sBal, uBal);
+
+        // The admin asks for a wider bound. Asking changes nothing today.
+        RangePolicy.Bounds memory wider = RangePolicy.Bounds({
+            maxFeedAge: 2 hours,
+            minHalfWidth: 0.01e18,
+            maxHalfWidth: 0.4e18,
+            maxDivergence: 0.005e18
+        });
+        vm.prank(admin);
+        vault.proposeBounds(wider);
+
+        vm.prank(keeper);
+        vm.expectPartialRevert(RangePolicy.RangeTooWide.selector);
+        vault.openRange(140e18, 260e18, sBal, uBal);
+
+        // Nor one second early.
+        vm.warp(block.timestamp + 2 days - 1);
+        vm.expectPartialRevert(BaseVault.TimelockNotElapsed.selector);
+        vault.applyBounds();
+
+        // After the delay it applies — and anyone may finish it, since the
+        // admin already decided and there is nothing here to choose.
+        vm.warp(block.timestamp + 1);
+        vm.prank(alice);
+        vault.applyBounds();
+
+        // The feed went stale while we waited; the keeper needs a live one.
+        feed.set(int256(200e8), block.timestamp);
+
+        (,, uint256 maxHalfWidth,) = vault.bounds();
+        assertEq(maxHalfWidth, 0.4e18, "bounds did not take effect");
+
+        vm.prank(keeper);
+        vault.openRange(140e18, 260e18, sBal, uBal);
+        assertTrue(adapter.hasPosition(), "the widened bound did not take effect");
+
+        // The proposal is consumed, not reusable.
+        vm.expectRevert(BaseVault.NoPendingBounds.selector);
+        vault.applyBounds();
+    }
+
+    /// @dev A4: the admin can be rotated. It used to be immutable and set to
+    /// whoever owned the factory at `addPair`, so rotating a compromised
+    /// factory key left `setKeeper` and `setBounds` on every live vault with
+    /// the old one.
+    function test_adminRotatesAndTheOldKeyGoesDead() public {
+        address newAdmin = makeAddr("newAdmin");
+
+        vm.prank(alice);
+        vm.expectRevert(BaseVault.NotAdmin.selector);
+        vault.setAdmin(newAdmin);
+
+        vm.prank(admin);
+        vault.setAdmin(newAdmin);
+        assertEq(vault.admin(), newAdmin, "admin did not rotate");
+
+        // The old key is done: it cannot rotate back, set the keeper, or move
+        // the policy.
+        vm.prank(admin);
+        vm.expectRevert(BaseVault.NotAdmin.selector);
+        vault.setAdmin(admin);
+
+        vm.prank(admin);
+        vm.expectRevert(BaseVault.NotAdmin.selector);
+        vault.setKeeper(alice);
+
+        // And the new one works.
+        vm.prank(newAdmin);
+        vault.setKeeper(alice);
+        assertEq(vault.keeper(), alice, "new admin could not set the keeper");
+
+        // Rotating to nowhere is refused: it would freeze the keeper and the
+        // policy at whatever they happen to be.
+        vm.prank(newAdmin);
+        vm.expectRevert(BaseVault.ZeroAddress.selector);
+        vault.setAdmin(address(0));
+    }
+
+    /// @dev A proposal the admin thinks better of costs nothing to withdraw,
+    /// and needs no delay to do it: cancelling can only leave the bounds where
+    /// they already are.
+    function test_aProposalCanBeCancelled() public {
+        RangePolicy.Bounds memory wider = RangePolicy.Bounds({
+            maxFeedAge: 2 hours,
+            minHalfWidth: 0.01e18,
+            maxHalfWidth: 0.4e18,
+            maxDivergence: 0.005e18
+        });
+        vm.prank(admin);
+        vault.proposeBounds(wider);
+
+        vm.prank(alice);
+        vm.expectRevert(BaseVault.NotAdmin.selector);
+        vault.cancelBounds();
+
+        vm.prank(admin);
+        vault.cancelBounds();
+
+        vm.warp(block.timestamp + 30 days);
+        vm.expectRevert(BaseVault.NoPendingBounds.selector);
+        vault.applyBounds();
+
+        (,, uint256 maxHalfWidth,) = vault.bounds();
+        assertEq(maxHalfWidth, 0.25e18, "cancelled proposal changed the bounds");
     }
 }

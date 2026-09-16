@@ -112,6 +112,8 @@ contract MockPool is IPoolAdapter {
     uint256 public usdgHeld;
     bool public open;
     bool public rangeInside = true;
+    uint256 public price = 200e18;
+    uint256 public swapFee = 0.003e18;
 
     constructor(address stock_, address usdg_, address vault_) {
         stock = IERC20(stock_);
@@ -133,6 +135,18 @@ contract MockPool is IPoolAdapter {
 
     function setInRange(bool v) external {
         rangeInside = v;
+    }
+
+    function poolPriceWad() external view returns (uint256) {
+        return price;
+    }
+
+    function swapFeeWad() external view returns (uint256) {
+        return swapFee;
+    }
+
+    function setPoolPrice(uint256 p) external {
+        price = p;
     }
 
     /// @dev Simulates fees arriving by crediting the position directly.

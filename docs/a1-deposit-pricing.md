@@ -1,13 +1,14 @@
 # A1 — how a deposit should be priced
 
-**Status: proposal, not decided.** `docs/plan.md` A1 asks for this write-up and
-a review pass before any of it is coded, because it chooses the product's
-shape and not just its implementation. The two rails A1 says to add regardless
-— an OZ-style virtual-share offset and `minShares` — are already in, with
-tests; this document is only about the half that remains.
+**Status: decided 2026-09-16 — Option A, the divergence gate, with ε floored
+at the pool's fee tier and defaulting to fee + 20 bps.** Built and tested; see
+`docs/decisions.md` and A1 in `docs/plan.md`. Measured at ε = 0.5% on a 0.3%
+pool, a legal 0.44% divergence costs a $2,000 depositor **1.8 bps**, which is
+the 2 bps this document predicted.
 
-**Recommendation: the divergence gate (Option A), with ε set per pair to the
-pool's fee tier plus 20 bps.** The measurements below are the reason.
+The rest is kept as written, as the argument the decision was made on. It also
+records the one thing that would reverse it: Option B wins outright if the
+single-asset-deposit requirement is ever dropped.
 
 ## The defect, restated
 

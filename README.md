@@ -240,15 +240,19 @@ Fixed: the first deposit has a virtual-share offset, so the donation attack
 costs the attacker rather than the victim, and `deposit` takes a `minShares`
 floor.
 
-Still open, and still the reason not to put third-party money through
-`deposit`: the mint denominator moves with the pool's price inside the range,
+Also fixed: the mint denominator moves with the pool's price inside the range,
 so a deposit mints in value-space at the feed while a redemption pays a
-physical slice, and the two agree only while the vault's mix matches the
-feed's. Measured, the distortion is quadratic in the pool-vs-feed divergence
-and capped by the range width — 1.79% on a ±6% range, 8.04% on a ±25% one. The
-options, the measurements and a recommendation are in
+physical slice. Measured, that distortion is quadratic in the pool-vs-feed
+divergence and capped by the range width — 1.79% on a ±6% range, 8.04% on a
+±25% one. `deposit` now refuses while the pool is more than ε from the feed,
+with ε floored at the pool's swap fee, which leaves a residual of about 2 bps.
+The options, the measurements and the decision are in
 [`docs/a1-deposit-pricing.md`](docs/a1-deposit-pricing.md); the history is in
 [`docs/decisions.md`](docs/decisions.md).
+
+What still blocks a third-party deposit is the rest of Track A, not this:
+off-hours feed policy (A2), deposit pause and caps (A6), a keeper (A7), fork
+tests against live 4663 (A8), and an audit.
 
 The invariants the design rests on are stated and tested in
 [`contracts/test/SubwayVault.t.sol`](contracts/test/SubwayVault.t.sol) and

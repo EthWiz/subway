@@ -62,7 +62,10 @@ contract SubwayVaultTest is Test {
                 haircut: 0.35e18,
                 maxMargin: 100_000e6,
                 bounds: RangePolicy.Bounds({
-                    maxFeedAge: 2 hours, minHalfWidth: 0.01e18, maxHalfWidth: 0.25e18
+                    maxFeedAge: 2 hours,
+                    minHalfWidth: 0.01e18,
+                    maxHalfWidth: 0.25e18,
+                    maxDivergence: 0.005e18
                 })
             })
         );

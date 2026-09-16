@@ -28,6 +28,22 @@ interface IPoolAdapter {
     /// A position out of range earns no fees and is entirely one-sided.
     function inRange() external view returns (bool);
 
+    /// @notice The pool's own current price, in the vault's units: USDG per
+    /// whole stock token, scaled by 1e18.
+    /// @dev Read by the deposit divergence gate, and by nothing that values
+    /// anything. This is the price an attacker CAN move, which is exactly why
+    /// the vault compares it against the feed rather than trusting it.
+    function poolPriceWad() external view returns (uint256);
+
+    /// @notice The pool's swap fee as a WAD fraction (0.003e18 for a 0.3%
+    /// tier).
+    /// @dev Exposed because it is the width of the pool's no-arbitrage band:
+    /// nobody closes a gap smaller than the fee they would pay to close it, so
+    /// a pool sits anywhere within ±fee of fair with nobody manipulating
+    /// anything. The vault uses it as the FLOOR on its divergence gate — a
+    /// gate tighter than honest pool behaviour blocks honest deposits.
+    function swapFeeWad() external view returns (uint256);
+
     /// @notice Open a position over [lowerPrice, upperPrice], both expressed as
     /// USDG per whole stock token scaled by 1e18.
     ///

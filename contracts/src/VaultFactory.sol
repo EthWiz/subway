@@ -72,6 +72,8 @@ contract VaultFactory {
         /// rollup state, so nothing on-chain can verify it. Carried here from
         /// Track A so the pair's hedge market is decided with the pair.
         uint256 lighterMarketId;
+        /// @notice The vault's policy timelock, immutable once deployed.
+        uint256 boundsDelay;
         RangePolicy.Bounds bounds;
     }
 
@@ -96,6 +98,7 @@ contract VaultFactory {
                     // itself: an admin that is a contract with no admin
                     // function is an admin nobody can use.
                     admin: owner,
+                    boundsDelay: p.boundsDelay,
                     bounds: p.bounds
                 })
             )
