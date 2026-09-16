@@ -411,3 +411,45 @@ constructor revert. It is a public immutable, so it can be read and displayed.
 wallet — a multisig or a governance contract changes both halves of this, since
 a contract admin can hold its own delay and a two-step handshake stops being
 pure cost.
+
+---
+
+## 2026-09-16 — Pause and caps are immediate; the share cap counts ACTIVE liquidity
+
+**Decided.** `BaseVault` gains `setDepositsPaused`, `maxTotalAssets` and
+`maxPoolShare` (A6). Three choices in there are worth recording.
+
+**They are not timelocked, while `bounds` is.** The bounds timelock exists for
+one specific shape of problem: a keeper limit that can be widened in the block
+it is exceeded never said no to anything. Neither a pause nor a cap has that
+shape. A pause only ever refuses new money, so delaying it delays the brake and
+not the risk; lowering a cap is likewise a brake; raising a cap lets in money
+that dilutes nobody, since new shares are priced at NAV. Timelocking them would
+buy holders nothing and cost the operator the ability to react.
+
+**The share cap counts the pool's ACTIVE liquidity, not its TVL.** The plan
+said "vault ≤ 15% of pool TVL", and TVL is the wrong denominator: fees are
+split among the liquidity in range, so it is the share of THAT which decides
+whether the vault is diluting its own fee take and whether the depth it would
+unwind into is really there. Checked in `openRange` after the position is
+placed, so the denominator includes it. Deposits are not gated on it — the cap
+is about how much of itself the vault puts in the pool, and gating deposits
+would mean a vault over the line stops working rather than simply stops adding.
+
+**Zero is refused on both caps.** A zero NAV ceiling reads as "unlimited" on
+one deployment and "closed" on another depending on who is guessing;
+`type(uint256).max` says "none" and cannot be misread.
+
+**Consequence: the test fixture changed, and it should have changed earlier.**
+The suite made the vault the pool's only liquidity, which the share cap now
+forbids outright — and which had been flattering every economic result in it,
+because every fee an attacker paid came straight back to the vault under test.
+That is precisely the caveat `docs/a1-deposit-pricing.md` flagged and could not
+then test. There is now a background `LiquidityProvider` and the vault sits at
+~10% of the pool. A1's residual measurement survived unchanged at 1.85 bps,
+which is worth knowing: the mint distortion at a given divergence is a property
+of the range, not of who else is in the pool.
+
+**Revisit if:** a pair's pool has liquidity concentrated far from the feed
+price, where active liquidity at the current tick is a poor proxy for the depth
+an unwind would actually find.

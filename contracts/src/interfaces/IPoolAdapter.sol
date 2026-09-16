@@ -35,6 +35,15 @@ interface IPoolAdapter {
     /// the vault compares it against the feed rather than trusting it.
     function poolPriceWad() external view returns (uint256);
 
+    /// @notice The pool's total ACTIVE liquidity at its current price,
+    /// including this position's when the position is in range.
+    /// @dev The denominator of the vault's share-of-pool cap (A6). Active
+    /// liquidity rather than total value locked, deliberately: fees are split
+    /// among the liquidity actually being traded against, so it is the share
+    /// of THAT which decides whether the vault is diluting its own fee take
+    /// and whether it can unwind into the depth it is relying on.
+    function poolLiquidity() external view returns (uint128);
+
     /// @notice The pool's swap fee as a WAD fraction (0.003e18 for a 0.3%
     /// tier).
     /// @dev Exposed because it is the width of the pool's no-arbitrage band:

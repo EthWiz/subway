@@ -145,6 +145,12 @@ contract MockPool is IPoolAdapter {
         return swapFee;
     }
 
+    /// @dev The mock's "liquidity" is its USDG leg, so a pool ten times the
+    /// position keeps the share cap out of the way of tests about other things.
+    function poolLiquidity() external view returns (uint128) {
+        return uint128(usdgHeld * 10);
+    }
+
     function setPoolPrice(uint256 p) external {
         price = p;
     }

@@ -89,6 +89,19 @@ contract BaseVault is ERC20, ReentrancyGuard {
     RangePolicy.Bounds public pendingBounds;
     uint256 public pendingBoundsAt;
 
+    /// @notice A brake on new money that depends on no keeper and stops no
+    /// exit. `redeem` does not read it, and no admin path can be made to.
+    bool public depositsPaused;
+
+    /// @notice Ceiling on the vault's NAV, in raw USDG. `type(uint256).max`
+    /// for none; zero is refused, because a vault whose cap means "unlimited"
+    /// on some deployments and "closed" on others is a cap nobody can read.
+    uint256 public maxTotalAssets;
+
+    /// @notice The largest share of the pool's ACTIVE liquidity the vault's
+    /// position may be, 1e18 = 100%. Checked when a range is opened.
+    uint256 public maxPoolShare;
+
     /// @dev `WAD * 10^stockDecimals / 10^usdgDecimals`, the single divisor that
     /// turns a raw stock amount times a WAD price into a RAW USDG amount.
     ///
@@ -165,6 +178,8 @@ contract BaseVault is ERC20, ReentrancyGuard {
     event BoundsProposed(RangePolicy.Bounds bounds, uint256 effectiveAt);
     event BoundsChanged(RangePolicy.Bounds bounds);
     event BoundsProposalCancelled();
+    event DepositsPausedSet(bool paused);
+    event CapsChanged(uint256 maxTotalAssets, uint256 maxPoolShare);
 
     // ---------------------------------------------------------------- errors
 
@@ -180,6 +195,10 @@ contract BaseVault is ERC20, ReentrancyGuard {
     error UnsupportedDecimals(uint8 usdgDecimals);
     error NoPendingBounds();
     error TimelockNotElapsed(uint256 effectiveAt);
+    error DepositsArePaused();
+    error CapExceeded(uint256 wouldBe, uint256 cap);
+    error PoolShareExceeded(uint128 positionLiquidity, uint128 poolLiquidity, uint256 cap);
+    error CapsInvalid();
 
     modifier onlyKeeper() {
         if (msg.sender != keeper) revert NotKeeper();
@@ -201,6 +220,8 @@ contract BaseVault is ERC20, ReentrancyGuard {
         address keeper;
         address admin;
         uint256 boundsDelay;
+        uint256 maxTotalAssets;
+        uint256 maxPoolShare;
         RangePolicy.Bounds bounds;
     }
 
@@ -218,6 +239,8 @@ contract BaseVault is ERC20, ReentrancyGuard {
         keeper = c.keeper;
         admin = c.admin;
         boundsDelay = c.boundsDelay;
+
+        _setCaps(c.maxTotalAssets, c.maxPoolShare);
 
         RangePolicy.requireValidBounds(c.bounds, IPoolAdapter(c.pool).swapFeeWad());
         bounds = c.bounds;
@@ -384,6 +407,7 @@ contract BaseVault is ERC20, ReentrancyGuard {
         returns (uint256 shares)
     {
         if (stockAmount == 0 && usdgAmount == 0) revert ZeroDeposit();
+        if (depositsPaused) revert DepositsArePaused();
 
         // A deposit needs a price and therefore a live feed; a redemption does
         // not. That asymmetry is deliberate — it is always safe to refuse new
@@ -410,6 +434,15 @@ contract BaseVault is ERC20, ReentrancyGuard {
         uint256 supply = totalSupply();
 
         uint256 value = usdgAmount + _stockValue(stockAmount, price);
+
+        // The cap is on NAV, not on cumulative deposits: money that has left
+        // makes room for money arriving, which is what a size limit on the
+        // strategy means. Checked against the value being added rather than by
+        // re-reading `totalAssets()` afterwards, so the two numbers the mint
+        // and the cap use are the same number.
+        uint256 navAfter = navBefore + value;
+        if (navAfter > maxTotalAssets) revert CapExceeded(navAfter, maxTotalAssets);
+
         // Same expression as `convertToShares`, against the pre-transfer NAV.
         shares = Math.mulDiv(value, supply + virtualShares, navBefore + 1);
         if (shares == 0) revert NothingToMint();
@@ -520,6 +553,7 @@ contract BaseVault is ERC20, ReentrancyGuard {
         // Against the SAME price the request was judged on, so the two checks
         // cannot disagree about where the market is.
         RangePolicy.requireValidRange(realisedLower, realisedUpper, price, bounds);
+        _requirePoolShareWithinCap();
 
         // Leaving an allowance alive is a standing claim on vault funds.
         stock.forceApprove(address(pool), 0);
@@ -553,6 +587,33 @@ contract BaseVault is ERC20, ReentrancyGuard {
         if (next == address(0)) revert ZeroAddress();
         emit AdminChanged(admin, next);
         admin = next;
+    }
+
+    /// @notice Stop or restart new deposits.
+    ///
+    /// @dev Immediate, and deliberately not behind the policy timelock. The
+    /// bounds timelock exists because widening a keeper bound on demand makes
+    /// it not a bound; pausing has no such shape. It only ever REFUSES new
+    /// money, so making it wait would delay the brake and not the risk, and
+    /// unpausing only restores the ordinary state.
+    ///
+    /// It is also the one admin power that must be provably harmless, so:
+    /// `redeem` does not read this flag, `previewRedeemAmounts` does not read
+    /// it, and no path that pays a holder can be made to. A pause is a brake
+    /// on the way in and nothing else.
+    function setDepositsPaused(bool paused) external onlyAdmin {
+        depositsPaused = paused;
+        emit DepositsPausedSet(paused);
+    }
+
+    /// @notice Set the NAV ceiling and the share-of-pool ceiling.
+    ///
+    /// @dev Immediate, like the pause and for the same reason. Lowering a cap
+    /// is a brake and should not have to wait; raising one lets in money that
+    /// dilutes nobody, since new shares are priced at NAV. Neither direction
+    /// is the thing the bounds timelock guards against.
+    function setCaps(uint256 maxTotalAssets_, uint256 maxPoolShare_) external onlyAdmin {
+        _setCaps(maxTotalAssets_, maxPoolShare_);
     }
 
     /// @notice Propose new policy bounds. They take effect after `boundsDelay`.
@@ -608,6 +669,46 @@ contract BaseVault is ERC20, ReentrancyGuard {
     }
 
     // -------------------------------------------------------------- internal
+
+    function _setCaps(uint256 maxTotalAssets_, uint256 maxPoolShare_) internal {
+        // Zero is refused on both. A zero NAV ceiling reads as either
+        // "unlimited" or "closed" depending on who is guessing, and a zero
+        // pool share would make every range the keeper opens revert.
+        if (maxTotalAssets_ == 0 || maxPoolShare_ == 0 || maxPoolShare_ > WAD) {
+            revert CapsInvalid();
+        }
+        maxTotalAssets = maxTotalAssets_;
+        maxPoolShare = maxPoolShare_;
+        emit CapsChanged(maxTotalAssets_, maxPoolShare_);
+    }
+
+    /// @dev The vault's position as a fraction of the liquidity actually being
+    /// traded against.
+    ///
+    /// Active liquidity rather than total value locked, because fees are split
+    /// among the liquidity in range: it is the share of THAT which decides
+    /// whether the vault is diluting its own fee take, and whether the depth
+    /// it would unwind into is really there.
+    ///
+    /// Read AFTER the position is placed, so the denominator includes it and
+    /// the ratio is the vault's true share. Written as a multiplication so a
+    /// pool with no active liquidity reverts rather than dividing by zero —
+    /// which is the right answer anyway: nothing is at most 15% of nothing.
+    ///
+    /// One honest caveat. If the position is opened OUT of range — legal,
+    /// since `RangePolicy` straddles the FEED and the pool can sit elsewhere —
+    /// the pool's active liquidity excludes it and the check is stricter than
+    /// the true share. Conservative in the safe direction, and a keeper
+    /// opening out-of-range ranges has a problem this is not the place to fix.
+    function _requirePoolShareWithinCap() internal view {
+        uint128 positionLiq = pool.positionLiquidity();
+        if (positionLiq == 0) return;
+
+        uint128 poolLiq = pool.poolLiquidity();
+        if (uint256(positionLiq) * WAD > uint256(poolLiq) * maxPoolShare) {
+            revert PoolShareExceeded(positionLiq, poolLiq, maxPoolShare);
+        }
+    }
 
     /// @dev The feed read that must not revert: `totalAssets` is a view other
     /// protocols call, and a stale feed should degrade it rather than brick

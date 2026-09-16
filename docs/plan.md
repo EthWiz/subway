@@ -353,12 +353,40 @@ The scan is v3-only; the adapter is v4-only. Before choosing pairs:
 3. Classify pool tokens **by address** against the Robinhood Stock Token
    registry, never by symbol — the HOOD lesson.
 
-### A6. Deposit pause and caps
+### A6. Deposit pause and caps — **DONE**
 
-The factory owner must be able to pause deposits per pair and the vault must
-enforce a TVL cap and a vault-≤-15%-of-pool-TVL cap. All three are called for
-below and none exist. Pause is a keeper-independent brake on new money and
-never on exits.
+All three exist on `BaseVault`.
+
+- **`setDepositsPaused`**, admin-only, immediate. Not behind the policy
+  timelock: the timelock exists because widening a keeper bound on demand makes
+  it not a bound, and a pause has no such shape — it only ever refuses new
+  money, so delaying it would delay the brake and not the risk. It is also the
+  one admin power that has to be provably harmless, so `redeem` and
+  `previewRedeemAmounts` do not read the flag and no paying path can be made to.
+- **`maxTotalAssets`**, a ceiling on NAV rather than on cumulative deposits, so
+  money leaving makes room for money arriving. Zero is refused: a cap that
+  reads as "unlimited" or "closed" depending on who is guessing is not a cap.
+  `type(uint256).max` is how you say "none".
+- **`maxPoolShare`**, checked in `openRange` after the position is placed,
+  against the pool's ACTIVE liquidity — not total value locked, because fees
+  are split among the liquidity actually being traded against, and it is the
+  share of that which decides both fee dilution and unwind depth. Written as a
+  multiplication, so a pool with no active liquidity reverts rather than
+  dividing by zero. Conservative when a position is opened out of range, since
+  the denominator then excludes it.
+
+Caps are settable immediately rather than timelocked, for the same reason as
+the pause: lowering one is a brake, and raising one lets in money that dilutes
+nobody, because new shares are priced at NAV.
+
+**This changed the test fixture, and the change was overdue.** The suite used
+to make the vault the pool's ONLY liquidity, which the share cap now forbids
+outright — and which had been quietly flattering every economic result in it,
+since every fee an attacker paid came straight back to the vault. There is now
+a `LiquidityProvider` supplying background liquidity, with the vault at ~10% of
+the pool. Notably, A1's residual measurement is unchanged at 1.85 bps: the
+mint distortion at a given divergence is a property of the range, not of who
+else is in the pool.
 
 ### A7. Keeper v0 — LP only
 

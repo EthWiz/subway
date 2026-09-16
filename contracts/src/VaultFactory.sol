@@ -74,6 +74,10 @@ contract VaultFactory {
         uint256 lighterMarketId;
         /// @notice The vault's policy timelock, immutable once deployed.
         uint256 boundsDelay;
+        /// @notice NAV ceiling in raw USDG, and the largest share of the
+        /// pool's active liquidity the vault's range may be (1e18 = 100%).
+        uint256 maxTotalAssets;
+        uint256 maxPoolShare;
         RangePolicy.Bounds bounds;
     }
 
@@ -99,6 +103,8 @@ contract VaultFactory {
                     // function is an admin nobody can use.
                     admin: owner,
                     boundsDelay: p.boundsDelay,
+                    maxTotalAssets: p.maxTotalAssets,
+                    maxPoolShare: p.maxPoolShare,
                     bounds: p.bounds
                 })
             )

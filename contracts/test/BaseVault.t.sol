@@ -6,6 +6,7 @@ import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 import {IPoolManager} from "v4-core/src/interfaces/IPoolManager.sol";
 import {PoolKey} from "v4-core/src/types/PoolKey.sol";
+import {StateLibrary} from "v4-core/src/libraries/StateLibrary.sol";
 
 import {BaseVault} from "../src/BaseVault.sol";
 import {Router} from "../src/Router.sol";
@@ -16,6 +17,7 @@ import {PriceTick} from "../src/libraries/PriceTick.sol";
 import {TickMath} from "v4-core/src/libraries/TickMath.sol";
 import {MockERC20, MockFeed} from "./Mocks.sol";
 import {Swapper} from "./v4/Swapper.sol";
+import {LiquidityProvider} from "./v4/Liquidity.sol";
 
 /// @notice The unhedged base vault, end to end against a real Uniswap v4 pool.
 ///
@@ -26,6 +28,8 @@ import {Swapper} from "./v4/Swapper.sol";
 ///   3. The share price never reads the pool tick.
 ///   4. The keeper can change the range's shape and nothing else.
 contract BaseVaultTest is Test {
+    using StateLibrary for IPoolManager;
+
     IPoolManager internal poolManager;
     MockERC20 internal stock;
     MockERC20 internal usdg;
@@ -35,6 +39,7 @@ contract BaseVaultTest is Test {
     VaultFactory internal factory;
     Router internal router;
     Swapper internal swapper;
+    LiquidityProvider internal backgroundLp;
 
     address internal keeper = makeAddr("keeper");
     address internal admin = makeAddr("admin");
@@ -44,6 +49,10 @@ contract BaseVaultTest is Test {
     uint24 internal constant FEE = 3000;
     int24 internal constant TICK_SPACING = 60;
     uint256 internal constant PRICE = 200e18;
+
+    /// @dev Sized so the vault's own range is a realistic minority of the
+    /// pool — comfortably under A6's 15% cap at the deposit sizes used here.
+    int256 internal constant BACKGROUND_LIQUIDITY = 4e17;
 
     function setUp() public {
         poolManager = IPoolManager(
@@ -78,6 +87,8 @@ contract BaseVaultTest is Test {
                 keeper: keeper,
                 admin: admin,
                 boundsDelay: 2 days,
+                maxTotalAssets: type(uint256).max,
+                maxPoolShare: 0.15e18,
                 bounds: RangePolicy.Bounds({
                     maxFeedAge: 2 hours,
                     minHalfWidth: 0.01e18,
@@ -98,8 +109,27 @@ contract BaseVaultTest is Test {
 
         stock.mint(address(swapper), 100_000e18);
         usdg.mint(address(swapper), 100_000_000e6);
+
+        // Somebody else in the pool. The vault must be a minority LP for A6's
+        // share cap to admit it at all, and a sole-LP fixture also hands every
+        // manipulation fee straight back to the vault under test.
+        backgroundLp = new LiquidityProvider(poolManager);
+        stock.mint(address(backgroundLp), 1e12 * 1e18);
+        usdg.mint(address(backgroundLp), 1e12 * 1e6);
+        _provideBackground(adapter, BACKGROUND_LIQUIDITY);
+
         _fund(alice);
         _fund(bob);
+    }
+
+    /// @dev A band of third-party liquidity straddling the pool's current
+    /// price, placed relative to the live tick so it does not depend on which
+    /// token sorts first.
+    function _provideBackground(UniV4Adapter target, int256 liquidity) internal {
+        (, int24 tick,,) = poolManager.getSlot0(target.poolKey().toId());
+        int24 lo = ((tick - 6_000) / TICK_SPACING) * TICK_SPACING;
+        int24 hi = ((tick + 6_000) / TICK_SPACING) * TICK_SPACING;
+        backgroundLp.provide(target.poolKey(), lo, hi, liquidity);
     }
 
     function _fund(address who) internal {
@@ -210,14 +240,17 @@ contract BaseVaultTest is Test {
     /// that gap does not shrink with the size of the redemption — which is
     /// precisely what makes the bug worth one share to exploit.
     function test_aTinyRedeemerCannotTakeEveryonesFees() public {
-        _deposit(alice, 100e18, 20_000e6);
-        _deposit(bob, 100e18, 20_000e6);
+        // Two holders, and between them a vault that stays inside A6's
+        // share-of-pool cap.
+        _deposit(alice, 50e18, 10_000e6);
+        _deposit(bob, 50e18, 10_000e6);
         _openRange();
 
-        // Real fees, from real round trips through the range.
+        // Real fees, from real round trips through the range. Larger than the
+        // vault, because the vault now earns only its slice of them.
         PoolKey memory key = adapter.poolKey();
-        swapper.swap(key, true, -20e18);
-        swapper.swap(key, false, -4_000e6);
+        swapper.swap(key, true, -100e18);
+        swapper.swap(key, false, -20_000e6);
 
         (uint256 feeStock, uint256 feeUsdg) = adapter.pendingFees();
         uint256 feeValue = feeUsdg + feeStock * 200 / 1e12;
@@ -284,7 +317,7 @@ contract BaseVaultTest is Test {
         uint256 poolPriceBefore = adapter.poolPriceWad();
 
         // Shove the pool hard in one direction. The feed does not move.
-        swapper.swap(adapter.poolKey(), true, -300e18);
+        swapper.swap(adapter.poolKey(), true, -500e18);
         assertLt(adapter.poolPriceWad(), poolPriceBefore * 99 / 100, "test failed to move the pool");
 
         // The share price may drift a little because the position's token MIX
@@ -394,6 +427,8 @@ contract BaseVaultTest is Test {
                 keeper: keeper,
                 lighterMarketId: 7,
                 boundsDelay: 2 days,
+                maxTotalAssets: type(uint256).max,
+                maxPoolShare: 0.15e18,
                 bounds: RangePolicy.Bounds({
                     maxFeedAge: 2 hours,
                     minHalfWidth: 0.01e18,
@@ -447,6 +482,8 @@ contract BaseVaultTest is Test {
                 keeper: keeper,
                 lighterMarketId: 7,
                 boundsDelay: 2 days,
+                maxTotalAssets: type(uint256).max,
+                maxPoolShare: 0.15e18,
                 bounds: RangePolicy.Bounds({
                     maxFeedAge: 2 hours,
                     minHalfWidth: 0.01e18,
@@ -475,6 +512,8 @@ contract BaseVaultTest is Test {
             keeper: keeper,
             lighterMarketId: 7,
             boundsDelay: 2 days,
+            maxTotalAssets: type(uint256).max,
+            maxPoolShare: 0.15e18,
             bounds: RangePolicy.Bounds({
                 maxFeedAge: 2 hours,
                 minHalfWidth: 0.01e18,
@@ -586,7 +625,7 @@ contract BaseVaultTest is Test {
 
         uint256 quoted = vault.previewDeposit(2_000e6);
 
-        swapper.swap(adapter.poolKey(), true, -7e18);
+        swapper.swap(adapter.poolKey(), true, -70e18);
         assertLt(
             (PRICE - adapter.poolPriceWad()) * 1e18 / PRICE,
             0.005e18,
@@ -637,7 +676,7 @@ contract BaseVaultTest is Test {
 
         // --- inside the gate: allowed, and cheap ---
         uint256 snap = vm.snapshotState();
-        swapper.swap(adapter.poolKey(), true, -7e18);
+        swapper.swap(adapter.poolKey(), true, -70e18);
 
         uint256 divergence = (PRICE - adapter.poolPriceWad()) * 1e18 / PRICE;
         assertLt(divergence, 0.005e18, "test's small shove was not inside the gate");
@@ -653,7 +692,7 @@ contract BaseVaultTest is Test {
         vm.revertToState(snap);
 
         // --- outside the gate: refused ---
-        swapper.swap(adapter.poolKey(), true, -300e18);
+        swapper.swap(adapter.poolKey(), true, -1_000e18);
         assertGt(vault.totalAssets(), navAtRest * 101 / 100, "shove did not distort NAV");
 
         vm.prank(bob);
@@ -780,6 +819,8 @@ contract BaseVaultTest is Test {
                 keeper: keeper,
                 admin: admin,
                 boundsDelay: 2 days,
+                maxTotalAssets: type(uint256).max,
+                maxPoolShare: 0.15e18,
                 bounds: RangePolicy.Bounds({
                     maxFeedAge: 2 hours,
                     minHalfWidth: 0.01e18,
@@ -793,6 +834,8 @@ contract BaseVaultTest is Test {
         poolManager.initialize(altAdapter.poolKey(), PriceTick.toSqrtPriceX96(PRICE, false, 18, 6));
         altStock.mint(alice, 10_000e18);
         altStock.mint(address(swapper), 10_000e18);
+        altStock.mint(address(backgroundLp), 1e12 * 1e18);
+        _provideBackground(altAdapter, BACKGROUND_LIQUIDITY);
     }
 
     // ------------------------------------------- A3: the policy binds the POSITION
@@ -905,7 +948,7 @@ contract BaseVaultTest is Test {
         _openRange();
 
         // Push the pool far outside the gate, then take the vault out of it.
-        swapper.swap(adapter.poolKey(), true, -300e18);
+        swapper.swap(adapter.poolKey(), true, -1_000e18);
         vm.prank(keeper);
         vault.closeRange();
         assertFalse(adapter.hasPosition(), "range did not close");
@@ -1073,5 +1116,119 @@ contract BaseVaultTest is Test {
 
         (,, uint256 maxHalfWidth,) = vault.bounds();
         assertEq(maxHalfWidth, 0.25e18, "cancelled proposal changed the bounds");
+    }
+
+    // ------------------------------------------------- A6: pause and the caps
+
+    /// @dev A pause is a brake on the way IN. The property worth testing is
+    /// not that it stops deposits — it is that it stops nothing else.
+    function test_pauseStopsDepositsAndNothingElse() public {
+        _deposit(alice, 100e18, 20_000e6);
+        _openRange();
+
+        vm.prank(alice);
+        vm.expectRevert(BaseVault.NotAdmin.selector);
+        vault.setDepositsPaused(true);
+
+        vm.prank(admin);
+        vault.setDepositsPaused(true);
+
+        vm.prank(bob);
+        vm.expectRevert(BaseVault.DepositsArePaused.selector);
+        vault.deposit(0, 2_000e6, 0, bob);
+
+        // Leaving works, and pays the same as it would have unpaused.
+        uint256 half = vault.balanceOf(alice) / 2;
+        (uint256 predStock, uint256 predUsdg) = vault.previewRedeemAmounts(half);
+        vm.prank(alice);
+        (uint256 stockOut, uint256 usdgOut) = vault.redeem(half, alice);
+        assertApproxEqRel(stockOut, predStock, 1e12, "pause changed what a redeemer is paid");
+        assertApproxEqRel(usdgOut, predUsdg, 1e12, "pause changed what a redeemer is paid");
+
+        // And the keeper can still manage the position it is holding — a
+        // pause on new money is not a freeze on the vault.
+        vm.prank(keeper);
+        vault.collectFees();
+
+        vm.prank(admin);
+        vault.setDepositsPaused(false);
+        assertGt(_deposit(bob, 0, 2_000e6), 0, "unpause did not restore deposits");
+    }
+
+    /// @dev The NAV cap is a ceiling on how big the strategy gets, not on how
+    /// much has ever been deposited — so money leaving makes room for money
+    /// arriving. Anything else would ratchet a vault shut.
+    function test_theNavCapBindsAndMoneyLeavingReopensIt() public {
+        vm.prank(admin);
+        vault.setCaps(50_000e6, 0.15e18);
+
+        _deposit(alice, 100e18, 20_000e6); // $40k, fits
+
+        // $20k more would be $60k against a $50k cap.
+        vm.prank(bob);
+        vm.expectPartialRevert(BaseVault.CapExceeded.selector);
+        vault.deposit(0, 20_000e6, 0, bob);
+
+        // What fits, fits.
+        assertGt(_deposit(bob, 0, 5_000e6), 0, "a deposit inside the cap was refused");
+
+        // Alice leaves; the room is Bob's to take.
+        uint256 shares = vault.balanceOf(alice);
+        vm.prank(alice);
+        vault.redeem(shares, alice);
+        assertGt(_deposit(bob, 0, 20_000e6), 0, "an exit did not make room under the cap");
+    }
+
+    /// @dev The share-of-pool cap, against a pool that has other liquidity in
+    /// it — which is the only situation where the cap means anything, and the
+    /// reason this suite provides background liquidity at all.
+    function test_theVaultCannotTakeMoreThanItsShareOfThePool() public {
+        _deposit(alice, 100e18, 20_000e6);
+        _deposit(bob, 100e18, 20_000e6);
+
+        uint256 sBal = stock.balanceOf(address(vault));
+        uint256 uBal = usdg.balanceOf(address(vault));
+
+        // Everything at once would be ~18% of the pool's active liquidity.
+        vm.prank(keeper);
+        vm.expectPartialRevert(BaseVault.PoolShareExceeded.selector);
+        vault.openRange(188e18, 212e18, sBal, uBal);
+        assertFalse(adapter.hasPosition(), "a rejected range still opened a position");
+
+        // Half of it is not. The cap bounds the POSITION, so a vault over the
+        // line keeps working — it just cannot put all of itself in the pool.
+        vm.prank(keeper);
+        vault.openRange(188e18, 212e18, sBal / 2, uBal / 2);
+        assertTrue(adapter.hasPosition(), "a range inside the cap was refused");
+
+        uint256 share = uint256(adapter.positionLiquidity()) * 1e18 / adapter.poolLiquidity();
+        assertLt(share, 0.15e18, "opened a position over the cap");
+
+        // Nobody is trapped by it either: exits do not read the cap.
+        uint256 aliceShares = vault.balanceOf(alice);
+        vm.prank(alice);
+        (uint256 stockOut, uint256 usdgOut) = vault.redeem(aliceShares, alice);
+        assertTrue(stockOut > 0 || usdgOut > 0, "the cap trapped a holder");
+    }
+
+    /// @dev Zero is refused on both caps. A zero NAV ceiling reads as
+    /// "unlimited" or "closed" depending on who is guessing, and a zero pool
+    /// share makes every range the keeper opens revert.
+    function test_capsCannotBeSetToSomethingUnreadable() public {
+        vm.prank(admin);
+        vm.expectRevert(BaseVault.CapsInvalid.selector);
+        vault.setCaps(0, 0.15e18);
+
+        vm.prank(admin);
+        vm.expectRevert(BaseVault.CapsInvalid.selector);
+        vault.setCaps(type(uint256).max, 0);
+
+        vm.prank(admin);
+        vm.expectRevert(BaseVault.CapsInvalid.selector);
+        vault.setCaps(type(uint256).max, 1e18 + 1);
+
+        vm.prank(alice);
+        vm.expectRevert(BaseVault.NotAdmin.selector);
+        vault.setCaps(1_000e6, 0.15e18);
     }
 }
