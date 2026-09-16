@@ -910,6 +910,16 @@ test("decodeV4Initialize: currencies from topics, key fields from data, dynamic-
   assert.ok(d.fee & UNIV4_DYNAMIC_FEE_FLAG);
 });
 
+test("isLimitExceeded: a server-side log query timeout is a split signal, not a retry", () => {
+  assert.equal(isLimitExceeded(new RpcError(-32000, "log query timed out")), true);
+  assert.equal(
+    isLimitExceeded(new RpcError(-32000, "logs matched by query exceeds limit of 10000")),
+    true,
+  );
+  assert.equal(isLimitExceeded(new RpcError(429, "Too Many Requests")), false);
+  assert.equal(isRateLimited(new RpcError(-32000, "log query timed out")), false);
+});
+
 test("sessionBucket: RTH, weekday overnight, and the Friday-close-to-Monday-open weekend", () => {
   // September 2026, EDT (UTC-4).
   assert.equal(sessionBucket(Date.parse("2026-09-11T19:30:00Z")), "rth"); // Fri 15:30 ET

@@ -44,10 +44,21 @@ export class RpcError extends Error {
   }
 }
 
-/** `eth_getLogs` result-size cap. The only fix is a narrower range. */
+/**
+ * `eth_getLogs` refused as too big. The only fix is a narrower range.
+ *
+ * Two shapes of refusal, one meaning. The result-size cap ("exceeds limit of
+ * 10000") is the obvious one. The public node also gives up on a query that
+ * is heavy rather than large — a wide block range OR-ing a long list of
+ * indexed ids can time out server-side and return `-32000 log query timed
+ * out` with nothing matched at all. Retrying that unchanged never helps;
+ * splitting the range does, so it is treated as the same signal.
+ */
 export function isLimitExceeded(err: unknown): boolean {
   if (!(err instanceof RpcError)) return false;
-  return /exceeds? limit|more than \d+ results|query returned more than/i.test(err.message);
+  return /exceeds? limit|more than \d+ results|query returned more than|query timed out/i.test(
+    err.message,
+  );
 }
 
 /** Endpoint throttling. The fix is to wait, not to narrow. */

@@ -288,7 +288,10 @@ async function main(): Promise<void> {
 
   // ---- pass two: every swap in the window for the candidate pools only ----
   const swapLogs: RpcLog[] = [];
-  const IDS_PER_QUERY = 150;
+  // Shape chosen against the public node's server-side query timeout: a
+  // 200k-block range OR-ing 150 ids timed out outright. `fetchLogs` now
+  // splits on that too, but starting small avoids paying for the discovery.
+  const IDS_PER_QUERY = 50;
   const batches = Math.ceil(candidates.length / IDS_PER_QUERY);
   for (let i = 0; i < candidates.length; i += IDS_PER_QUERY) {
     const batch = candidates.slice(i, i + IDS_PER_QUERY);
@@ -297,7 +300,7 @@ async function main(): Promise<void> {
       logsT,
       { fromBlock, toBlock, address: POOL_MANAGER, topics: [UNIV4_SWAP_TOPIC, batch] },
       {
-        initialChunk: 200_000,
+        initialChunk: 40_000,
         minChunk: 500,
         throttleMs: gapMs,
         onProgress: (done, total, n) =>
