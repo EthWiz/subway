@@ -81,12 +81,16 @@ contract Router {
 
     /// @notice Deposit into a pair, hedged or not.
     /// @param stock The pair's stock token, which is the pair's identity.
+    /// @param minShares Forwarded to the vault unchanged. The Router adds no
+    /// slippage protection of its own and takes none away: routing through a
+    /// convenience contract must not quietly widen what a depositor accepts.
     /// @param hedged False mints `xAMC` to `receiver`; true wraps it into
     /// `hAMC` in the same transaction.
     function deposit(
         address stock,
         uint256 stockAmount,
         uint256 usdgAmount,
+        uint256 minShares,
         bool hedged,
         address receiver
     ) external returns (uint256 shares) {
@@ -111,7 +115,7 @@ contract Router {
             usdgToken.forceApprove(base, usdgAmount);
         }
 
-        shares = BaseVault(base).deposit(stockAmount, usdgAmount, receiver);
+        shares = BaseVault(base).deposit(stockAmount, usdgAmount, minShares, receiver);
 
         if (stockAmount > 0) stockToken.forceApprove(base, 0);
         if (usdgAmount > 0) usdgToken.forceApprove(base, 0);

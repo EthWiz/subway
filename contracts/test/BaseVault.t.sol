@@ -109,8 +109,15 @@ contract BaseVaultTest is Test {
     }
 
     function _deposit(address who, uint256 stockAmt, uint256 usdgAmt) internal returns (uint256) {
+        return _deposit(who, stockAmt, usdgAmt, 0);
+    }
+
+    function _deposit(address who, uint256 stockAmt, uint256 usdgAmt, uint256 minShares)
+        internal
+        returns (uint256)
+    {
         vm.prank(who);
-        return vault.deposit(stockAmt, usdgAmt, who);
+        return vault.deposit(stockAmt, usdgAmt, minShares, who);
     }
 
     function _openRange() internal {
@@ -248,7 +255,7 @@ contract BaseVaultTest is Test {
         // Deposits stop...
         vm.prank(bob);
         vm.expectRevert(RangePolicy.FeedPaused.selector);
-        vault.deposit(1e18, 200e6, bob);
+        vault.deposit(1e18, 200e6, 0, bob);
 
         // ...and the keeper cannot move the range...
         vm.prank(keeper);
@@ -391,7 +398,7 @@ contract BaseVaultTest is Test {
         assertEq(routerAdapter.vault(), base, "adapter is not bound to the factory's vault");
 
         vm.prank(alice);
-        uint256 shares = router.deposit(stockToken, 10e18, 2_000e6, false, alice);
+        uint256 shares = router.deposit(stockToken, 10e18, 2_000e6, 0, false, alice);
         assertGt(shares, 0, "router minted nothing");
         assertEq(BaseVault(base).balanceOf(alice), shares, "shares did not reach the depositor");
         assertEq(stock.balanceOf(address(router)), 0, "router kept stock");
@@ -442,7 +449,7 @@ contract BaseVaultTest is Test {
         vm.expectRevert(
             abi.encodeWithSelector(Router.HedgedVaultNotDeployed.selector, address(stock))
         );
-        router.deposit(address(stock), 10e18, 2_000e6, true, alice);
+        router.deposit(address(stock), 10e18, 2_000e6, 0, true, alice);
     }
 
     function test_factoryRegistersOneBaseVaultAndOneHedgedVaultPerPair() public {
@@ -483,7 +490,7 @@ contract BaseVaultTest is Test {
         vm.expectRevert(
             abi.encodeWithSelector(Router.HedgedVaultNotDeployed.selector, address(stock))
         );
-        router.deposit(address(stock), 10e18, 2_000e6, true, alice);
+        router.deposit(address(stock), 10e18, 2_000e6, 0, true, alice);
 
         // Write-once: re-pointing a live wrapper would strand its holders.
         vm.prank(admin);
@@ -493,5 +500,315 @@ contract BaseVaultTest is Test {
             )
         );
         factory.registerHedgedVault(address(stock), makeAddr("other"));
+    }
+
+    // ------------------------------------------------- A1: how a deposit prices
+    //
+    // The four tests `docs/plan.md` A1 asks for either way the open half of
+    // that item is decided. Two of them prove the rails added with this
+    // change; two measure the exposure the decision still has to close.
+
+    /// @dev A1 face (3): first-deposit inflation, in the form that actually
+    /// steals money rather than the form `NothingToMint` already blocked.
+    ///
+    /// The classic sequence is: open the vault with one raw unit, donate
+    /// enough to make that unit worth $60, and let a $100 depositor round down
+    /// to a single share worth $80. `NothingToMint` never saw it, because the
+    /// victim does mint a nonzero share — it is just far too few.
+    ///
+    /// With the virtual offset the arithmetic inverts, and it inverts for a
+    /// reason worth stating: the attacker's opening unit buys 1e12 shares
+    /// rather than 1, so after the donation they own a small MINORITY of a
+    /// vault they funded, and the donation lands mostly in the victim's
+    /// pocket. Donating to a vault you do not control is simply a gift.
+    function test_donationCannotInflateTheOpeningShare() public {
+        address mallory = makeAddr("mallory");
+        usdg.mint(mallory, 100e6);
+        vm.prank(mallory);
+        usdg.approve(address(vault), type(uint256).max);
+
+        // 1. Open the vault with the smallest possible deposit.
+        vm.prank(mallory);
+        uint256 malloryShares = vault.deposit(0, 1, 0, mallory);
+        assertEq(malloryShares, 1e12, "opening unit did not buy a whole share's worth");
+
+        // 2. Donate, so one raw unit of deposit now looks like $60 of vault.
+        vm.prank(mallory);
+        usdg.transfer(address(vault), 59_999_999);
+        assertEq(vault.totalAssets(), 60e6, "donation did not land");
+
+        // 3. The victim deposits $100 and must not round down to dust.
+        uint256 victimShares = _deposit(alice, 0, 100e6);
+        assertGt(victimShares, malloryShares, "victim minted less than the opening unit");
+
+        // 4. Both leave. The victim must come out whole; the attacker must eat
+        //    the donation rather than the victim.
+        vm.prank(alice);
+        (, uint256 victimOut) = vault.redeem(victimShares, alice);
+        assertGe(victimOut, 100e6, "victim lost money to the donation");
+
+        vm.prank(mallory);
+        (, uint256 malloryOut) = vault.redeem(malloryShares, mallory);
+        assertLt(malloryOut, 60e6, "attacker got their donation back");
+    }
+
+    /// @dev A1 face (4): a depositor can now put a floor under their own trade.
+    ///
+    /// Not a unit test of a comparison — the point is the sequence it defends.
+    /// The victim quotes `previewDeposit`, an attacker moves the pool inside
+    /// the range before the transaction lands, the quote goes stale, and the
+    /// deposit reverts instead of silently minting fewer shares.
+    function test_minSharesRejectsADepositRepricedByThePool() public {
+        _deposit(alice, 100e18, 20_000e6);
+        _openRange();
+
+        // Bob quotes $2,000 of USDG and asks for no worse than 0.5% slippage.
+        uint256 quoted = vault.previewDeposit(2_000e6);
+        uint256 floor = quoted * 995 / 1000;
+
+        // The pool moves; the feed does not. `totalAssets` marks both legs at
+        // the feed, but the MIX it marks comes from the pool, so the mint
+        // denominator moves anyway. That is A1 face (2), still open.
+        swapper.swap(adapter.poolKey(), true, -300e18);
+        assertLt(vault.previewDeposit(2_000e6), floor, "pool move did not reprice the mint");
+
+        vm.prank(bob);
+        vm.expectPartialRevert(BaseVault.MinSharesNotMet.selector);
+        vault.deposit(0, 2_000e6, floor, bob);
+
+        // And the floor is not a blanket veto: at the quote the deposit lands.
+        uint256 shares = _deposit(bob, 0, 2_000e6, vault.previewDeposit(2_000e6));
+        assertGt(shares, 0, "an honest deposit at its own quote was rejected");
+    }
+
+    /// @dev A1 face (2), measured rather than asserted away.
+    ///
+    /// Moving the pool inside the range and back changes `totalAssets` even
+    /// with the feed still, because `positionAmounts` reports the mix the
+    /// POOL's price implies. The full sequence — attacker shoves the pool, a
+    /// victim deposits against the moved NAV, attacker shoves it back and
+    /// exits — is the one that turns that into money, and this test exists to
+    /// produce the number rather than to claim it is zero.
+    ///
+    /// Marking a range at a static feed while the pool walks away OVERSTATES
+    /// it (the position's realised trades all happened at prices better than
+    /// the mark), so the victim's deposit is divided by an inflated
+    /// denominator and mints too few shares. The shortfall stays with the
+    /// existing holders, which is what the attacker is.
+    ///
+    /// What the attacker pays for it, here, is the round trip's swap fees —
+    /// and in this test the vault is the pool's only liquidity, so most of
+    /// that comes straight back to them as a holder. A real pool with other
+    /// LPs leaks more. That is precisely why this is a characterisation test
+    /// with a loose bound and a log line, not a pass/fail on profitability:
+    /// the bound documents today's exposure, and the A1 decision (divergence
+    /// gate, or minting from quantities) is what should drive it to zero. When
+    /// that lands, this test becomes an `expectRevert`.
+    /// @dev A1 face (2), measured end to end rather than asserted away.
+    ///
+    /// Moving the pool inside the range and back changes `totalAssets` with
+    /// the feed still, because `positionAmounts` reports the mix the POOL's
+    /// price implies. The sequence that turns that into money is: shove the
+    /// pool, let a victim deposit against the moved NAV, shove it back, exit.
+    /// This test runs it and reports the number, because A1 is a decision that
+    /// wants an amount rather than an adjective.
+    ///
+    /// Two things come out of it, and they point opposite ways.
+    ///
+    /// **The mispricing is real and material.** Marking a range at a static
+    /// feed while the pool walks away OVERSTATES it — the position's realised
+    /// trades all happened at prices better than the mark — so the victim
+    /// divides by an inflated denominator and mints too few shares. Measured
+    /// here at about 1.75% of the deposit, from a shove of roughly a quarter
+    /// of the range. That is the defect, and nothing in this change fixes it.
+    ///
+    /// **On this pool shape the attack still loses money.** The attacker has
+    /// to push the price through the vault's own liquidity, and pays ~0.3%
+    /// each way on the size it takes to move it. The NAV distortion is second
+    /// order in the price move; the fee is first order. So the victim's share
+    /// of the round trip's fees more than covers what the mispricing took off
+    /// them, and the attacker ends up paying the victim a few dollars.
+    ///
+    /// **That second fact does not generalise, and is the reason A1 still
+    /// blocks.** It holds only because the vault is the pool's ONLY liquidity
+    /// here, so every fee the attacker pays comes back to the vault. A vault
+    /// that is a minority of the pool pays most of those fees to other LPs
+    /// while eating the whole distortion — and A6's vault-≤-15%-of-pool-TVL
+    /// cap guarantees the vault is exactly that. An attacker who can move the
+    /// price on a cheaper venue and let arbitrage carry it here pays nothing
+    /// at all. So this test pins today's exposure; it does not close it.
+    ///
+    /// When A1's decision lands — a divergence gate, or minting from
+    /// quantities — the deposit in step 2 should revert or reprice, and this
+    /// test becomes an `expectRevert` rather than a measurement.
+    function test_A1_poolManipulationAroundAVictimDeposit_isMeasured() public {
+        // The attacker is a large incumbent holder; that is the position the
+        // victim's shortfall accrues to.
+        uint256 attackerShares = _deposit(alice, 100e18, 20_000e6);
+        _openRange();
+
+        uint256 attackerBefore = _wealth(address(swapper)) + vault.convertToAssets(attackerShares);
+        uint256 victimIn = 2_000e6;
+        uint256 quoteAtRest = vault.previewDeposit(victimIn);
+        uint256 navAtRest = vault.totalAssets();
+
+        // 1. Shove the pool inside the range. The feed does not move.
+        swapper.swap(adapter.poolKey(), true, -300e18);
+
+        uint256 navShoved = vault.totalAssets();
+        uint256 quoteShoved = vault.previewDeposit(victimIn);
+        emit log_named_decimal_uint("NAV at rest (USDG)", navAtRest, 6);
+        emit log_named_decimal_uint("NAV shoved (USDG)", navShoved, 6);
+
+        // The denominator moved, and by enough to matter: this is the defect.
+        assertGt(navShoved, navAtRest * 101 / 100, "NAV distortion below the recorded floor");
+        assertLt(navShoved, navAtRest * 110 / 100, "NAV distortion above its recorded bound");
+        assertLt(quoteShoved, quoteAtRest * 99 / 100, "quote did not move with the denominator");
+
+        // 2. The victim deposits against the inflated denominator.
+        uint256 victimShares = _deposit(bob, 0, victimIn);
+
+        // 3. Shove it back, and both sides leave.
+        swapper.swap(adapter.poolKey(), false, -290e18);
+
+        vm.prank(alice);
+        (uint256 aStock, uint256 aUsdg) = vault.redeem(attackerShares, alice);
+        uint256 attackerAfter = _wealth(address(swapper)) + _value(aStock, aUsdg);
+
+        vm.prank(bob);
+        (uint256 vStock, uint256 vUsdg) = vault.redeem(victimShares, bob);
+        uint256 victimOut = _value(vStock, vUsdg);
+
+        emit log_named_decimal_uint("victim deposited (USDG)", victimIn, 6);
+        emit log_named_decimal_uint("victim recovered (USDG)", victimOut, 6);
+        emit log_named_int("attacker P&L (USDG)", int256(attackerAfter) - int256(attackerBefore));
+
+        // On this shape the round trip is a transfer FROM the attacker TO the
+        // victim, via the fees the shoves paid into the vault's own range.
+        assertLt(attackerAfter, attackerBefore, "manipulation turned a profit; A1 is now urgent");
+        assertGt(victimOut, victimIn, "victim was not made whole by the fee round trip");
+    }
+
+    /// @dev Fees a range has earned but not been paid are assets of the
+    /// holders who earned them. `totalAssets` counts them, so a depositor
+    /// arriving mid-period is priced against a NAV that already includes them
+    /// and cannot buy into yield they were not there for.
+    ///
+    /// The failure this catches is the quiet one: drop `pendingFees` from
+    /// `totalAssets` and every test above still passes, because the mint
+    /// denominator is only visibly wrong when somebody mints against it.
+    function test_depositWhileFeesArePendingDoesNotBuyIntoThem() public {
+        uint256 aliceShares = _deposit(alice, 100e18, 20_000e6);
+        _openRange();
+
+        swapper.swap(adapter.poolKey(), true, -20e18);
+        swapper.swap(adapter.poolKey(), false, -4_000e6);
+
+        (uint256 feeStock, uint256 feeUsdg) = adapter.pendingFees();
+        uint256 feeValue = _value(feeStock, feeUsdg);
+        assertGt(feeValue, 1e6, "test earned no fees worth measuring");
+
+        uint256 aliceClaimBefore = vault.convertToAssets(aliceShares);
+        uint256 bobShares = _deposit(bob, 0, 2_000e6);
+
+        // Alice keeps every cent of what her liquidity earned...
+        assertApproxEqRel(
+            vault.convertToAssets(aliceShares),
+            aliceClaimBefore,
+            1e14,
+            "the new depositor took a slice of pending fees"
+        );
+        // ...and Bob's claim is worth what he paid, not a cent more.
+        assertLe(vault.convertToAssets(bobShares), 2_000e6, "new depositor bought into yield");
+    }
+
+    /// @dev Every test above runs with the stock token as `currency0`, which
+    /// is one of the two pool shapes. `UniV4Adapter.t.sol` covers the flipped
+    /// ordering at the adapter, but the vault's own arithmetic — the value
+    /// divisor, the mint, the pro-rata exit — has never been run against it,
+    /// and a sign error in the tick mapping surfaces as a mispriced share
+    /// rather than a failed swap.
+    function test_theWholeVaultWorksWhenUsdgIsCurrencyZero() public {
+        (BaseVault altVault, UniV4Adapter altAdapter, MockERC20 altStock) = _altOrderingStack();
+        assertFalse(altAdapter.stockIsCurrency0(), "test setup failed to flip the ordering");
+
+        vm.startPrank(alice);
+        altStock.approve(address(altVault), type(uint256).max);
+        usdg.approve(address(altVault), type(uint256).max);
+        uint256 shares = altVault.deposit(10e18, 2_000e6, 0, alice);
+        vm.stopPrank();
+
+        // $2,000 of stock plus $2,000 of USDG, priced through the same
+        // divisor as the other ordering.
+        assertApproxEqRel(
+            altVault.convertToAssets(shares), 4_000e6, 1e12, "flipped ordering mispriced the mint"
+        );
+
+        vm.prank(keeper);
+        altVault.openRange(188e18, 212e18, 10e18, 2_000e6);
+        assertTrue(altAdapter.hasPosition(), "flipped ordering could not open a range");
+
+        swapper.swap(altAdapter.poolKey(), true, -2e18);
+        swapper.swap(altAdapter.poolKey(), false, -2e18);
+
+        vm.prank(alice);
+        (uint256 stockOut, uint256 usdgOut) = altVault.redeem(shares, alice);
+        assertGt(stockOut, 0, "flipped ordering paid no stock");
+        assertGt(usdgOut, 0, "flipped ordering paid no usdg");
+        assertEq(altVault.totalSupply(), 0, "sole holder left shares behind");
+    }
+
+    // --------------------------------------------------------------- helpers
+
+    /// @dev Both tokens of an address, valued in USDG at the feed price.
+    function _wealth(address who) internal view returns (uint256) {
+        return _value(stock.balanceOf(who), usdg.balanceOf(who));
+    }
+
+    function _value(uint256 stockAmt, uint256 usdgAmt) internal pure returns (uint256) {
+        // PRICE is 200e18 and the divisor is 1e18 * 1e18 / 1e6 = 1e30.
+        return usdgAmt + stockAmt * PRICE / 1e30;
+    }
+
+    /// @dev A second, independent vault whose stock token sorts ABOVE USDG,
+    /// so the pool's `currency0` is USDG and every tick mapping inverts.
+    function _altOrderingStack()
+        internal
+        returns (BaseVault altVault, UniV4Adapter altAdapter, MockERC20 altStock)
+    {
+        altStock = new MockERC20("High Stock", "xHI", 18);
+        while (address(altStock) < address(usdg)) {
+            altStock = new MockERC20("High Stock", "xHI", 18);
+        }
+
+        address predicted = vm.computeCreateAddress(address(this), vm.getNonce(address(this)) + 1);
+        altAdapter = new UniV4Adapter(
+            poolManager,
+            predicted,
+            IERC20(address(altStock)),
+            IERC20(address(usdg)),
+            FEE,
+            TICK_SPACING
+        );
+        altVault = new BaseVault(
+            BaseVault.Config({
+                name: "Subway High",
+                symbol: "xHI",
+                stock: address(altStock),
+                usdg: address(usdg),
+                feed: address(feed),
+                pool: address(altAdapter),
+                keeper: keeper,
+                admin: admin,
+                bounds: RangePolicy.Bounds({
+                    maxFeedAge: 2 hours, minHalfWidth: 0.01e18, maxHalfWidth: 0.25e18
+                })
+            })
+        );
+        assertEq(address(altVault), predicted, "alt vault address prediction failed");
+
+        poolManager.initialize(altAdapter.poolKey(), PriceTick.toSqrtPriceX96(PRICE, false, 18, 6));
+        altStock.mint(alice, 10_000e18);
+        altStock.mint(address(swapper), 10_000e18);
     }
 }

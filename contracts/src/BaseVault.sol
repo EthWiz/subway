@@ -84,6 +84,34 @@ contract BaseVault is ERC20, ReentrancyGuard {
     /// Robinhood Chain has 6.
     uint256 private immutable stockValueDivisor;
 
+    /// @dev Virtual shares that exist in the mint arithmetic and in the
+    /// ERC-4626 views, and that nobody holds: `10 ** (decimals() -
+    /// usdgDecimals)`, so 1e12 against 6-decimal USDG. Paired with one virtual
+    /// USDG unit in the denominator, this is OpenZeppelin's ERC-4626 offset,
+    /// and it is here for two reasons.
+    ///
+    /// **It closes first-deposit inflation.** Without it the opening deposit
+    /// mints `shares = value` against an empty vault, so one raw unit buys one
+    /// share, a donation of 59,999,999 units then makes that share worth $60,
+    /// and the next depositor's $100 rounds down to a single share they can
+    /// only redeem $80 of. With the offset the attacker's opening unit buys
+    /// 1e12 shares, the victim's $100 buys ~3.3e12 more, and the attacker ends
+    /// up eating their own donation instead of the victim's money. The theft
+    /// is bounded by roughly `1 / virtualShares` of the victim's deposit.
+    ///
+    /// **It makes `decimals()` honest.** Shares are an 18-decimal ERC-20 while
+    /// the accounting asset has 6, so minting `shares = value` priced one
+    /// whole share at a million dollars and `convertToAssets(1e18)` — the
+    /// number a lending market reads as "price per share" — at $1e12. With the
+    /// offset a whole share opens at $1.
+    ///
+    /// The virtual terms appear ONLY in value-space: the mint, and the
+    /// `convertTo*` views built on it. They are deliberately absent from
+    /// `redeem` and `previewRedeemAmounts`, which divide the vault's physical
+    /// contents by the REAL supply — crediting phantom shares with a slice of
+    /// real tokens would leave the last holder unable to empty the vault.
+    uint256 private immutable virtualShares;
+
     /// @notice Raw USDG value of a raw stock amount at a WAD price.
     function _stockValue(uint256 stockAmount, uint256 price) internal view returns (uint256) {
         return Math.mulDiv(stockAmount, price, stockValueDivisor);
@@ -121,6 +149,8 @@ contract BaseVault is ERC20, ReentrancyGuard {
     error InsufficientShares(uint256 requested, uint256 held);
     error UseDualAssetRedeem();
     error ZeroAddress();
+    error MinSharesNotMet(uint256 shares, uint256 minShares);
+    error UnsupportedDecimals(uint8 usdgDecimals);
 
     modifier onlyKeeper() {
         if (msg.sender != keeper) revert NotKeeper();
@@ -159,8 +189,13 @@ contract BaseVault is ERC20, ReentrancyGuard {
         admin = c.admin;
         bounds = c.bounds;
 
-        stockValueDivisor = WAD * (10 ** IERC20Metadata(c.stock).decimals())
-            / (10 ** IERC20Metadata(c.usdg).decimals());
+        uint8 usdgDecimals = IERC20Metadata(c.usdg).decimals();
+        // The share token is 18-decimal; an accounting asset wider than that
+        // would make the offset below a negative power of ten.
+        if (usdgDecimals > decimals()) revert UnsupportedDecimals(usdgDecimals);
+
+        stockValueDivisor = WAD * (10 ** IERC20Metadata(c.stock).decimals()) / (10 ** usdgDecimals);
+        virtualShares = 10 ** (decimals() - usdgDecimals);
     }
 
     // ------------------------------------------------------------ accounting
@@ -213,19 +248,19 @@ contract BaseVault is ERC20, ReentrancyGuard {
         return total;
     }
 
+    /// @dev The virtual share and the virtual USDG unit remove the empty-vault
+    /// special cases that used to sit here: at zero supply this is
+    /// `assets * virtualShares`, which is the same ratio every later depositor
+    /// gets, rather than a separate rule that only the first depositor meets.
+    /// Rounding is down, against the depositor and towards the vault.
     function convertToShares(uint256 assets) public view returns (uint256) {
-        uint256 supply = totalSupply();
-        uint256 nav = totalAssets();
-        if (supply == 0 || nav == 0) return assets;
-        return Math.mulDiv(assets, supply, nav);
+        return Math.mulDiv(assets, totalSupply() + virtualShares, totalAssets() + 1);
     }
 
     /// @notice USDG per share. This is what an oracle or a lending market
     /// reads, and what the hedged wrapper values its holding at.
     function convertToAssets(uint256 shares) public view returns (uint256) {
-        uint256 supply = totalSupply();
-        if (supply == 0) return shares;
-        return Math.mulDiv(shares, totalAssets(), supply);
+        return Math.mulDiv(shares, totalAssets() + 1, totalSupply() + virtualShares);
     }
 
     function previewDeposit(uint256 assets) external view returns (uint256) {
@@ -239,6 +274,16 @@ contract BaseVault is ERC20, ReentrancyGuard {
     /// @notice What `redeem` would actually pay: quantities of both tokens.
     /// @dev The honest companion to `previewRedeem`, which can only express
     /// the USDG-equivalent of a dual-asset payout.
+    ///
+    /// Divides by the REAL supply, with no virtual share anywhere: this is
+    /// quantity-space, and the vault's physical contents belong entirely to
+    /// the people holding real shares. So this is very slightly MORE generous
+    /// than `previewRedeem` — by the `virtualShares / (supply +
+    /// virtualShares)` sliver the value-space views hold back, about 2.5e-10
+    /// of a vault with $4,000 in it. That sliver is the anti-inflation buffer,
+    /// and it is only a meaningful fraction of the vault in exactly the state
+    /// the buffer exists to punish: a near-empty supply against donated
+    /// assets.
     function previewRedeemAmounts(uint256 shares)
         external
         view
@@ -289,7 +334,18 @@ contract BaseVault is ERC20, ReentrancyGuard {
     /// The incoming value is priced at the feed and minted against the vault's
     /// NAV read BEFORE the transfers land, so a deposit is never in its own
     /// denominator.
-    function deposit(uint256 stockAmount, uint256 usdgAmount, address receiver)
+    ///
+    /// @param minShares The fewest shares the caller will accept. This is not
+    /// decoration. The mint denominator is `totalAssets()`, whose stock and
+    /// USDG QUANTITIES come from `positionAmounts()` and therefore move with
+    /// the pool's price inside the range even while the feed is still — so the
+    /// share count a depositor is quoted is not the share count they are
+    /// guaranteed, and someone who moves the pool between the quote and the
+    /// transaction changes it. Closing that gap at the protocol level is the
+    /// open half of A1; `minShares` is the part that does not need the answer,
+    /// because it lets a depositor put a floor under their own trade whichever
+    /// way that decision goes. Pass 0 only if you genuinely do not care.
+    function deposit(uint256 stockAmount, uint256 usdgAmount, uint256 minShares, address receiver)
         external
         nonReentrant
         returns (uint256 shares)
@@ -304,8 +360,10 @@ contract BaseVault is ERC20, ReentrancyGuard {
         uint256 supply = totalSupply();
 
         uint256 value = usdgAmount + _stockValue(stockAmount, price);
-        shares = (supply == 0 || navBefore == 0) ? value : Math.mulDiv(value, supply, navBefore);
+        // Same expression as `convertToShares`, against the pre-transfer NAV.
+        shares = Math.mulDiv(value, supply + virtualShares, navBefore + 1);
         if (shares == 0) revert NothingToMint();
+        if (shares < minShares) revert MinSharesNotMet(shares, minShares);
 
         if (stockAmount > 0) stock.safeTransferFrom(msg.sender, address(this), stockAmount);
         if (usdgAmount > 0) usdg.safeTransferFrom(msg.sender, address(this), usdgAmount);
