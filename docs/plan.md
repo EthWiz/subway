@@ -27,9 +27,11 @@ remains ungraded rather than killed.
   structurally dead; it says nothing about profitability.
 - **No markouts were run, for any pair, ever.** The +1 s/+10 s/+60 s grader is
   built and tested but has never been pointed at a real window.
-- **The product shape is untested, not falsified.** The vault, NAV floor,
-  epoch settlement, redemption queue and contract-owned Lighter account are
-  all as written; what is falsified is the candidate list.
+- **The product shape is untested, not falsified.** The NAV floor, epoch
+  settlement, redemption queue and contract-owned Lighter account are all as
+  written; what is falsified is the candidate list. The shape itself was
+  revised later the same day — see the two-vault stack below — for
+  fungibility reasons, not because the screen said anything about it.
 - **A first version of the Phase 0 report was wrong and is corrected.** It
   concluded that no name cleared both legs and that hedge depth and fee APR
   are anti-correlated on this chain. Both are withdrawn: the vault's fee share
@@ -74,22 +76,39 @@ remains ungraded rather than killed.
 **Status:** Plan (nothing shipped). Drafted 2026-09-16 from the Robinhood
 Chain LP research in the `claude/lp-meme-token-il-strategies-t9wd3q` session.
 Revised the same day from per-user vaults to **shared ERC-4626 vaults per
-pair** so the position is a fungible, collateral-grade token.
+pair** so the position is a fungible, collateral-grade token, and again on
+2026-09-16 from one hedged vault per pair to a **two-vault stack**: an
+unhedged base vault that alone touches Uniswap, and a hedged wrapper that
+holds it (handoff `two-vault-stack-20260916-131940Z`).
 
 **One line:** a non-custodial app where users deposit a Robinhood Stock
-Token and/or USDG into a per-pair vault, receive a share token, and the vault
-runs a concentrated Uniswap position on Robinhood Chain for that pair, hedged
-by default with a short on Lighter's Robinhood Chain instance, whose
-settlement contract lives on the same chain and is owned by the vault.
+Token and/or USDG into a per-pair vault and receive a share token, backed by
+a concentrated Uniswap position on Robinhood Chain — unhedged (`xAMC`) or
+delta-hedged against a short on Lighter's Robinhood Chain instance (`hAMC`),
+whose settlement contract lives on the same chain and is owned by the hedged
+vault.
+
+**Ship order: `xAMC` first, `hAMC` in Phase 3.**
 
 ## Why this shape
 
-- **Shares are the product.** A pooled vault mints `hAMC`, `hHOOD`, … whose
-  value is roughly dollar-stable because the position is delta-hedged. That
-  token can be posted as collateral (Morpho is live on Robinhood Chain and
-  already backs Robinhood Earn), LP'd, or wrapped by other protocols. Per-user
-  vaults cannot produce that; they were the first draft and are demoted to an
-  optional isolation mode.
+- **Shares are the product.** A pooled vault mints a fungible token that can
+  be posted as collateral (Morpho is live on Robinhood Chain and already backs
+  Robinhood Earn), LP'd, or wrapped by other protocols. Per-user vaults cannot
+  produce that; they were the first draft and are demoted to an optional
+  isolation mode.
+- **Two vaults, because a hedge flag would destroy the product.** Holders want
+  both modes: equity beta with fees, or roughly dollar-stable. A per-holder
+  hedged/unhedged flag inside ONE vault makes its shares non-fungible, which
+  kills the collateral use that is the reason for pooling at all. So the modes
+  are two tokens: `xAMC` (unhedged base) and `hAMC` (hedged wrapper holding
+  `xAMC`). Any hedge ratio is a mix of the two, and "toggle hedge" is a
+  wrap/unwrap — no LP is closed or reopened.
+- **The base vault ships first and answers the only question that matters.**
+  `xAMC` has no keeper trading risk, no rollup, no epochs and no queue, and it
+  measures fees against toxic-flow loss with real capital. That number decides
+  both modes. `hAMC` is then a second contract, not a rewrite, and hedge
+  netting across holders still happens in one Lighter account.
 - **Same-chain custody root.** Lighter RH is an app-specific ZK rollup whose
   L1 is Robinhood Chain. The vault contract is the L1 owner of the pair's
   Lighter account. Lighter's rules then do the custody work: secure
@@ -108,16 +127,23 @@ settlement contract lives on the same chain and is owned by the vault.
 
 ## The one hard problem: share price
 
-Everything in the vault is on-chain and priceable **except the hedge
-equity**, which lives in Lighter's rollup and cannot be read from Robinhood
-Chain. A share used as collateral needs a manipulation-resistant on-chain
+**`xAMC` does not have this problem.** Everything the base vault owns is on
+this chain: LP value from liquidity math priced at the Chainlink feed, plus
+idle balances. `convertToAssets` is exact and fully on-chain, withdrawals are
+direct (reduce the range pro rata and transfer), and there is no epoch, no
+queue and no margin ledger. That is most of why it ships first.
+
+The problem is `hAMC`'s alone. Everything the hedged wrapper owns is on-chain
+and priceable — it holds `xAMC` shares, which price themselves — **except the
+hedge equity**, which lives in Lighter's rollup and cannot be read from
+Robinhood Chain. A share used as collateral needs a manipulation-resistant on-chain
 price. The design answers with three mechanisms that together make
 `convertToAssets` a **conservative, fully on-chain floor**:
 
-1. **NAV floor.** `NAV_floor = LP value + idle balances + margin × (1 − h)`,
-   where LP value comes from Uniswap `StateView` liquidity math priced at the
-   Chainlink feed (not the pool tick, which is manipulable), idle balances are
-   token balances of the vault, margin is the cumulative USDG deposited to the
+1. **NAV floor.** `NAV_floor = xAMC value + idle balances + margin × (1 − h)`,
+   where `xAMC` value is its own on-chain `convertToAssets` (itself Uniswap
+   liquidity math priced at the Chainlink feed, never the pool tick, which is
+   manipulable), idle balances are token balances of the wrapper, margin is the cumulative USDG deposited to the
    vault's Lighter account minus withdrawals (an on-chain event trail the
    vault itself maintains), and `h` is a haircut set from the liquidation
    distance at target leverage (3x → h ≈ 0.35). **Unsettled hedge PnL counts
@@ -137,7 +163,8 @@ price. The design answers with three mechanisms that together make
    normally, up to 14 days in the escape-hatch case.
 
 A Morpho market for `hAMC` reads `convertToAssets` (the floor) through a
-thin oracle adapter and sets a low LLTV. Because the floor is on-chain and
+thin oracle adapter and sets a low LLTV. `xAMC` can back its own market at a
+lower LLTV — it is honest equity beta, not a stable claim. Because the floor is on-chain and
 monotone in verifiable inputs, it does not depend on the keeper.
 
 ## Not in this repo's runtime
@@ -183,21 +210,27 @@ version-agnostic for that reason.
 ```
  user wallet ──wagmi/viem──▶ Next.js app ──read──▶ Backend API (vault stats, NAV history, queue)
       │                                                    ▲
-      │ tx: deposit / requestRedeem / claim                 │ events + snapshots (Ponder)
+      │ tx: Router.deposit(pair, stock, usdg, hedged)       │ events + snapshots (Ponder)
       ▼                                                    │
- HedgedLPVault (ERC-4626, one per pair) ──mints──▶ hAMC / hHOOD / … (collateral-grade)
-      │  owns   ┌──────────────────────────────┐
-      ├────────▶│ Uniswap v4 position (ERC-721) │
-      │         └──────────────────────────────┘
-      │  L1-owns ┌────────────────────────────┐
-      ├─────────▶│ Lighter RH account (rollup) │◀── keeper trade-only API key
-      │          └────────────────────────────┘
-      └── bounded operator role ◀── Keeper (LP policy, band hedge, epoch settlement)
-      └── guardian (multisig) ◀── panic only
+   Router ── hedged=false ─▶ BaseVault  (xAMC)             │
+      │                          │ owns  ┌───────────────────────────┐
+      │                          ├──────▶│ Uniswap v4 position       │
+      │                          │       └───────────────────────────┘
+      │                          └── bounded operator ◀── Keeper (lp-manager)
+      │
+      └── hedged=true ──▶ BaseVault ──xAMC──▶ HedgedVault (hAMC, collateral-grade)
+                                                  │  holds xAMC; NEVER touches the pool
+                                                  │  L1-owns ┌────────────────────────────┐
+                                                  ├─────────▶│ Lighter RH account (rollup) │◀── keeper trade-only key
+                                                  │          └────────────────────────────┘
+                                                  ├── bounded operator ◀── Keeper (hedger, settler)
+                                                  └── guardian (multisig) ◀── panic only
 ```
 
-Money only ever moves between the vault, its pool position, its own Lighter
-account, and share holders on redemption. The keeper changes _shape_ (range,
+Money only ever moves between a vault, its pool position, the hedged vault's
+own Lighter account, and share holders on redemption. The Router holds nothing
+between transactions — it is a convenience, not a custodian, and every path
+through it is also reachable by calling the vaults directly. The keeper changes _shape_ (range,
 hedge size, margin within cap); it cannot change _destination_.
 
 ## Repository layout (new repo `subway`)
@@ -205,14 +238,18 @@ hedge size, margin within cap); it cannot change _destination_.
 ```
 subway/
   contracts/            Foundry (Solidity 0.8.28), fork tests vs chain 4663
-    src/HedgedLPVault.sol               ERC-4626 + queue + epoch NAV
-    src/VaultFactory.sol                pair registry, deploys vaults
-    src/adapters/UniV4Adapter.sol       IPoolAdapter impl
+    src/BaseVault.sol                   xAMC: ERC-4626, the ONLY pool toucher
+    src/HedgedVault.sol                 hAMC: ERC-4626 over xAMC, + queue/epoch/Lighter
+    src/Router.sol                      deposit/redeem with a `hedged` flag
+    src/VaultFactory.sol                pair registry, deploys both vaults
+    src/adapters/UniV4Adapter.sol       IPoolAdapter impl          [built]
     src/adapters/UniV3Adapter.sol       IPoolAdapter impl (Phase 1b)
+    src/libraries/{LiquidityAmounts,PriceTick}.sol                 [built]
     src/hedge/LighterRHHedge.sol        IZkLighter calls, key registration, exits
-    src/policy/RangePolicy.sol          feed-bounded range checks
+    src/policy/RangePolicy.sol          feed-bounded range checks  [built]
     src/oracle/HedgedShareOracle.sol    Morpho-compatible price of hX in USDG
-    src/interfaces/{IPoolAdapter,IZkLighter,IHedgeVenue}.sol
+    src/interfaces/{IPoolAdapter,IZkLighter,IPriceFeed}.sol
+    test/v4/                            real PoolManager loaded by artifact
     test/fork/*.t.sol                   Alchemy fork of 4663; ZkLighter live
   apps/web/             Next.js 15 (App Router), wagmi v2, viem, RainbowKit, Tailwind, shadcn/ui
   apps/keeper/          Node 22 TS: feeds, lp-manager, hedger, settler, accountant, api, alerts
@@ -227,26 +264,35 @@ subway/
 
 - Pair registry: stock token, USDG, pool key and fee tier, Chainlink feed,
   Lighter market id and asset index, per-pair caps (TVL, max margin, max
-  share of pool TVL). Deploys one `HedgedLPVault` per pair. Owner-multisig
-  can add pairs and pause deposits; it can never move vault funds.
+  share of pool TVL, max `hAMC` share of `xAMC` supply). Deploys the pair's
+  `BaseVault` and, later, its `HedgedVault`. Owner-multisig can add pairs and
+  pause deposits; it can never move vault funds.
+- A pair may exist with only a `BaseVault`. That is the Phase 1 state and the
+  factory must not treat it as incomplete.
 
-### `HedgedLPVault` (ERC-4626, one per pair)
+### `BaseVault` — `xAMC` (ERC-4626, one per pair) — **Phase 1**
 
-Roles: `keeper` (bounded operator, rotatable by the factory owner),
-`guardian` (protocol multisig, **panic-only**). No per-user roles: holders
-interact only through the 4626 surface and the queue.
+The only contract that touches Uniswap. Unhedged, so it carries equity beta
+and is not dollar-stable; it is collateral-grade in the way a Uniswap LP
+token is, not in the way a stablecoin is.
 
-Holder surface:
+Roles: `keeper` (bounded operator, rotatable by the factory owner). No
+guardian and no panic path, because there is nothing to be trapped behind:
+every holder can always withdraw without the keeper.
+
+Holder surface — **synchronous, no queue**:
 
 - `deposit(stockAmt, usdgAmt, receiver)` — dual-asset deposit valued at the
-  Chainlink feed; mints shares at the **floor NAV**. Single-asset deposits
-  allowed; the keeper rebalances the mix at the next range move. Permit2 for
-  approvals.
-- `requestRedeem(shares)` → burns into a queue slot with the current epoch
-  id. `claim(slot)` after `settleEpoch` pays USDG (default) or pro-rata
-  stock+USDG (holder's choice at request time).
-- Standard 4626 reads. `convertToAssets` returns the **floor**; `previewRedeem`
-  returns the floor and the UI explains the queue.
+  Chainlink feed. Single-asset deposits allowed; the keeper rebalances the mix
+  at the next range move. Permit2 for approvals.
+- `withdraw` / `redeem` — real ERC-4626, settled out of the range. The vault
+  takes the redeemer's pro-rata slice of liquidity through
+  `IPoolAdapter.decreaseLiquidity`, which brings out their share of accrued
+  fees in the same proportion and leaves the remaining holders' claim
+  unchanged. No cash buffer is held against redemptions, because none is
+  needed.
+- `convertToAssets` — LP value at the **feed** price plus idle balances.
+  Exact, on-chain, and never a function of the pool tick.
 
 Keeper surface (each call checked against on-chain policy):
 
@@ -255,35 +301,77 @@ Keeper surface (each call checked against on-chain policy):
   paused, range straddles the feed price, width within bounds, no open in a
   blocked window.
 - `collectFees` — fees stay in the vault (auto-compound is a policy flag).
-- `fundHedge(amount)` → `ZkLighter.deposit(to = address(this), USDG …)`,
-  capped at `maxMargin` and recorded in the vault's margin ledger.
-- `registerHedgeKey(pubKey)` → `ZkLighter.changePubKey` (`msg.sender` must be
-  the account's L1 address, i.e. the vault). One active key; rotation emits
-  an event.
-- `withdrawHedge(amount)` — secure withdrawal, lands at the vault, debits the
-  margin ledger.
-- `settleEpoch(attestation)` — snapshots floor NAV, advances the epoch,
-  processes the redemption queue against idle balances (the keeper must have
-  withdrawn enough from Lighter and closed enough range first; the call
-  reverts if idle balances cannot cover the queue).
 
-Panic (guardian or keeper; always callable):
+The keeper here cannot trade, cannot reach a rollup, and cannot choose where
+money goes. Its whole power is the shape of one range.
 
-- `panic()` — pull liquidity, `cancelAllOrders` and `withdraw` on ZkLighter
-  via the L1 priority path, freeze keeper, open a **holder-callable**
-  `emergencyRedeem` that pays pro-rata idle balances plus a claim on the
-  matured Lighter withdrawal. Nobody needs the keeper to leave.
+### `HedgedVault` — `hAMC` (ERC-4626 over `xAMC`, one per pair) — **Phase 3**
+
+Holds `xAMC` shares and owns the pair's Lighter account. **It never touches
+the pool.** Everything hard lives here and only here: margin ledger, NAV
+floor, epoch settlement, redemption queue, panic.
+
+Its asset is `xAMC`, not USDG, which is what makes it a wrapper rather than a
+second implementation of the same thing.
+
+- **The hedge target is a pure on-chain read**, not a keeper assertion:
+  `hAMC`'s `xAMC` balance ÷ `xAMC` total supply × stock tokens currently in
+  the range. Nothing off-chain is needed to compute what the hedge should be,
+  which is what makes the keeper's failure to hedge detectable.
+- Holder surface: `deposit`/`mint` take `xAMC` (the Router wraps in one tx);
+  `requestRedeem(shares)` → queue slot at the current epoch id; `claim(slot)`
+  after `settleEpoch`. `convertToAssets` returns the **floor**;
+  `withdraw`/`redeem` revert pointing at the queue, because claiming ERC-4626
+  and then blocking withdrawal fails at an integrator's runtime rather than at
+  their integration.
+- Keeper surface: `fundHedge` / `withdrawHedge` (capped at `maxMargin`,
+  recorded in the margin ledger), `registerHedgeKey`, `settleEpoch`.
+- Panic (guardian or keeper; always callable): `cancelAllOrders` and
+  `withdraw` on ZkLighter via the L1 priority path, freeze the keeper, open a
+  holder-callable `emergencyRedeem` paying pro-rata `xAMC` plus a claim on the
+  matured Lighter withdrawal. **Note the exit is in `xAMC`, not USDG** — the
+  wrapper does not need the pool to be unwound for its holders to get out,
+  because `xAMC` is itself always redeemable.
+
+Two constraints the stack adds, both about one side not being able to hurt
+the other:
+
+- **Cap `hAMC` at a fraction of `xAMC` supply** (default 50%). Otherwise a run
+  on the hedged side forces the base vault out of the pool at an epoch, and
+  the unhedged holders — who took no keeper risk — pay for it.
+- **Epoch sequencing is fixed**: reduce hedge → redeem `xAMC` for USDG →
+  withdraw margin as needed → `settleEpoch`. The base vault's range reduce is
+  the liquidity source, and `settleEpoch` reverts if idle balances cannot
+  cover the queue.
+
+### `Router` — **Phase 1**
+
+One user entry point, so the two-token design is not two-step UX:
+
+- `deposit(pair, stockAmt, usdgAmt, hedged)` — `hedged=false` mints `xAMC` to
+  the caller; `hedged=true` routes stock/USDG → `xAMC` → `hAMC` in one tx.
+- `redeem(pair, shares, hedged)` — the mirror.
+- `wrap` / `unwrap` — "toggle hedge" moves `xAMC` into or out of `hAMC`
+  **without closing or reopening any LP**, which is the whole reason the hedge
+  is a separate vault instead of a flag.
+
+The Router is pass-through: it holds no balances between transactions, has no
+privileged role on either vault, and every path through it is reachable by
+calling the vaults directly.
 
 Invariants pinned by tests:
 
-1. No function moves tokens anywhere except the vault, its pool position,
-   its own Lighter account, or a share holder on claim/emergency redeem.
+1. No function moves tokens anywhere except a vault, its pool position, the
+   hedged vault's own Lighter account, or a share holder on
+   redeem/claim/emergency redeem.
 2. `convertToAssets` never reads the pool tick or any keeper-supplied value.
-3. Keeper cannot register a key when frozen, exceed `maxMargin`, open a range
-   that violates `RangePolicy`, or settle an epoch the queue cannot be paid
-   from.
-4. `panic()` leaves the vault in a state from which every holder can exit
-   without the keeper.
+   This binds **both** vaults.
+3. The keeper cannot register a key when frozen, exceed `maxMargin`, open a
+   range that violates `RangePolicy`, or settle an epoch the queue cannot be
+   paid from.
+4. `panic()` leaves `hAMC` in a state from which every holder can exit without
+   the keeper — and `xAMC` has no state it can be trapped in at all.
+5. `hAMC` cannot exceed its configured share of `xAMC` supply.
 
 ### `HedgedShareOracle`
 
@@ -312,16 +400,16 @@ residual trust surface and the frontend states it plainly.
 One process per environment, one worker per vault. Modules, each with a
 single job:
 
-| Module       | Job                                                                                                                                                                                                                                                                                                                                                |
-| ------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `feeds`      | Chainlink feed reads (staleness and paused aware), Lighter RH WS mid for the hedge market, optional Alpaca SIP during RTH as a faster head. Publishes one `fair` per pair with a source tag.                                                                                                                                                       |
-| `lp-manager` | In-range state from `StateView`; apply the pair's `RangePolicy` (recenter when fair leaves the inner band, widen on high realised vol, pull before US open / over weekends / earnings); submit `rebalance` txs through a bounded L1 signer. Rebalances the stock/USDG mix after single-asset deposits.                                             |
-| `hedger`     | LP delta = stock tokens currently in the position (token amount at current tick from `StateView`); target short = −delta × hedgeRatio; trade only when \|target − current\| > band; IOC on Lighter with the vault's trade-only key; funding monitor that unwinds when 8h funding > cap and flags the vault; margin top-up/down inside `maxMargin`. |
-| `settler`    | Epoch clock. Before `settleEpoch`: size the redemption queue, reduce range and hedge pro rata, secure-withdraw realised PnL and queue cover to the vault, wait for maturity, then call `settleEpoch` with the attestation (Lighter-side equity, fills, funding).                                                                                   |
-| `accountant` | Fees, IL vs hold, hedge PnL and funding from Lighter fills, gas; NAV (floor and attested) per vault; feeds the API and the dispute check (attested vs floor drift).                                                                                                                                                                                |
-| `keys`       | Lighter API key per vault in GCP Secret Manager; L1 keeper signer in KMS; rotation runbook.                                                                                                                                                                                                                                                        |
-| `api`        | Read-only HTTP for the web app: vault stats, NAV history, queue state, per-holder positions by address. Writes do not exist; state changes are on-chain.                                                                                                                                                                                           |
-| `alerts`     | Telegram on: feed stale > N min while in range, hedge band breach > M min, margin ratio < floor, attested NAV below floor (impossible unless the ledger is wrong), Lighter API errors, keeper signer balance low, queue cover shortfall before an epoch.                                                                                           |
+| Module       | Job                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| ------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `feeds`      | Chainlink feed reads (staleness and paused aware), Lighter RH WS mid for the hedge market, optional Alpaca SIP during RTH as a faster head. Publishes one `fair` per pair with a source tag.                                                                                                                                                                                                                                                                         |
+| `lp-manager` | **`xAMC` only, Phase 2.** In-range state from `StateView`; apply the pair's `RangePolicy` (recenter when fair leaves the inner band, widen on high realised vol, pull before US open / over weekends / earnings); submit `rebalance` txs through a bounded L1 signer. Rebalances the stock/USDG mix after single-asset deposits.                                                                                                                                     |
+| `hedger`     | **`hAMC` only, Phase 3.** Target short is read on-chain from `hAMC`'s share of the range, not asserted off-chain. LP delta = stock tokens currently in the position (token amount at current tick from `StateView`); target short = −delta × hedgeRatio; trade only when \|target − current\| > band; IOC on Lighter with the vault's trade-only key; funding monitor that unwinds when 8h funding > cap and flags the vault; margin top-up/down inside `maxMargin`. |
+| `settler`    | **`hAMC` only, Phase 3.** Epoch clock. Before `settleEpoch`: size the redemption queue, reduce range and hedge pro rata, secure-withdraw realised PnL and queue cover to the vault, wait for maturity, then call `settleEpoch` with the attestation (Lighter-side equity, fills, funding).                                                                                                                                                                           |
+| `accountant` | Fees, IL vs hold, hedge PnL and funding from Lighter fills, gas; NAV (floor and attested) per vault; feeds the API and the dispute check (attested vs floor drift).                                                                                                                                                                                                                                                                                                  |
+| `keys`       | Lighter API key per vault in GCP Secret Manager; L1 keeper signer in KMS; rotation runbook.                                                                                                                                                                                                                                                                                                                                                                          |
+| `api`        | Read-only HTTP for the web app: vault stats, NAV history, queue state, per-holder positions by address. Writes do not exist; state changes are on-chain.                                                                                                                                                                                                                                                                                                             |
+| `alerts`     | Telegram on: feed stale > N min while in range, hedge band breach > M min, margin ratio < floor, attested NAV below floor (impossible unless the ledger is wrong), Lighter API errors, keeper signer balance low, queue cover shortfall before an epoch.                                                                                                                                                                                                             |
 
 Storage: Postgres (Ponder-indexed on-chain events plus keeper tables: hedge
 fills, NAV snapshots, decisions log). No Redis at MVP.
@@ -346,14 +434,21 @@ Routes:
 - `/` — connect, jurisdiction gate (geo + self-attestation; stock tokens are
   not offered to US/UK/CA/CH persons), vault list: pair, TVL, trailing fee
   APR, hedge ratio, floor NAV vs attested NAV, queue depth, next epoch.
-- `/vault/[pair]` — deposit panel (stock, USDG or both; shows shares at
-  floor NAV and the "floor undervalues you slightly" note), redeem panel
-  (request → queued → claimable, with the epoch timer and the honest
-  Lighter-withdrawal wait copy), position view (range vs feed, delta and
-  hedge ratio, fees, IL, hedge PnL, funding), decisions log, "use as
-  collateral" link to the Morpho market when live.
-- `/portfolio` — the connected address's shares across vaults, queue slots,
-  claimables.
+- `/vault/[pair]` — a **hedged / unhedged toggle** backed by the Router, and
+  the panels change with it, because the two modes genuinely differ:
+  - _Unhedged (`xAMC`)_ — deposit and withdraw are both immediate. Show
+    equity beta plainly: this tracks the stock, plus fees, minus arb loss.
+  - _Hedged (`hAMC`)_ — deposit mints at floor NAV with the "the floor
+    undervalues you slightly" note; redeem is request → queued → claimable
+    with the epoch timer and honest Lighter-withdrawal wait copy.
+    Position view either way: range vs feed, delta and hedge ratio, fees, IL,
+    and for `hAMC` also hedge PnL and funding. Decisions log. "Use as
+    collateral" link to the Morpho market when live.
+- `/portfolio` — the connected address's `xAMC` and `hAMC` balances per pair,
+  **the implied hedge ratio that mix produces**, queue slots, claimables.
+  Toggling hedge from here is a wrap/unwrap, not an exit and re-entry, and
+  the UI should say so — it is the main thing that makes the two-token design
+  feel like one product.
 
 Transaction UX: deposit = one Permit2 signature + one tx; redeem = one tx to
 request, one to claim. The app never holds keys. Optional Phase 4:
@@ -374,6 +469,7 @@ ERC-4337/7702 with Alchemy Gas Manager to sponsor `claim` and
 | Earnings       | pull liquidity from close before to open after                                                       | gap risk                                                    |
 | Epoch          | daily at 21:00 ET                                                                                    | after the close, before overnight                           |
 | Caps           | vault ≤ 15% of pool TVL; `maxMargin` ≤ 40% of vault TVL                                              | fee dilution and unwind depth                               |
+| Hedged share   | `hAMC` ≤ 50% of `xAMC` supply                                                                        | a hedged-side run must not force the unhedged side out      |
 
 ## Evidence gate (Phase 0) — go/no-go before any code beyond scaffolding
 
@@ -397,32 +493,57 @@ a 50% fee decay. This gate reuses this repo's tooling; its report lands in
 
 ## Phases
 
-> **GATED — none started.** Phase 0 returned NO-GO on AMC/HOOD/MSTR and no
-> economic grade for any other pair (see Current state).
+> **GATED — none started beyond the adapter.** Phase 0 returned NO-GO on
+> AMC/HOOD/MSTR and no economic grade for any other pair (see Current state).
+> `UniV4Adapter`, `RangePolicy` and the share-math libraries exist; nothing is
+> deployed.
 
-1. **Contracts core (3 weeks).** Factory, vault with queue and epoch NAV,
-   `UniV4Adapter`, `LighterRHHedge`, `RangePolicy`, `HedgedShareOracle`.
-   Fork tests against live 4663 (Alchemy fork or Tenderly vnet as Sherwood
-   did): deposit/mint at floor, range open/close with feed-bounded rejections,
-   Lighter deposit → account creation → `changePubKey` → secure withdraw
-   back to the vault, epoch settle with a queued redemption, `panic` and
-   `emergencyRedeem` without the keeper. Resolve v3 addresses; `UniV3Adapter`
-   if AMC/HOOD stay v3-dominant.
-2. **Keeper on testnet/paper (2 weeks).** Feeds, lp-manager, hedger, settler
-   against a dev vault. Confirm Lighter RH API reachability from `us-east4`
+Revised 2026-09-16 for the two-vault stack. The reordering is the point: the
+unhedged vault is shippable and measurable on its own, and it answers the fee
+vs toxic-flow question that both modes depend on. Building the hedge first
+would have meant carrying keeper trading risk, a rollup dependency and an
+epoch clock through the entire period in which the strategy was still
+unproven.
+
+1. **Phase 1 — unhedged core.** `VaultFactory`, `BaseVault` (`xAMC`),
+   `UniV4Adapter`, `RangePolicy`, `Router` (unhedged path). Fork tests against
+   live 4663: deposit, range open/close with feed-bounded rejections, direct
+   withdrawal settled out of the range, pro-rata fee accrual. Resolve the v3
+   addresses; add `UniV3Adapter` if the surviving names stay v3-dominant.
+   **Ships to closed beta on its own.**
+2. **Phase 2 — keeper, LP only.** `feeds` and `lp-manager` against a dev
+   vault. No hedger, no settler, no Lighter, no API keys. Ponder indexer and
+   accountant. This is where the real fee-vs-loss number comes from.
+3. **Phase 3 — the hedge.** `HedgedVault` (`hAMC`), `LighterRHHedge`,
+   `HedgedShareOracle`, and the keeper's `hedger` and `settler`. **Gated on
+   Phase 0's fee-vs-markout result**, and now also on Phase 2 having produced
+   a real one. Confirm Lighter RH API reachability from `us-east4`
    (CloudFront fronting, Standard tier), account-index resolution for a
    contract address, deposit crediting time, secure-withdraw latency end to
-   end, and the epoch cycle wall-clock. Ponder indexer and accountant.
-3. **Web MVP (2 weeks).** Connect, jurisdiction gate, vault list, deposit,
-   request/claim, portfolio. Testnet first, then mainnet behind an allowlist.
-4. **Closed beta (3–4 weeks).** Own capital, AMC and HOOD vaults, $20–30K
-   each, a handful of allowlisted holders. Grade on cash, not fee APR. Fix the
-   unwind edge cases (Sherwood's open item: a both-side close with zero base
-   amount may open the opposite side instead of no-oping). Measure floor vs
-   attested NAV drift.
-5. **Audit + collateral (after beta).** External audit; deploy the Morpho
-   market with `HedgedShareOracle` at a conservative LLTV; gas sponsorship for
-   exits; per-user isolation mode only if a large holder asks for it.
+   end, and the epoch cycle wall-clock.
+4. **Web MVP.** Connect, jurisdiction gate, vault list, deposit with the
+   hedged/unhedged toggle backed by the Router, request/claim, portfolio
+   showing both share balances and the implied hedge ratio. Testnet first,
+   then mainnet behind an allowlist. The unhedged half can ship after Phase 1.
+5. **Closed beta.** Own capital, $20–30K per vault, a handful of allowlisted
+   holders. Grade on cash, not fee APR. Fix the unwind edge cases (Sherwood's
+   open item: a both-side close with zero base amount may open the opposite
+   side instead of no-oping). Measure floor vs attested NAV drift once `hAMC`
+   exists.
+6. **Audit + collateral.** External audit; Morpho markets with
+   `HedgedShareOracle` for `hAMC` at a conservative LLTV and a lower one for
+   `xAMC`; gas sponsorship for exits; per-user isolation mode only if a large
+   holder asks for it.
+
+### Noted, not scoped
+
+The longer-term product for sophisticated LPs is an **oracle-anchored Uniswap
+v4 hook pool** — quote at Chainlink ± spread, dynamic fee against the oracle
+gap — with the vault as its deposit layer. Plain ranges are the benchmark it
+would have to beat, which is another reason to measure them first. `IPoolAdapter`
+is deliberately version- and shape-agnostic so a hook pool is a different
+adapter rather than a rewrite; `UniV4Adapter` passes `IHooks(address(0))` in
+one place.
 
 ## Open questions (resolve in Phase 1–2; none blocks Phase 0)
 
