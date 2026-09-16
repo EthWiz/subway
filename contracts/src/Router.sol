@@ -24,7 +24,7 @@ import {VaultFactory} from "./VaultFactory.sol";
 /// harder to reach — which is the property that makes it safe to put in front
 /// of everything.
 ///
-/// ## Phase 1 status
+/// ## Track A status
 ///
 /// `HedgedVault` does not exist yet. `deposit` and `redeem` carry the `hedged`
 /// flag from the start — the signature is what the web app's toggle calls, and
@@ -41,7 +41,7 @@ contract Router {
     VaultFactory public immutable factory;
 
     /// @dev Whether the Router can actually route a hedged deposit or
-    /// redemption. False until `HedgedVault` exists in Phase 3.
+    /// redemption. False until `HedgedVault` exists in Track B.
     ///
     /// This is a constant rather than a derived value because the alternative
     /// drifted: `hedgeAvailable` used to answer "is a hedged vault
@@ -72,7 +72,7 @@ contract Router {
     /// rather than discovering it from a reverted transaction. It therefore
     /// has to answer for the ROUTE, not just the registry: a registered
     /// hedged vault the Router cannot yet route to is not availability.
-    /// Phase 1 answers false for every pair.
+    /// Track A answers false for every pair.
     function hedgeAvailable(address stock) external view returns (bool) {
         return HEDGED_ROUTING_LIVE && factory.hedgedVaultFor(stock) != address(0);
     }
@@ -91,7 +91,7 @@ contract Router {
         address receiver
     ) external returns (uint256 shares) {
         if (stockAmount == 0 && usdgAmount == 0) revert NothingToDeposit();
-        // Phase 3 replaces this with: deposit to the Router, then wrap into
+        // Track B replaces this with: deposit to the Router, then wrap into
         // the hedged vault and mint to `receiver`, all in this transaction.
         if (hedged && !HEDGED_ROUTING_LIVE) revert HedgedVaultNotDeployed(stock);
         (address base,) = vaultsFor(stock);
@@ -129,7 +129,7 @@ contract Router {
         external
         returns (uint256 stockOut, uint256 usdgOut)
     {
-        if (hedged && !HEDGED_ROUTING_LIVE) revert HedgedVaultNotDeployed(stock); // Phase 3.
+        if (hedged && !HEDGED_ROUTING_LIVE) revert HedgedVaultNotDeployed(stock); // Track B.
         (address base,) = vaultsFor(stock);
 
         IERC20(base).safeTransferFrom(msg.sender, address(this), shares);

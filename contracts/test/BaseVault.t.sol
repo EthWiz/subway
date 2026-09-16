@@ -474,7 +474,7 @@ contract BaseVaultTest is Test {
         assertEq(factory.hedgedVaultFor(address(stock)), fakeHedged, "registration did not stick");
 
         // Registering a wrapper does NOT advertise the hedged mode: the Router
-        // still cannot route to it in Phase 1, and a toggle that lights up on
+        // still cannot route to it in Track A, and a toggle that lights up on
         // a path that always reverts is worse than no toggle.
         assertFalse(
             router.hedgeAvailable(address(stock)), "hedge advertised while routing still reverts"

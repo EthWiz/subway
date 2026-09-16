@@ -83,7 +83,7 @@ Two consequences that look like bugs and are not:
   depositor entering at a floor below true NAV is therefore mildly **over**paid,
   at the expense of the holders already in. An earlier version of this file
   claimed the opposite and drew a security argument from it; the argument does
-  not hold, and pricing an `hAMC` mint is an open Phase 3 problem rather than
+  not hold, and pricing an `hAMC` mint is an open Track B problem rather than
   something the floor solves for free.
 - **The price uses the Chainlink feed, never the pool tick.** A pool tick is
   something an attacker can move with capital; a share price built on one is a
@@ -206,7 +206,7 @@ retrying a failed scan.
 
 Honest list, so nobody mistakes the scaffold for a product:
 
-- **`HedgedVault` (`hAMC`)** — Phase 3, gated on the unhedged vault producing
+- **`HedgedVault` (`hAMC`)** — Track B, gated on the unhedged vault producing
   a real fee-vs-loss number. `SubwayVault.sol` in the tree is the _pre-stack_
   hedged vault: it owns the Uniswap position directly rather than holding
   `xAMC`, and it is neither deployed by the factory nor reachable through the

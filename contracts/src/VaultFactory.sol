@@ -7,8 +7,8 @@ import {RangePolicy} from "./policy/RangePolicy.sol";
 /// @title VaultFactory
 /// @notice Pair registry and deployer.
 ///
-/// A pair has one `BaseVault` (`xAMC`) and, from Phase 3, one `HedgedVault`
-/// (`hAMC`) that holds it. A pair with only a base vault is the normal Phase 1
+/// A pair has one `BaseVault` (`xAMC`) and, from Track B, one `HedgedVault`
+/// (`hAMC`) that holds it. A pair with only a base vault is the normal Track A
 /// state, not an incomplete one.
 ///
 /// The owner can add pairs, rotate keepers and register the hedged vault. It
@@ -25,7 +25,7 @@ contract VaultFactory {
     /// registration is a mistake rather than a second opinion.
     mapping(address => address) public baseVaultFor;
 
-    /// @notice stock token => hedged wrapper vault, zero until Phase 3.
+    /// @notice stock token => hedged wrapper vault, zero until Track B.
     ///
     /// Set rather than deployed here: `HedgedVault` owns a Lighter account and
     /// its wiring (market id, asset index, margin caps, guardian) is decided
@@ -70,7 +70,7 @@ contract VaultFactory {
         address keeper;
         /// @notice Recorded for operators and indexers; the chain cannot read
         /// rollup state, so nothing on-chain can verify it. Carried here from
-        /// Phase 1 so the pair's hedge market is decided with the pair.
+        /// Track A so the pair's hedge market is decided with the pair.
         uint256 lighterMarketId;
         RangePolicy.Bounds bounds;
     }
@@ -106,7 +106,7 @@ contract VaultFactory {
         emit PairAdded(p.stock, vault, p.lighterMarketId);
     }
 
-    /// @notice Point a pair at its hedged wrapper. Phase 3.
+    /// @notice Point a pair at its hedged wrapper. Track B.
     /// @dev Write-once per pair: re-pointing a live `hAMC` would strand every
     /// holder of the old one behind a Router that no longer knows about it.
     function registerHedgedVault(address stock, address hedgedVault) external onlyOwner {
