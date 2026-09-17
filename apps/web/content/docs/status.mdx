@@ -1,0 +1,36 @@
+---
+title: What is and is not built
+description: The unhedged vault is written and unaudited. The hedged vault does not exist, and Phase 0 rejected the three pairs this project started from.
+---
+
+Nothing is deployed on Robinhood Chain. No addresses are pinned, no contract has been audited, and
+the keeper does not exist.
+
+## The hedged vault is not reachable
+
+On chain, `hedgeAvailable()` is a constant `false` and answers `false` for every pair. Both hedged
+paths revert `HedgedVaultNotDeployed`.
+
+<Callout tone="warning" title="One pair previews the hedged UI">
+  So the hedged components are reachable at all, a single pair in this app returns true from a
+  **UI fixture** — not from the contract. Every hedged figure behind that toggle is invented.
+</Callout>
+
+In the vault list, the hedge ratio, floor/attested NAV, queue and next-epoch columns describe the
+hedged wrapper only. They read `—` wherever it does not exist, which on chain is everywhere. An
+em-dash rather than a zero is deliberate: a zero queue and no queue are different facts.
+
+## Phase 0 rejected all three named pairs
+
+<RejectedPairs />
+
+Eighteen of 194 registered tokens are hedgeable at all, and three pool bars cleared on a
+15-minute window. No pair has been shown to be profitable. See
+[how the fee APR is computed](/docs/fee-apr) for why the cleared figures should not be read as
+returns.
+
+## Open questions
+
+Deposit pricing is not settled. First-deposit donation, the absence of a `minShares` guard, and a
+value-space mint against a quantity-space redeem are all open in `docs/decisions.md`. Share counts
+quoted in the deposit panel are indicative.

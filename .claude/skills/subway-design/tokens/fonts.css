@@ -1,0 +1,14 @@
+/* Substituted webfonts — see readme.md "Font substitution". No font binaries were
+   provided by the source repository (EthWiz/subway ships no frontend).
+   Instrument Serif carries the wordmark and page titles; Schibsted Grotesk carries
+   UI, labels and every figure; IBM Plex Mono is hashes and code only. */
+@import url("https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Schibsted+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap");
+:root{
+--font-serif:"Instrument Serif",Georgia,"Times New Roman",serif;
+--font-display:"Instrument Serif",Georgia,"Times New Roman",serif;
+--font-ui:"Schibsted Grotesk","Helvetica Neue",Helvetica,sans-serif;
+/* Figures use the UI grotesk with tabular numerals — the finance-app convention. */
+--font-num:"Schibsted Grotesk","Helvetica Neue",Helvetica,sans-serif;
+/* Mono is for hashes, addresses, calldata and code only. */
+--font-mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+}

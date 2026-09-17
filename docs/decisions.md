@@ -243,6 +243,52 @@ becomes anything other than a single operator wallet.
 
 ---
 
+## 2026-09-17 — The web app renders on a vendored design system, and docs are headless
+
+**Decision.** `apps/web` is rendered with the Subway design system, vendored
+into `src/ds/` from the `subway-design` skill rather than consumed as a package.
+The token CSS is copied **verbatim** and every Tailwind utility that can reach a
+colour, radius or typeface is remapped onto those tokens through `@theme`, so
+Tailwind is left doing layout only. The new `/docs` section uses fumadocs'
+content layer (`fumadocs-core` + `fumadocs-mdx`) and **not** `fumadocs-ui`.
+
+**Why.**
+
+1. **One visual language, enforced mechanically.** The failure mode of adopting
+   a design system is a page that uses `bg-white` where a component uses
+   `--bg-surface`; the two drift and nobody notices. Routing the utilities
+   through the same tokens makes that disagreement unrepresentable rather than
+   merely discouraged.
+2. **Verbatim tokens keep the sync cheap.** The system is authored elsewhere and
+   will be re-synced wholesale. Reformatting it — or improving it locally —
+   turns every future sync into a diff against our own edits. `src/ds/tokens/`
+   is in `.prettierignore` to protect exactly this.
+3. **`fumadocs-ui` would have been a second design system.** It is a complete
+   docs theme. Taking only the MDX pipeline, page tree and TOC, and rendering
+   with Subway's own primitives, keeps `/docs` looking like the app.
+
+**Cost.** Two adaptations to the system's components are ours and will need
+re-applying on a sync: `Icon` resolves from `/icons/` rather than probing
+bundle-relative, and `TopNav` takes `next/link` routes. The responsive rules for
+the top nav, the docs sidebar and the TOC are also ours — the system specifies
+those components at desktop width only.
+
+The fumadocs versions are pinned tightly and the constraint is not obvious:
+`fumadocs-core@16` peer-requires Next 16 (this app is on 15.5), and
+`fumadocs-mdx@14.x` claims to support core 15 but targets core 16's file layout
+and dies at `ERR_MODULE_NOT_FOUND`. The working pair is core `15.8.5` with mdx
+`13.0.8`. This is recorded because the next person to run `pnpm update` will
+otherwise rediscover it.
+
+**Revisit if:** the app moves to Next 16 — at which point both fumadocs packages
+can go to their current majors and this pin should be dropped — or the design
+system starts being published as a package, which would make `src/ds/` a
+vendored copy to delete rather than maintain.
+
+> > > > > > > origin/main
+
+---
+
 ## 2026-09-16 — Virtual shares and `minShares`, and the mint distortion measured
 
 **Decided**, for the two halves of the entry above that needed no product

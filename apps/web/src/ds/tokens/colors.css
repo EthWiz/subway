@@ -1,0 +1,32 @@
+:root{
+/* surfaces — warm off-white paper on white cards */
+--paper-0:#FFFFFF;--paper-1:#FBFAF7;--paper-2:#F3F0E9;--paper-3:#E8E3D8;
+/* ink — navy through warm grey */
+--ink-0:#14213A;--ink-1:#3A465E;--ink-2:#6B7488;--ink-3:#9AA1B0;--ink-inverse:#FBFAF7;
+/* lines */
+--line-1:#EAE6DE;--line-2:#D9D5CC;--line-strong:#14213A;
+/* brand accent — terracotta */
+--accent:#B3553B;--accent-hover:#C4644A;--accent-press:#96422C;--accent-tint:#F7EDE8;--accent-ink:#8A3D27;
+/* semantics: pos = fee income / in range, neg = loss / out of range */
+--pos:#3F6B4F;--pos-tint:#EBF1EA;--neg:#A33326;--neg-tint:#F8E9E6;
+--warn:#8A6516;--warn-tint:#F8F0DE;--info:#2B4A7E;--info-tint:#EAEFF7;
+/* state machine colours used across vault, queue and hedge surfaces */
+--state-live:#3F6B4F;--state-pending:#8A6516;--state-paused:#6B7488;--state-halted:#A33326;
+/* semantic aliases — always prefer these in components */
+--bg-page:var(--paper-1);--bg-surface:var(--paper-0);--bg-sunken:var(--paper-2);--bg-raised:var(--paper-0);
+--bg-hover:#F5F2EC;--bg-active:var(--paper-3);--bg-inverse:var(--ink-0);
+--text-body:var(--ink-1);--text-strong:var(--ink-0);--text-muted:var(--ink-2);--text-faint:var(--ink-3);
+--text-on-accent:#FFFFFF;--text-on-inverse:var(--ink-inverse);--text-link:var(--accent-ink);
+--border-subtle:var(--line-1);--border-default:var(--line-2);--border-loud:var(--line-strong);
+--focus-ring:rgba(179,85,59,.30);
+}
+.theme-dark{
+--paper-0:#1B2438;--paper-1:#141B2C;--paper-2:#232D42;--paper-3:#2E3950;
+--ink-0:#F4F2ED;--ink-1:#D6D3CB;--ink-2:#9BA3B4;--ink-3:#727B8D;--ink-inverse:#141B2C;
+--line-1:#263044;--line-2:#333E55;--line-strong:#F4F2ED;
+--accent-tint:#31201A;--accent-ink:#E79375;
+--pos:#69A97C;--pos-tint:#17251A;--neg:#DE7160;--neg-tint:#2C1815;
+--warn:#C79A3F;--warn-tint:#2A2113;--info:#7D9EDB;--info-tint:#161E2E;
+--state-live:#69A97C;--state-pending:#C79A3F;--state-paused:#9BA3B4;--state-halted:#DE7160;
+--bg-hover:#202940;--bg-active:#2E3950;--text-link:var(--accent-ink);
+}

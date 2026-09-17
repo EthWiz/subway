@@ -1,0 +1,6 @@
+:root{
+--sp-0:0px;/* @kind spacing */--sp-1:2px;--sp-2:4px;--sp-3:8px;--sp-4:12px;--sp-5:16px;--sp-6:20px;--sp-7:24px;--sp-8:32px;--sp-9:40px;--sp-10:56px;--sp-11:80px;--sp-12:120px;
+--gutter:24px;--page-pad:32px;--card-pad:20px;--card-pad-lg:28px;--section-gap:56px;
+--maxw-page:1200px;--maxw-prose:640px;--maxw-panel:400px;
+--control-h-sm:30px;--control-h:38px;--control-h-lg:46px;--tap-min:44px;
+}

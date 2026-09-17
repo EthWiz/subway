@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<!-- @template name="Vault dashboard" description="Subway app shell with a vault list: header, headline figures, pair table and a deposit panel." -->
+<helmet><script src="./ds-base.js"></script></helmet>
+<div style="min-height:100vh;background:var(--bg-page);font:var(--type-body);color:var(--text-body)">
+<x-import component-from-global-scope="SubwayDesignSystem_44ed98.TopNav" active="vaults" address="0x4f2a…9c1b" hint-size="100%,64px"></x-import>
+<div style="max-width:var(--maxw-page);margin:0 auto;padding:var(--sp-8) var(--page-pad) var(--sp-11)">
+<header style="display:flex;align-items:flex-end;justify-content:space-between;gap:var(--sp-8);flex-wrap:wrap;margin-bottom:var(--sp-7)">
+<div style="max-width:var(--maxw-prose)">
+<div style="font:var(--type-label);letter-spacing:var(--ls-label);text-transform:uppercase;color:var(--text-muted);margin-bottom:var(--sp-3)">Vaults · Robinhood Chain 4663</div>
+<h1 style="font:var(--type-h1);letter-spacing:var(--ls-heading);color:var(--text-strong);margin:0 0 var(--sp-3)">LP a stock token. Keep the fees, drop the direction.</h1>
+<p style="margin:0">Deposit a Robinhood Stock Token, USDG, or both. You receive a fungible share: xNVDA is equity beta plus fees, hNVDA is the same position with the delta hedged on Lighter.</p>
+</div>
+<div style="display:flex;gap:var(--sp-8)">
+<div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end">
+<span style="font:var(--type-label);letter-spacing:var(--ls-label);text-transform:uppercase;color:var(--text-muted)">TVL, all vaults</span>
+<span style="font:var(--type-num-lg);letter-spacing:var(--ls-num);font-variant-numeric:lining-nums;color:var(--text-strong)">$689,380</span>
+<span style="font:var(--type-body-sm);color:var(--text-muted)">closed beta, own capital</span>
+</div>
+<div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end">
+<span style="font:var(--type-label);letter-spacing:var(--ls-label);text-transform:uppercase;color:var(--text-muted)">Names cleared</span>
+<span style="font:var(--type-num-lg);letter-spacing:var(--ls-num);font-variant-numeric:lining-nums;color:var(--text-strong)">3 / 194</span>
+<span style="font:var(--type-body-sm);color:var(--text-muted)">of 18 hedgeable</span>
+</div>
+</div>
+</header>
+<div style="display:grid;grid-template-columns:minmax(0,1fr) 380px;gap:var(--gutter);align-items:start">
+<section style="background:var(--bg-surface);border:1px solid var(--border-subtle);border-radius:var(--radius-card);box-shadow:var(--shadow-1);padding:var(--card-pad) 0 0">
+<div style="display:flex;align-items:baseline;justify-content:space-between;padding:0 var(--card-pad) var(--sp-5)">
+<h3 style="font:var(--type-h3);color:var(--text-strong);margin:0">Pairs</h3>
+<span style="font:var(--type-body-sm);color:var(--text-muted)">Screened 2026-09-16</span>
+</div>
+<table style="width:100%;border-collapse:collapse">
+<thead><tr>
+<th style="text-align:left;padding:0 var(--sp-5) var(--sp-3);font:var(--type-label);letter-spacing:var(--ls-label);text-transform:uppercase;color:var(--text-muted);border-bottom:1px solid var(--border-default)">Share</th>
+<th style="text-align:right;padding:0 var(--sp-5) var(--sp-3);font:var(--type-label);letter-spacing:var(--ls-label);text-transform:uppercase;color:var(--text-muted);border-bottom:1px solid var(--border-default)">TVL</th>
+<th style="text-align:right;padding:0 var(--sp-5) var(--sp-3);font:var(--type-label);letter-spacing:var(--ls-label);text-transform:uppercase;color:var(--text-muted);border-bottom:1px solid var(--border-default)">Fee APR 24h</th>
+<th style="text-align:right;padding:0 var(--sp-5) var(--sp-3);font:var(--type-label);letter-spacing:var(--ls-label);text-transform:uppercase;color:var(--text-muted);border-bottom:1px solid var(--border-default)">Share price</th>
+<th style="text-align:right;padding:0 var(--sp-5) var(--sp-3);font:var(--type-label);letter-spacing:var(--ls-label);text-transform:uppercase;color:var(--text-muted);border-bottom:1px solid var(--border-default)">State</th>
+</tr></thead>
+<tbody>
+<tr>
+<td style="padding:var(--sp-4) var(--sp-5);border-bottom:1px solid var(--border-subtle)"><x-import component-from-global-scope="SubwayDesignSystem_44ed98.TokenMark" ticker="INTC" size="sm" name="INTC / USDG · v3 0.30%" hint-size="200px,34px"></x-import></td>
+<td style="padding:var(--sp-4) var(--sp-5);text-align:right;border-bottom:1px solid var(--border-subtle);font:var(--type-num-md);letter-spacing:var(--ls-num);font-variant-numeric:lining-nums;color:var(--text-strong)">$412,800</td>
+<td style="padding:var(--sp-4) var(--sp-5);text-align:right;border-bottom:1px solid var(--border-subtle);font:var(--type-num-md);letter-spacing:var(--ls-num);font-variant-numeric:lining-nums;color:var(--text-strong)">6.1%</td>
+<td style="padding:var(--sp-4) var(--sp-5);text-align:right;border-bottom:1px solid var(--border-subtle);font:var(--type-num-md);letter-spacing:var(--ls-num);font-variant-numeric:lining-nums;color:var(--text-strong)">$1.0412</td>
+<td style="padding:var(--sp-4) var(--sp-5);text-align:right;border-bottom:1px solid var(--border-subtle)"><x-import component-from-global-scope="SubwayDesignSystem_44ed98.StatusPill" state="live" label="In range" hint-size="100px,24px"></x-import></td>
+</tr>
+<tr>
+<td style="padding:var(--sp-4) var(--sp-5);border-bottom:1px solid var(--border-subtle)"><x-import component-from-global-scope="SubwayDesignSystem_44ed98.TokenMark" ticker="META" size="sm" name="META / USDG · v3 0.30%" hint-size="200px,34px"></x-import></td>
+<td style="padding:var(--sp-4) var(--sp-5);text-align:right;border-bottom:1px solid var(--border-subtle);font:var(--type-num-md);letter-spacing:var(--ls-num);font-variant-numeric:lining-nums;color:var(--text-strong)">$188,400</td>
+<td style="padding:var(--sp-4) var(--sp-5);text-align:right;border-bottom:1px solid var(--border-subtle);font:var(--type-num-md);letter-spacing:var(--ls-num);font-variant-numeric:lining-nums;color:var(--text-strong)">4.4%</td>
+<td style="padding:var(--sp-4) var(--sp-5);text-align:right;border-bottom:1px solid var(--border-subtle);font:var(--type-num-md);letter-spacing:var(--ls-num);font-variant-numeric:lining-nums;color:var(--text-strong)">$1.0088</td>
+<td style="padding:var(--sp-4) var(--sp-5);text-align:right;border-bottom:1px solid var(--border-subtle)"><x-import component-from-global-scope="SubwayDesignSystem_44ed98.StatusPill" state="live" label="In range" hint-size="100px,24px"></x-import></td>
+</tr>
+<tr>
+<td style="padding:var(--sp-4) var(--sp-5);border-bottom:1px solid var(--border-subtle)"><x-import component-from-global-scope="SubwayDesignSystem_44ed98.TokenMark" ticker="SPCX" size="sm" name="SPCX / USDG · v3 1.00%" hint-size="200px,34px"></x-import></td>
+<td style="padding:var(--sp-4) var(--sp-5);text-align:right;border-bottom:1px solid var(--border-subtle);font:var(--type-num-md);letter-spacing:var(--ls-num);font-variant-numeric:lining-nums;color:var(--text-strong)">$61,200</td>
+<td style="padding:var(--sp-4) var(--sp-5);text-align:right;border-bottom:1px solid var(--border-subtle);font:var(--type-num-md);letter-spacing:var(--ls-num);font-variant-numeric:lining-nums;color:var(--text-strong)">18.2%</td>
+<td style="padding:var(--sp-4) var(--sp-5);text-align:right;border-bottom:1px solid var(--border-subtle);font:var(--type-num-md);letter-spacing:var(--ls-num);font-variant-numeric:lining-nums;color:var(--text-strong)">$1.0031</td>
+<td style="padding:var(--sp-4) var(--sp-5);text-align:right;border-bottom:1px solid var(--border-subtle)"><x-import component-from-global-scope="SubwayDesignSystem_44ed98.StatusPill" state="pending" label="Pre-open pull" hint-size="130px,24px"></x-import></td>
+</tr>
+</tbody>
+</table>
+</section>
+<div style="display:grid;gap:var(--gutter)">
+<section style="background:var(--bg-surface);border:1px solid var(--border-subtle);border-radius:var(--radius-panel);box-shadow:var(--shadow-1);padding:var(--card-pad-lg)">
+<h3 style="font:var(--type-h3);color:var(--text-strong);margin:0 0 var(--sp-5)">Deposit</h3>
+<x-import component-from-global-scope="SubwayDesignSystem_44ed98.AmountInput" label="USDG" asset="USDG" balance="12,480.00" usdValue="≈ $12,480 at feed" hint-size="100%,120px"></x-import>
+<div style="height:var(--sp-5)"></div>
+<x-import component-from-global-scope="SubwayDesignSystem_44ed98.Button" variant="primary" size="lg" fullWidth="{{ true }}" hint-size="100%,46px">Deposit into xINTC</x-import>
+<p style="margin:var(--sp-4) 0 0;font:var(--type-body-sm);color:var(--text-muted)">You hold equity beta: this tracks the stock, plus fees, minus arb loss.</p>
+</section>
+<x-import component-from-global-scope="SubwayDesignSystem_44ed98.Callout" tone="warning" title="Pre-launch" hint-size="100%,120px">Nothing is deployed and no pair has been shown to be profitable. Figures are trailing-window extrapolations, not returns.</x-import>
+</div>
+</div>
+</div>
+</div>
+
+</x-dc>
+</body>
+</html>

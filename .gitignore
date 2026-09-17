@@ -21,6 +21,21 @@ research/scratch/
 
 .DS_Store
 
+# Agent tooling. The skills under .claude/skills/ are shared and tracked, and
+# .agents|.codex|.grok/skills are symlinks to them. Everything below is local
+# per-machine state and must never be committed — a worktree in particular.
+.claude/worktrees/
+.claude/settings.local.json
+.codex/worktrees/
+.cursor/worktrees/
+
+# Source archive for the vendored design-system export; the extracted bundle
+# under .claude/skills/subway-design/ is what the repo tracks.
+subway-design.zip
+
+# fumadocs-mdx generates this from content/docs/ at build time.
+.source/
+
 # Per-id Initialize cache for research/scan-v4.ts; rebuilt on demand.
 research/generated/v4-pools.json
 research/generated/v4-candidates-*.json

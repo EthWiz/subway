@@ -1,0 +1,58 @@
+---
+title: The two share tokens
+description: xAMC is equity beta plus fees. hAMC is the same position with the delta hedged, minted at a floor.
+---
+
+Each pair issues one share token per vault. The `x` prefix is the unhedged base vault, the `h`
+prefix is the hedged wrapper.
+
+## xAMC — the unhedged share
+
+You hold equity beta. The share tracks the stock one-for-one, plus the fees the range earns, minus
+what arbitrageurs take when the pool lags the feed. If the stock falls 20%, this falls roughly
+20%. Hedging removes direction; it does not remove impermanent loss.
+
+Redemption pays **both** tokens, as a pro-rata slice of what the vault holds — idle balances, the
+range's pending fees, and your share of the LP principal. That split moves with the pool.
+
+Fees earned by the range are swept into the vault before your slice is measured, so you are paid
+your share of them and no more. Redeeming early does not hand you the range's whole fee balance.
+
+## hAMC — the hedged share
+
+The wrapper shorts the LP's delta on Lighter and leaves a dollar-denominated yield. Redemption
+queues: your slot settles at the epoch NAV, after the keeper reduces the hedge pro rata and the
+Lighter withdrawal matures. A Lighter secure withdrawal is not instant, so the queue is real
+waiting, not a UI delay.
+
+## Floor NAV and attested NAV
+
+Two NAVs exist because only one of them is provable on-chain.
+
+<DataTable
+  columns={[
+    { key: "nav", label: "NAV", mono: false, width: "26%" },
+    { key: "what", label: "What it contains", mono: false, wrap: true },
+  ]}
+  rows={[
+    {
+      id: "floor",
+      nav: "Floor",
+      what: "Idle balances + xShare value at the feed + margin × (1 − haircut). Unsettled hedge PnL counts as zero.",
+    },
+    {
+      id: "attested",
+      nav: "Attested",
+      what: "The floor, plus hedge equity inside Lighter's rollup. Display only.",
+    },
+  ]}
+/>
+
+Robinhood Chain cannot read Lighter's rollup, so unsettled hedge PnL counts as zero in the floor.
+The floor can be too low, never too high, and the attested figure is display only.
+
+<Callout tone="info" title="Depositors are mildly underpaid, on purpose">
+  You mint at the floor, so you give up the unprovable part of the vault. That is exactly what
+  makes deposit-time manipulation pointless: there is nothing to inflate that the contract will
+  sell you.
+</Callout>

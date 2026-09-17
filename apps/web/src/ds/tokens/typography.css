@@ -1,0 +1,31 @@
+:root{
+--fs-display-1:62px;--fs-display-2:44px;--fs-h1:34px;--fs-h2:23px;--fs-h3:18px;
+--fs-body:15px;--fs-body-sm:13.5px;--fs-label:12px;--fs-micro:10.5px;
+--fs-num-xl:40px;--fs-num-lg:26px;--fs-num-md:17px;--fs-num-sm:13px;
+--lh-tight:1.02; /* @kind font */
+--lh-snug:1.18; /* @kind font */
+--lh-normal:1.5; /* @kind font */
+--lh-loose:1.62; /* @kind font */
+--fw-regular:400; /* @kind font */
+--fw-medium:500; /* @kind font */
+--fw-semibold:600; /* @kind font */
+--fw-bold:700; /* @kind font */
+--ls-display:-0.018em; /* @kind font */
+--ls-heading:-0.012em; /* @kind font */
+--ls-body:-0.003em; /* @kind font */
+--ls-label:0.05em; /* @kind font */
+--ls-num:-0.008em; /* @kind font */
+--ls-mono:0; /* @kind font */
+/* semantic type aliases — serif for the wordmark and page titles only */
+--type-display:var(--fw-regular) var(--fs-display-1)/var(--lh-tight) var(--font-serif);
+--type-h1:var(--fw-regular) var(--fs-h1)/var(--lh-snug) var(--font-serif);
+--type-h2:var(--fw-semibold) var(--fs-h2)/var(--lh-snug) var(--font-ui);
+--type-h3:var(--fw-semibold) var(--fs-h3)/var(--lh-snug) var(--font-ui);
+--type-body:var(--fw-regular) var(--fs-body)/var(--lh-normal) var(--font-ui);
+--type-body-sm:var(--fw-regular) var(--fs-body-sm)/var(--lh-normal) var(--font-ui);
+--type-label:var(--fw-medium) var(--fs-label)/1.3 var(--font-ui);
+--type-num-lg:var(--fw-semibold) var(--fs-num-lg)/1.15 var(--font-num);
+--type-num-md:var(--fw-medium) var(--fs-num-md)/1.25 var(--font-num);
+--type-num-sm:var(--fw-regular) var(--fs-num-sm)/1.35 var(--font-num);
+--type-code:var(--fw-regular) var(--fs-body-sm)/1.4 var(--font-mono);
+}
